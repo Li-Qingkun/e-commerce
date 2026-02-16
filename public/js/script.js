@@ -119,6 +119,37 @@ function getJsonFileFullPath() {
 	return `${CONFIG.jsonFilePath}${getJsonFileName()}`;
 }
 
+// ===================== 新增：用户信息同步核心函数 =====================
+/**
+ * 同步更新localStorage中的currentUserInfo
+ * @param {object} userInfo 最新的用户信息对象
+ */
+function syncCurrentUserInfoToLocalStorage(userInfo) {
+	if (!userInfo || !userInfo.userName) {
+		console.warn('同步用户信息失败：用户信息不完整');
+		return;
+	}
+	// 更新全局变量
+	currentUserInfo = {
+		...userInfo
+	};
+	// 同步到localStorage
+	localStorage.setItem('currentUserInfo', JSON.stringify(currentUserInfo));
+	console.log('✅ 已同步用户信息到localStorage：', currentUserInfo);
+}
+
+/**
+ * 从USER_INFO_LIST中获取当前用户的最新信息并同步到localStorage
+ */
+function refreshCurrentUserInfo() {
+	const userInfo = USER_INFO_LIST.find(user => user.userName === currentUserName);
+	if (userInfo) {
+		syncCurrentUserInfoToLocalStorage(userInfo);
+	} else {
+		console.warn(`未找到用户【${currentUserName}】的最新信息`);
+	}
+}
+
 // ===================== 用户信息操作函数（修复核心问题） =====================
 /**
  * 加载用户信息从JSON文件（核心修复：确保每次都加载最新数据）
@@ -150,6 +181,9 @@ async function loadUserInfoFromJson() {
 		const userData = await response.json();
 		USER_INFO_LIST = userData; // 更新全局用户数据
 		console.log('✅ 成功加载最新用户数据：', USER_INFO_LIST);
+        
+        // 核心新增：加载最新数据后立即同步到localStorage
+        refreshCurrentUserInfo();
 		return USER_INFO_LIST;
 	} catch (error) {
 		console.error('[加载用户信息] 失败：', error);
@@ -174,7 +208,7 @@ async function saveUserInfoToJson() {
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
 			},
-			body: `fileName=${encodeURIComponent(fileName)}&filePath=${encodeURIComponent(filePath)}&data=${encodeURIComponent(JSON.stringify(USER_INFO_LIST, null, 2))}`
+			body: `fileName=${encodeURIComponent(fileName)}&filePath=${encodeURIComponent('/data/')}&data=${encodeURIComponent(JSON.stringify(USER_INFO_LIST, null, 2))}`
 		});
 
 		if (!response.ok) {
@@ -184,6 +218,9 @@ async function saveUserInfoToJson() {
 		const result = await response.json();
 		if (result.success) {
 			console.log('用户信息保存成功：', result.msg);
+            
+            // 核心新增：保存成功后立即同步最新信息到localStorage
+            refreshCurrentUserInfo();
 			return {
 				success: true,
 				msg: result.msg
@@ -323,6 +360,8 @@ async function addNewShop() {
 			await loadUserInfoFromJson(); // 重新加载最新的用户数据
 			getUserShopList(); // 重新获取店铺列表
 			initShopSwitcher(); // 重新初始化店铺导航栏
+			// 核心新增：强制同步最新用户信息到localStorage
+			refreshCurrentUserInfo();
 			window.location.reload(); // 最后刷新页面
 		}, 1500);
 	} else {
@@ -791,6 +830,12 @@ function initUserDropdown() {
 
 	// 新增店铺按钮事件（新增）
 	$('#btnAddShop').off('click').click(function() {
+		const userInfo = USER_INFO_LIST.find(user => user.userName === currentUserName);
+		const shopCount = userInfo?.shopList?.length || 0;
+		if (shopCount >= 3) {
+			showToast(`当前账户店铺数量已达上限(3个)，如需增加请联系管理员`, 'error');
+			return;
+		}
 		// 清空表单
 		$('#addShopForm')[0].reset();
 		// 显示模态框
@@ -1222,7 +1267,6 @@ function handleCompareButtonClick() {
 function isUserValidMember() {
 	// 优先从localStorage获取完整用户信息
 	const userInfoStr = localStorage.getItem('currentUserInfo');
-	debugger;
 	if (userInfoStr) {
 		try {
 			currentUserInfo = JSON.parse(userInfoStr);

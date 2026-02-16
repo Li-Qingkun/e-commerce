@@ -1,5 +1,15 @@
 ﻿[
   {
+    "logId": "log_1771252683355_gmc05czm5",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【李庆坤】成功，身份：VIP会员，店铺：得力沐璞汽车用品专卖店,迈库雷汽车用品专卖店，到期时间：2026-02-12",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-16T14:38:03.355Z",
+    "operationTimeStr": "2026/2/16 22:38:03",
+    "ip": "127.0.0.1"
+  },
+  {
     "logId": "log_1771246690142_ydtdtcvkr",
     "operationType": "删除用户",
     "operationDesc": "删除用户【1】成功",

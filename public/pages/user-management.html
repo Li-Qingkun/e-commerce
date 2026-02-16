@@ -544,12 +544,12 @@
 		let memberExpireTime = '';
 		if (userRole === 'vip') {
 			memberExpireTime = $('#modalMemberExpireTime').val();
-			if (expireDate) {
+			if (memberExpireTime) {
 				// 将选择的日期（YYYY-MM-DD）转为ISO时间格式（YYYY-MM-DDT00:00:00.000Z）
-				memberExpireTime = new Date(expireDate + 'T00:00:00').toISOString();
+				memberExpireTime = memberExpireTime;
 			} else {
 				// 为空则设为永久（可自定义一个很远的时间）
-				memberExpireTime = new Date('2099-12-31T23:59:59').toISOString();
+				memberExpireTime = new Date('2099-12-31').toISOString();
 			}
 		}
 
