@@ -14,6 +14,7 @@
 				<th>用户名</th>
 				<th>密码</th>
 				<th>身份</th>
+				<th>会员到期时间</th>
 				<th>店铺列表</th>
 				<th>创建时间</th>
 				<th>最后修改时间</th>
@@ -46,16 +47,18 @@
 				<input type="password" id="modalPassword" placeholder="请输入密码" autocomplete="new-password">
 			</div>
 			<div class="form-group">
-				<label for="modalConfirmPwd">确认密码</label>
-				<input type="password" id="modalConfirmPwd" placeholder="请再次输入密码" autocomplete="new-password">
-				<span class="password-tip" id="passwordTip">两次密码不一致！</span>
-			</div>
-			<div class="form-group">
 				<label for="modalRole">用户身份</label>
 				<select id="modalRole">
 					<option value="normal">普通用户</option>
 					<option value="admin">管理员</option>
+					<option value="vip">VIP会员</option>
 				</select>
+			</div>
+			<!-- 新增：会员到期时间（默认隐藏） -->
+			<div class="form-group" id="memberExpireTimeGroup" style="display: none;">
+				<label for="modalMemberExpireTime">会员到期时间</label>
+				<input type="date" id="modalMemberExpireTime" placeholder="请选择会员到期时间">
+				<small class="text-muted">为空则表示永久会员</small>
 			</div>
 			<div class="form-group">
 				<label for="modalShopList">店铺列表</label>
@@ -72,14 +75,12 @@
 
 <!-- Toast 提示容器（子页面专属） -->
 <div class="toast-container" id="toastContainer"></div>
+<link rel="stylesheet" href="../css/user-management.css" />
 
 <script>
-	// 定义受保护的超级管理员账户
-	// const PROTECTED_ADMIN_USER = 'admin';
-
 	// 页面初始化
 	function initUserManagement() {
-		console.log('用户管理子页面初始化');
+		// console.log('用户管理子页面初始化');
 
 		// 加载用户数据
 		loadAllUsers();
@@ -92,13 +93,13 @@
 	function bindEvents() {
 		// 1. 新增用户按钮
 		$('#btnAddUser').click(function() {
-			console.log('点击新增用户按钮');
+			// console.log('点击新增用户按钮');
 			openUserModal('add');
 		});
 
 		// 2. 编辑用户按钮
 		$('#userTableBody').on('click', '.btn-edit-user', function() {
-			console.log('点击编辑用户按钮');
+			// console.log('点击编辑用户按钮');
 			try {
 				// 关键修复：从当前行的 data 属性获取正确数据，而非按钮的 data 属性
 				const $tr = $(this).closest('tr'); // 获取当前行
@@ -108,18 +109,21 @@
 				const role = $tr.data('role') || $(this).data('role') || 'normal';
 				const shopList = $tr.data('shoplist') || $(this).data('shoplist') || [];
 				const shopNames = shopList.map(shop => shop.shopName || '').join(',');
+				const memberExpireTime = $tr.data('memberexpiretime') || '';
 
-				console.log('编辑用户数据：', {
-					userName,
-					password,
-					role,
-					shopNames
-				}); // 调试日志
+				// console.log('编辑用户数据：', {
+				// 	userName,
+				// 	password,
+				// 	role,
+				// 	memberExpireTime,
+				// 	shopNames
+				// }); // 调试日志
 
 				openUserModal('edit', {
 					userName,
 					password, // 现在是正确的用户密码
 					role,
+					memberExpireTime,
 					shopNames
 				});
 			} catch (e) {
@@ -156,57 +160,23 @@
 			saveUser();
 		});
 
-		// 8. 实时校验用户名
-		// let userNameCheckTimer = null;
-		// $('#modalUserName').on('input blur', function() {
-		// 	const $this = $(this);
-		// 	const userName = $this.val().trim();
-		// 	const $tip = $('#userNameTip');
-		// 	const $saveBtn = $('#btnModalSave');
+		// 8. 新增：用户身份切换事件（显示/隐藏到期时间）
+		$('#modalRole').change(function() {
+			const role = $(this).val();
+			const $expireTimeGroup = $('#memberExpireTimeGroup');
 
-		// 	// 如果用户名为空，隐藏提示并启用保存按钮
-		// 	if (!userName) {
-		// 		$tip.removeClass('show');
-		// 		$this.removeClass('error');
-		// 		clearTimeout(userNameCheckTimer);
-		// 		validatePasswordForm(); // 重新校验密码，更新保存按钮状态
-		// 		return;
-		// 	}
-
-		// 	clearTimeout(userNameCheckTimer);
-		// 	userNameCheckTimer = setTimeout(() => {
-		// 		fetch(`/data/userdata.json?_=${new Date().getTime()}`, {
-		// 				cache: 'no-cache'
-		// 			})
-		// 			.then(res => res.ok ? res.json() : [])
-		// 			.then(data => {
-		// 				if (!Array.isArray(data)) data = [];
-		// 				const editUserName = $('#editUserName').val().trim();
-		// 				const isExist = data.some(u =>
-		// 					u.userName && u.userName.trim() === userName && u.userName !==
-		// 					editUserName
-		// 				);
-
-		// 				if (isExist) {
-		// 					$tip.addClass('show');
-		// 					$this.addClass('error');
-		// 					$('#btnModalSave').prop('disabled', true).css('opacity', '0.6');
-		// 				} else {
-		// 					$tip.removeClass('show');
-		// 					$this.removeClass('error');
-		// 					validatePasswordForm(); // 重新校验密码，更新保存按钮状态
-		// 				}
-		// 			})
-		// 			.catch(err => {
-		// 				console.error('实时校验用户名失败：', err);
-		// 				$tip.removeClass('show');
-		// 				validatePasswordForm();
-		// 			});
-		// 	}, 500);
-		// });
+			// 只有VIP会员才显示到期时间
+			if (role === 'vip') {
+				$expireTimeGroup.show();
+			} else {
+				$expireTimeGroup.hide();
+			}
+			// 重新校验表单
+			validatePasswordForm();
+		});
 
 		// 9. 实时校验密码一致性
-		$('#modalPassword, #modalConfirmPwd').on('input', validatePasswordForm);
+		// $('#modalPassword, #modalConfirmPwd').on('input', validatePasswordForm);
 	}
 
 	/**
@@ -231,41 +201,48 @@
 	function validatePasswordForm() {
 		const isEdit = !!$('#editUserName').val().trim();
 		const password = $('#modalPassword').val().trim();
-		const confirmPwd = $('#modalConfirmPwd').val().trim();
+		// const confirmPwd = $('#modalConfirmPwd').val().trim();
 		const $tip = $('#passwordTip');
-		const $pwdInput = $('#modalConfirmPwd');
+		// const $pwdInput = $('#modalConfirmPwd');
 		const $saveBtn = $('#btnModalSave');
 
 		// 编辑模式：密码可选（为空则不修改）
-		if (isEdit && !password && !confirmPwd) {
+		if (isEdit && !password) {
 			$tip.removeClass('show');
 			$pwdInput.removeClass('error');
+			// 关键1：编辑模式下启用按钮并恢复颜色
+			$saveBtn.prop('disabled', false).css('opacity', '1');
 			return true;
 		}
 
 		let isValid = true;
-		// 仅校验密码一致性（如果输入了密码）
-		if (password || confirmPwd) {
-			if (password !== confirmPwd) {
-				$tip.addClass('show');
-				$pwdInput.addClass('error');
-				isValid = false;
-			} else {
-				$tip.removeClass('show');
-				$pwdInput.removeClass('error');
-			}
-		} else {
-			// 如果密码和确认密码都为空，隐藏提示
-			$tip.removeClass('show');
-			$pwdInput.removeClass('error');
-		}
+		// // 仅校验密码一致性（如果输入了密码）
+		// if (password || confirmPwd) {
+		// 	if (password !== confirmPwd) {
+		// 		$tip.addClass('show');
+		// 		$pwdInput.addClass('error');
+		// 		isValid = false;
+		// 	} else {
+		// 		$tip.removeClass('show');
+		// 		$pwdInput.removeClass('error');
+		// 	}
+		// } else {
+		// 	// 如果密码和确认密码都为空，隐藏提示
+		// 	$tip.removeClass('show');
+		// 	$pwdInput.removeClass('error');
+		// }
 
 		const userNameExist = $('#userNameTip').hasClass('show');
 		if (userNameExist) {
 			isValid = false;
+			// 用户名重复时：禁用按钮+灰色
+			$saveBtn.prop('disabled', true).css('opacity', '0.6');
+		} else {
+			isValid = true;
+			// 关键2：用户名合法时：启用按钮+恢复正常颜色
+			$saveBtn.prop('disabled', false).css('opacity', '1');
 		}
 
-		$saveBtn.prop('disabled', !isValid);
 		return isValid;
 	}
 
@@ -274,17 +251,22 @@
 	 */
 	function openUserModal(type, userData = {}) {
 		const {
-			userName = '', password = '', role = 'normal', shopNames = ''
+			userName = '', password = '', role = 'normal', shopNames = '', memberExpireTime = ''
 		} = userData;
+
+		// 1. 先隐藏弹窗，避免填充过程被看到
+		$('#userModal').removeClass('show').css('display', 'none');
 
 		// 重置弹窗状态
 		$('#userNameTip').removeClass('show');
 		$('#modalUserName').removeClass('error').val('');
 		$('#passwordTip').removeClass('show');
-		$('#modalConfirmPwd').removeClass('error').val('');
+		// $('#modalConfirmPwd').removeClass('error').val('');
 		$('#modalPassword').val('');
 		$('#modalShopList').val('');
 		$('#modalRole').val('normal').prop('disabled', false);
+		// 新增：重置到期时间
+		$('#modalMemberExpireTime').val('');
 		$('#editUserName').val('');
 		$('#btnModalSave').prop('disabled', true).css('opacity', '0.6');
 
@@ -293,13 +275,38 @@
 			$('#editUserName').val(''); // 关键：清空隐藏的编辑用户名
 			$('#modalUserName').val('').removeAttr('disabled').removeClass('error');
 			$('#modalPassword').val(''); // 清空密码
-			$('#modalConfirmPwd').val(''); // 清空确认密码
+			// $('#modalConfirmPwd').val(''); // 清空确认密码
 			$('#modalRole').val('normal'); // 重置为普通用户
 			$('#modalShopList').val('').removeAttr('disabled'); // 清空店铺列表
+			$('#memberExpireTimeGroup').hide();
 
 			// 新增模式：重新绑定用户名校验事件
 			bindUserNameCheck();
 		} else if (type === 'edit') {
+			$('#modalTitle').text('编辑用户');
+			$('#editUserName').val(userName);
+			$('#modalUserName').val(userName).attr('disabled', true).removeClass('error');
+			$('#modalPassword').val(password);
+			// $('#modalConfirmPwd').val(password);
+			$('#modalShopList').val(shopNames).removeAttr('disabled');
+
+			// 根据角色显示/隐藏会员到期时间输入框
+			if (role === 'vip') {
+				$('#memberExpireTimeGroup').show();
+				// 格式化时间为输入框可识别的格式
+				if (memberExpireTime) {
+					// 从 ISO 时间字符串中提取前10位，得到 YYYY-MM-DD
+					const formattedDate = memberExpireTime.slice(0, 10);
+					$('#modalMemberExpireTime').val(formattedDate);
+				} else {
+					$('#modalMemberExpireTime').val('');
+				}
+			} else {
+				$('#memberExpireTimeGroup').hide();
+				// 清空输入框的值，避免残留
+				$('#modalMemberExpireTime').val('');
+			}
+
 			// 保护逻辑：admin账户禁用身份修改
 			if (userName === PROTECTED_ADMIN_USER) {
 				$('#modalRole').val('admin').prop('disabled', true);
@@ -307,13 +314,6 @@
 			} else {
 				$('#modalRole').val(role).prop('disabled', false);
 			}
-
-			$('#modalTitle').text('编辑用户');
-			$('#editUserName').val(userName);
-			$('#modalUserName').val(userName).attr('disabled', true).removeClass('error');
-			$('#modalPassword').val(password);
-			$('#modalConfirmPwd').val(password);
-			$('#modalShopList').val(shopNames).removeAttr('disabled');
 
 			// 编辑模式：解绑用户名的校验事件，避免误报
 			$('#modalUserName').off('input blur');
@@ -401,7 +401,7 @@
 			$('#editUserName').val('');
 			$('#modalUserName').val('').removeAttr('disabled').removeClass('error');
 			$('#modalPassword').val('');
-			$('#modalConfirmPwd').val('');
+			// $('#modalConfirmPwd').val('');
 			$('#modalRole').val('normal');
 			$('#modalShopList').val('').removeAttr('disabled');
 			$('#userNameTip').removeClass('show');
@@ -415,7 +415,7 @@
 	 */
 	function loadAllUsers() {
 		const $tbody = $('#userTableBody');
-		$tbody.empty().append('<tr><td colspan="8" class="empty-tip">加载中...</td></tr>');
+		$tbody.empty().append('<tr><td colspan="9" class="empty-tip">加载中...</td></tr>');
 
 		const timestamp = new Date().getTime();
 		fetch(`/data/userdata.json?_=${timestamp}`, {
@@ -430,7 +430,7 @@
 				if (response.ok) {
 					return response.json();
 				} else if (response.status === 404) {
-					$tbody.empty().append('<tr><td colspan="8" class="empty-tip">暂无用户数据</td></tr>');
+					$tbody.empty().append('<tr><td colspan="9" class="empty-tip">暂无用户数据</td></tr>');
 					return [];
 				}
 				throw new Error(`获取用户数据失败 [${response.status}]`);
@@ -438,7 +438,7 @@
 			.then(userData => {
 				$tbody.empty();
 				if (!Array.isArray(userData) || userData.length === 0) {
-					$tbody.append('<tr><td colspan="8" class="empty-tip">暂无用户数据</td></tr>');
+					$tbody.append('<tr><td colspan="9" class="empty-tip">暂无用户数据</td></tr>');
 					return;
 				}
 
@@ -447,8 +447,32 @@
 					const updateTime = user.updateTime ? new Date(user.updateTime).toLocaleString() : '未知';
 					const showPwd = user.password ? user.password.substring(0, 3) + '****' : '未设置';
 					const userRole = user.role || 'normal';
-					const roleText = userRole === 'admin' ? '管理员' : '普通用户';
-					const roleClass = userRole === 'admin' ? 'admin' : 'normal';
+					// 新增：角色文本和样式
+					let roleText = '';
+					let roleClass = '';
+					if (userRole === 'admin') {
+						roleText = '管理员';
+						roleClass = 'admin';
+					} else if (userRole === 'vip') {
+						roleText = 'VIP会员';
+						roleClass = 'vip';
+					} else {
+						roleText = '普通用户';
+						roleClass = 'normal';
+					}
+					// 新增：会员到期时间显示
+					let expireTimeText = '无';
+					if (userRole === 'vip' && user.memberExpireTime) {
+						try {
+							expireTimeText = new Date(user.memberExpireTime).toLocaleDateString();
+						} catch (e) {
+							expireTimeText = '永久';
+						}
+					} else if (userRole === 'vip' && !user.memberExpireTime) {
+						expireTimeText = '永久';
+					} else if (userRole === 'admin') {
+						expireTimeText = '永久';
+					}
 					const isProtected = user.userName === PROTECTED_ADMIN_USER;
 
 					let shopHtml = '';
@@ -465,42 +489,19 @@
 					    <tr data-username="${user.userName}" 
 					        data-password="${user.password || ''}" 
 					        data-role="${userRole}"
-					        data-shoplist='${JSON.stringify(user.shopList || [])}'>
+					        data-shoplist='${JSON.stringify(user.shopList || [])}'
+					        data-memberexpiretime="${user.memberExpireTime || ''}">
 					        <td>${index + 1}</td>
 					        <td>${user.userName || '-'}</td>
 					        <td>${showPwd}</td>
 					        <td><span class="role-tag ${roleClass}">${roleText}</span></td>
+					        <td>${expireTimeText}</td>
 					        <td>${shopHtml}</td>
 					        <td>${createTime}</td>
 					        <td>${updateTime}</td>
 					        <td></td>
 					    </tr>
 					`);
-
-					// const $tr = $(`
-					//                <tr data-username="${user.userName}">
-					//                    <td>${index + 1}</td>
-					//                    <td>${user.userName || '-'}</td>
-					//                    <td>${showPwd}</td>
-					//                    <td><span class="role-tag ${roleClass}">${roleText}</span></td>
-					//                    <td>${shopHtml}</td>
-					//                    <td>${createTime}</td>
-					//                    <td>${updateTime}</td>
-					//                    <td></td>
-					//                </tr>
-					//            `);
-
-					// 编辑按钮
-					// const $editBtn = $(
-					// 	`<button class="btn btn-sm btn-primary btn-edit-user ${isProtected ? 'disabled' : ''}" 
-					//                        ${isProtected ? 'title="超级管理员账户部分操作受限"' : ''}>
-					//                    <i class="fa fa-edit"></i> 编辑
-					//                </button>`
-					// );
-					// $editBtn.data('username', user.userName);
-					// $editBtn.data('password', user.password || '');
-					// $editBtn.data('role', userRole);
-					// $editBtn.data('shoplist', user.shopList || []);
 
 					// 编辑按钮只保留基础标识，不再存储完整数据
 					const $editBtn = $(
@@ -509,11 +510,6 @@
 					        <i class="fa fa-edit"></i> 编辑
 					    </button>`
 					);
-					// 移除按钮的 data 绑定，统一从行获取
-					// $editBtn.data('username', user.userName); // 删除
-					// $editBtn.data('password', user.password || ''); // 删除
-					// $editBtn.data('role', userRole); // 删除
-					// $editBtn.data('shoplist', user.shopList || []); // 删除
 
 					// 删除按钮
 					const $deleteBtn = $(
@@ -530,7 +526,7 @@
 			})
 			.catch(err => {
 				console.error('加载用户数据失败：', err);
-				$tbody.empty().append('<tr><td colspan="8" class="empty-tip">加载用户数据失败</td></tr>');
+				$tbody.empty().append('<tr><td colspan="9" class="empty-tip">加载用户数据失败</td></tr>');
 			});
 	}
 
@@ -541,9 +537,21 @@
 		const editUserName = $('#editUserName').val().trim();
 		const userName = $('#modalUserName').val().trim();
 		const password = $('#modalPassword').val().trim();
-		const confirmPwd = $('#modalConfirmPwd').val().trim();
+		// const confirmPwd = $('#modalConfirmPwd').val().trim();
 		const userRole = $('#modalRole').val() || 'normal';
 		const shopInput = $('#modalShopList').val().trim();
+		// 新增：获取会员到期时间
+		let memberExpireTime = '';
+		if (userRole === 'vip') {
+			memberExpireTime = $('#modalMemberExpireTime').val();
+			if (expireDate) {
+				// 将选择的日期（YYYY-MM-DD）转为ISO时间格式（YYYY-MM-DDT00:00:00.000Z）
+				memberExpireTime = new Date(expireDate + 'T00:00:00').toISOString();
+			} else {
+				// 为空则设为永久（可自定义一个很远的时间）
+				memberExpireTime = new Date('2099-12-31T23:59:59').toISOString();
+			}
+		}
 
 		// 保护逻辑
 		if (editUserName === PROTECTED_ADMIN_USER && userRole !== 'admin') {
@@ -560,12 +568,12 @@
 			return;
 		}
 
-		if (password || confirmPwd) {
-			if (password !== confirmPwd) {
-				showToast('两次密码输入不一致！', 'error');
-				return;
-			}
-		}
+		// if (password || confirmPwd) {
+		// 	if (password !== confirmPwd) {
+		// 		showToast('两次密码输入不一致！', 'error');
+		// 		return;
+		// 	}
+		// }
 
 		if (!shopInput) {
 			showToast('请输入店铺名称！', 'error');
@@ -613,6 +621,7 @@
 						password: password,
 						role: userRole,
 						shopList: shopList,
+						memberExpireTime: memberExpireTime, // 新增：保存到期时间
 						createTime: now,
 						updateTime: now
 					});
@@ -625,6 +634,7 @@
 								shopList: shopList,
 								password: password || user.password,
 								role: editUserName === PROTECTED_ADMIN_USER ? 'admin' : userRole,
+								memberExpireTime: userRole === 'vip' ? memberExpireTime : '', // 新增：保存到期时间
 								updateTime: now
 							};
 						}
@@ -660,7 +670,8 @@
 				// 记录成功日志
 				const operationType = editUserName ? '编辑用户' : '新增用户';
 				const operationDesc =
-					`${operationType}【${userName}】成功，身份：${userRole === 'admin' ? '管理员' : '普通用户'}，店铺：${shopInput}`;
+					`${operationType}【${userName}】成功，身份：${userRole === 'admin' ? '管理员' : userRole === 'vip' ? 'VIP会员' : '普通用户'}，店铺：${shopInput}` +
+					(userRole === 'vip' ? `，到期时间：${memberExpireTime || '永久'}` : '');
 				recordOperationLog(operationType, operationDesc, 'success');
 
 				showToast(editUserName ? '用户编辑成功！' : '用户新增成功！', 'success');

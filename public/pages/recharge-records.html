@@ -1,0 +1,245 @@
+<!-- 会员充值记录页面 -->
+<div class="page-header">
+	<h2 class="page-title">会员充值记录</h2>
+	<div class="record-filter">
+		<input type="text" id="rechargeSearch" placeholder="搜索用户名/备注/操作人">
+		<select id="paymentMethodFilter">
+			<option value="">全部支付方式</option>
+			<option value="wechat">微信</option>
+			<option value="alipay">支付宝</option>
+			<option value="cash">现金</option>
+			<option value="admin">后台手动</option>
+		</select>
+		<select id="paymentStatusFilter">
+			<option value="">全部支付状态</option>
+			<option value="success">成功</option>
+			<option value="fail">失败</option>
+			<option value="pending">待支付</option>
+		</select>
+		<button id="btnRefreshRecords" class="btn btn-primary btn-sm">
+			<i class="fa fa-refresh"></i> 刷新
+		</button>
+	</div>
+</div>
+
+<div class="card">
+	<table class="table table-bordered table-hover recharge-table">
+		<thead>
+			<tr>
+				<th>序号</th>
+				<th>用户名</th>
+				<th>充值金额(元)</th>
+				<th>充值时长(月)</th>
+				<th>原到期时间</th>
+				<th>新到期时间</th>
+				<th>充值类型</th>
+				<th>支付方式</th>
+				<th>支付状态</th>
+				<th>充值时间</th>
+				<th>操作人</th>
+				<th>备注</th>
+			</tr>
+		</thead>
+		<tbody id="rechargeTableBody">
+			<tr>
+				<td colspan="12" class="empty-tip">加载充值记录中...</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+<script>
+	// 初始化充值记录页面
+	function initRechargeRecords() {
+		// console.log('会员充值记录页面初始化');
+		loadRechargeRecords();
+		bindRechargeEvents();
+	}
+
+	// 加载充值记录数据
+	function loadRechargeRecords() {
+		const $tbody = $('#rechargeTableBody');
+		$tbody.empty().append('<tr><td colspan="12" class="empty-tip">加载充值记录中...</td></tr>');
+
+		// 读取本地充值记录文件
+		fetch(`/data/recharge-records.json?_=${new Date().getTime()}`, {
+				method: 'GET',
+				cache: 'no-cache'
+			})
+			.then(res => {
+				if (res.ok) return res.json();
+				return [];
+			})
+			.then(records => {
+				$tbody.empty();
+				if (!Array.isArray(records) || records.length === 0) {
+					$tbody.append('<tr><td colspan="12" class="empty-tip">暂无充值记录</td></tr>');
+					return;
+				}
+
+				// 应用筛选条件
+				records = filterRechargeRecords(records);
+
+				// 渲染充值记录列表
+				records.forEach((record, index) => {
+					// 格式化时间（将ISO时间转为本地格式）
+					const formatTime = (timeStr) => {
+						if (!timeStr) return '-';
+						return new Date(timeStr).toLocaleString();
+					};
+
+					// 状态标签样式
+					const statusClass = record.paymentStatus === 'success' ? 'success' :
+						record.paymentStatus === 'fail' ? 'danger' : 'warning';
+					const statusText = record.paymentStatus === 'success' ? '成功' :
+						record.paymentStatus === 'fail' ? '失败' : '待支付';
+
+					// 充值类型文本
+					const rechargeTypeText = record.rechargeType === 'normal' ? '普通充值' :
+						record.rechargeType === 'renew' ? '续费' : '升级';
+
+					// 支付方式文本
+					const paymentMethodText = record.paymentMethod === 'wechat' ? '微信' :
+						record.paymentMethod === 'alipay' ? '支付宝' :
+						record.paymentMethod === 'cash' ? '现金' : '后台手动';
+
+					const $tr = $(`
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${record.userName || '-'}</td>
+                        <td>${record.rechargeAmount || 0}</td>
+                        <td>${record.rechargeMonths || 0}</td>
+                        <td>${formatTime(record.originalExpireTime)}</td>
+                        <td>${formatTime(record.newExpireTime)}</td>
+                        <td>${rechargeTypeText}</td>
+                        <td>${paymentMethodText}</td>
+                        <td><span class="status-tag ${statusClass}">${statusText}</span></td>
+                        <td>${formatTime(record.rechargeTime)}</td>
+                        <td>${record.operator || '-'}</td>
+                        <td title="${record.remark || '-'}">${record.remark || '-'}</td>
+                    </tr>
+                `);
+					$tbody.append($tr);
+				});
+			})
+			.catch(err => {
+				console.error('加载充值记录失败：', err);
+				$tbody.empty().append('<tr><td colspan="12" class="empty-tip">加载充值记录失败</td></tr>');
+			});
+	}
+
+	// 筛选充值记录
+	function filterRechargeRecords(records) {
+		const searchKey = $('#rechargeSearch').val().toLowerCase().trim();
+		const paymentMethod = $('#paymentMethodFilter').val();
+		const paymentStatus = $('#paymentStatusFilter').val();
+
+		return records.filter(record => {
+			// 关键词搜索（用户名/备注/操作人）
+			const matchSearch = !searchKey ||
+				(record.userName && record.userName.toLowerCase().includes(searchKey)) ||
+				(record.remark && record.remark.toLowerCase().includes(searchKey)) ||
+				(record.operator && record.operator.toLowerCase().includes(searchKey));
+
+			// 支付方式筛选
+			const matchMethod = !paymentMethod || record.paymentMethod === paymentMethod;
+
+			// 支付状态筛选
+			const matchStatus = !paymentStatus || record.paymentStatus === paymentStatus;
+
+			return matchSearch && matchMethod && matchStatus;
+		});
+	}
+
+	// 绑定页面事件
+	function bindRechargeEvents() {
+		// 搜索/筛选事件
+		$('#rechargeSearch, #paymentMethodFilter, #paymentStatusFilter').on('input change', function() {
+			loadRechargeRecords();
+		});
+
+		// 刷新按钮事件
+		$('#btnRefreshRecords').click(function() {
+			$(this).html('<i class="fa fa-spinner fa-spin"></i> 刷新中...');
+			loadRechargeRecords();
+			setTimeout(() => {
+				$(this).html('<i class="fa fa-refresh"></i> 刷新');
+			}, 500);
+			// 记录操作日志
+			window.recordOperationLog('查看充值记录', '手动刷新会员充值记录列表', 'success');
+		});
+	}
+
+	// 挂载初始化函数到window，供主页面调用
+	window.initRechargeRecords = initRechargeRecords;
+</script>
+
+<style>
+	/* 充值记录页面样式 */
+	.record-filter {
+		display: flex;
+		gap: 10px;
+		margin-bottom: 15px;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
+	.record-filter input,
+	.record-filter select {
+		padding: 8px 10px;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		font-size: 14px;
+	}
+
+	.record-filter input {
+		width: 200px;
+	}
+
+	.recharge-table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+
+	.recharge-table th {
+		background-color: #f5f5f5;
+		text-align: center;
+		padding: 10px;
+		font-weight: 600;
+	}
+
+	.recharge-table td {
+		padding: 8px 10px;
+		border: 1px solid #eee;
+		text-align: center;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 200px;
+	}
+
+	.status-tag {
+		padding: 2px 8px;
+		border-radius: 4px;
+		font-size: 12px;
+		color: #fff;
+	}
+
+	.status-tag.success {
+		background-color: #00C851;
+	}
+
+	.status-tag.danger {
+		background-color: #ff4444;
+	}
+
+	.status-tag.warning {
+		background-color: #ffbb33;
+	}
+
+	.empty-tip {
+		text-align: center;
+		color: #999;
+		padding: 20px;
+	}
+</style>

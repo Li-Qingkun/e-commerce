@@ -439,24 +439,31 @@ body {
 }
 
 .modal-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 15px;
-	padding-bottom: 10px;
-	border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;  /* 水平居中 */
+    align-items: center;      /* 垂直居中 */
+    position: relative;       /* 为关闭按钮定位做准备 */
+    padding: 16px 24px;
+    border-bottom: 1px solid #eee;
 }
 
 .modal-title {
-	font-size: 18px;
-	font-weight: 600;
-	margin: 0;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
 }
 
+/* 关闭按钮单独定位，避免影响标题居中 */
 .modal-close {
-	cursor: pointer;
-	font-size: 20px;
-	color: #999;
+    position: absolute;
+    top: 16px;
+    right: 24px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #999;
+    cursor: pointer;
 }
 
 .modal-body .form-group {

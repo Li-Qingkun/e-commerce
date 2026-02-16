@@ -4,7 +4,7 @@
     "userName": "张云翔",
     "password": "1",
     "role": "normal",
-    "memberExpireTime": "2026-08-12T09:40:56.599Z",
+    "memberExpireTime": "2026-08-12",
     "shopList": [
       {
         "shopName": "众合祥汽车配件"
@@ -18,7 +18,7 @@
     "userName": "111",
     "password": "111",
     "role": "admin",
-    "memberExpireTime": "2027-02-12T09:41:09.656Z",
+    "memberExpireTime": "2027-02-12",
     "shopList": [
       {
         "shopName": "111"
@@ -31,8 +31,8 @@
     "id": "7b7c8d8c-9999-4999-8999-999999999999",
     "userName": "李庆坤",
     "password": "1",
-    "role": "normal",
-    "memberExpireTime": "2026-02-12T09:43:02.396Z",
+    "role": "vip",
+    "memberExpireTime": "2026-02-12",
     "shopList": [
       {
         "shopName": "得力沐璞汽车用品专卖店"
@@ -42,14 +42,14 @@
       }
     ],
     "createTime": "2026-02-12T09:43:02.396Z",
-    "updateTime": "2026-02-16T06:56:40.691Z"
+    "updateTime": "2026-02-16T11:51:52.231Z"
   },
   {
     "id": "8e4e09c0-c01e-4c9c-9c0c-0c9c0c9c0c9c",
     "userName": "admin",
     "password": "admin123",
     "role": "admin",
-    "memberExpireTime": "2028-02-12T09:46:11.571Z",
+    "memberExpireTime": "2028-02-12",
     "shopList": [
       {
         "shopName": "超级管理员"
@@ -63,7 +63,7 @@
     "userName": "王浩丞",
     "password": "1",
     "role": "normal",
-    "memberExpireTime": "2026-08-13T18:25:53.090Z",
+    "memberExpireTime": "2026-08-13",
     "shopList": [
       {
         "shopName": "祥铁旗舰店"

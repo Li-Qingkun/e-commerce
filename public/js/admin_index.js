@@ -118,6 +118,8 @@ function loadPage(pageName, pagePath) {
 				window.initUserManagement();
 			} else if (pageName === 'operation-log' && window.initOperationLog) {
 				window.initOperationLog();
+			} else if (pageName === 'recharge-records' && window.initRechargeRecords) {
+				window.initRechargeRecords(); // 新增充值记录页面初始化
 			}
 		} else {
 			$('#contentContainer').html(`

@@ -1,0 +1,25 @@
+/* VIP会员标签样式 */
+.role-tag.vip {
+    background-color: #faad14;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* 管理员和普通用户样式保持不变 */
+.role-tag.admin {
+    background-color: #1677ff;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.role-tag.normal {
+    background-color: #52c41a;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}

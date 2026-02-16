@@ -1,5 +1,45 @@
 ﻿[
   {
+    "logId": "log_1771246690142_ydtdtcvkr",
+    "operationType": "删除用户",
+    "operationDesc": "删除用户【1】成功",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-16T12:58:10.142Z",
+    "operationTimeStr": "2026/2/16 20:58:10",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771246685038_wyfa2n975",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【1】成功，身份：普通用户，店铺：1",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-16T12:58:05.038Z",
+    "operationTimeStr": "2026/2/16 20:58:05",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771246679620_asahakxe7",
+    "operationType": "新增用户",
+    "operationDesc": "新增用户【1】成功，身份：普通用户，店铺：1",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-16T12:57:59.620Z",
+    "operationTimeStr": "2026/2/16 20:57:59",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771242712423_vhbldekoy",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【李庆坤】成功，身份：普通用户，店铺：得力沐璞汽车用品专卖店,迈库雷汽车用品专卖店",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-16T11:51:52.423Z",
+    "operationTimeStr": "2026/2/16 19:51:52",
+    "ip": "127.0.0.1"
+  },
+  {
     "logId": "log_1771225134464_w4q292nn1",
     "operationType": "编辑用户",
     "operationDesc": "编辑用户【王浩丞】成功，身份：普通用户，店铺：祥铁旗舰店",
