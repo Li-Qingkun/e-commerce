@@ -168,6 +168,19 @@ function validateRegisterForm() {
 }
 
 /**
+ * 辅助函数：判断日期是否过期
+ * @param {string} expireTime - ISO格式的过期时间字符串
+ * @returns {boolean} - 是否过期
+ */
+function isDateExpired(expireTime) {
+	if (!expireTime) return true; // 无过期时间默认视为过期
+	const expireDate = new Date(expireTime);
+	const now = new Date();
+	// 比较时间戳，当前时间大于过期时间则视为过期
+	return now.getTime() > expireDate.getTime();
+}
+
+/**
  * 处理登录逻辑（按身份跳转不同页面）
  */
 function handleLogin() {
@@ -202,8 +215,27 @@ function handleLogin() {
 				throw new Error('用户名或密码错误');
 			}
 
+			// ********** 新增逻辑：判断会员是否过期 **********
+			let userRole = user.role || 'normal';
+			// 检查会员到期时间是否过期
+			const isMemberExpired = isDateExpired(user.memberExpireTime);
+
+			// 如果过期，强制将角色改为normal
+			if (isMemberExpired && userRole !== 'admin') {
+				userRole = 'normal';
+				// 提示用户会员已过期
+				// showToast('您的会员已过期，当前仅能以普通用户身份登录', 'warning');
+			}
+
+			// ********** 新增逻辑：存储完整用户信息到localStorage **********
+			// 深拷贝用户对象，避免修改原数据
+			const userInfo = JSON.parse(JSON.stringify(user));
+			// 更新用户信息中的角色（如果过期则改为normal）
+			userInfo.role = userRole;
+			// 存储完整用户信息
+			localStorage.setItem('currentUserInfo', JSON.stringify(userInfo));
+
 			// 验证成功，存储用户信息
-			const userRole = user.role || 'normal'; // 默认普通用户
 			localStorage.setItem('currentUserName', username);
 			localStorage.setItem('isAdmin', userRole === 'admin' ? 'true' : 'false');
 

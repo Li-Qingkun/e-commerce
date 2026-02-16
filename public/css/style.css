@@ -817,3 +817,140 @@ body {
 #addShopModal .modal-body {
 	padding: 20px;
 }
+
+/* 充值记录表格样式 */
+#rechargeRecordModal .table {
+	width: 100%;
+	margin-bottom: 0;
+}
+
+#rechargeRecordModal .table-bordered>thead>tr>th,
+#rechargeRecordModal .table-bordered>tbody>tr>td {
+	border: 1px solid var(--border-color);
+	padding: 8px 12px;
+	text-align: center;
+}
+
+#rechargeRecordModal .table thead th {
+	background-color: #f8f9fa;
+	color: var(--text-color);
+	font-weight: 600;
+}
+
+#rechargeRecordModal .table tbody tr:hover {
+	background-color: #f5f7fa;
+}
+
+/* 充值记录表格容器 - 优化滚动和内边距 */
+.recharge-table-wrapper {
+	overflow-x: auto;
+	padding: 0;
+	margin-bottom: 0;
+	border-radius: 8px;
+	border: 1px solid var(--border-color);
+}
+
+/* 充值记录表格 - 紧凑排版 */
+.recharge-table {
+	width: 100%;
+	margin-bottom: 0;
+	table-layout: fixed;
+	/* 固定列宽，防止内容撑开 */
+}
+
+.recharge-table th,
+.recharge-table td {
+	padding: 6px 8px !important;
+	/* 减小单元格内边距 */
+	font-size: 13px;
+	/* 统一字体大小 */
+	white-space: nowrap;
+	/* 禁止换行，保持单行 */
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* 表头样式优化 */
+.recharge-table thead th {
+	background-color: #f8f9fa;
+	color: var(--text-color);
+	font-weight: 600;
+	text-align: center;
+	border-bottom: 2px solid var(--border-color);
+}
+
+/* 表格行 hover 效果 */
+.recharge-table tbody tr:hover {
+	background-color: #f5f7fa;
+}
+
+/* 支付状态标签 - 紧凑版 */
+.recharge-status {
+	padding: 1px 6px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 500;
+	display: inline-block;
+	line-height: 1.4;
+}
+
+/* 充值记录表格 Tooltip 样式 */
+.recharge-tooltip {
+	position: absolute;
+	background: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	padding: 6px 10px;
+	border-radius: 4px;
+	font-size: 12px;
+	z-index: 9999;
+	max-width: 300px;
+	word-wrap: break-word;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.2s;
+}
+
+.recharge-tooltip.show {
+	opacity: 1;
+}
+
+/* 确保表格单元格相对定位，用于Tooltip定位 */
+.recharge-table td {
+	position: relative;
+}
+
+.status-success {
+	background-color: rgba(82, 196, 26, 0.1);
+	color: var(--success-color);
+}
+
+.status-pending {
+	background-color: rgba(250, 173, 20, 0.1);
+	color: var(--warning-color);
+}
+
+.status-failed {
+	background-color: rgba(255, 77, 79, 0.1);
+	color: var(--error-color);
+}
+
+
+
+/* 移动端充值记录表格适配（11列） */
+@media (max-width: 768px) {
+	.recharge-table-wrapper {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.recharge-table {
+		min-width: 800px;
+		/* 保证移动端可横向滚动 */
+	}
+
+	.recharge-table th,
+	.recharge-table td {
+		padding: 4px 6px !important;
+		font-size: 12px;
+	}
+}

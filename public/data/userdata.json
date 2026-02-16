@@ -4,7 +4,6 @@
     "userName": "张云翔",
     "password": "1",
     "role": "normal",
-    "memberType": "普通会员",
     "memberExpireTime": "2026-08-12T09:40:56.599Z",
     "shopList": [
       {
@@ -19,7 +18,6 @@
     "userName": "111",
     "password": "111",
     "role": "admin",
-    "memberType": "VIP会员",
     "memberExpireTime": "2027-02-12T09:41:09.656Z",
     "shopList": [
       {
@@ -34,8 +32,7 @@
     "userName": "李庆坤",
     "password": "1",
     "role": "normal",
-    "memberType": "普通会员",
-    "memberExpireTime": "2026-09-12T09:43:02.396Z",
+    "memberExpireTime": "2026-02-12T09:43:02.396Z",
     "shopList": [
       {
         "shopName": "得力沐璞汽车用品专卖店"
@@ -52,7 +49,6 @@
     "userName": "admin",
     "password": "admin123",
     "role": "admin",
-    "memberType": "超级会员",
     "memberExpireTime": "2028-02-12T09:46:11.571Z",
     "shopList": [
       {
@@ -67,7 +63,6 @@
     "userName": "王浩丞",
     "password": "1",
     "role": "normal",
-    "memberType": "普通会员",
     "memberExpireTime": "2026-08-13T18:25:53.090Z",
     "shopList": [
       {

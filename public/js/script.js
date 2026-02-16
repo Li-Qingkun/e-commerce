@@ -13,6 +13,10 @@ let currentShopName = ''; // 当前选中店铺名称
 let userShopList = []; // 当前用户的店铺列表
 // 用户信息JSON（初始为空，确保每次都从文件加载）
 let USER_INFO_LIST = [];
+// 当前用户完整信息（新增）
+let currentUserInfo = null;
+// 充值记录数据（新增）
+let rechargeRecords = [];
 
 // ===================== 工具函数 =====================
 /**
@@ -129,6 +133,8 @@ async function loadUserInfoFromJson() {
 				'Cache-Control': 'no-store, no-cache, must-revalidate'
 			}
 		});
+
+		currentUserInfo = JSON.parse(localStorage.getItem('currentUserInfo'));
 
 		if (response.status === 404) {
 			console.log('用户信息文件不存在，使用空数据并创建文件');
@@ -765,6 +771,7 @@ function initUserDropdown() {
 		if (confirm('确定退出后台管理系统？')) {
 			localStorage.removeItem('currentUserName');
 			localStorage.removeItem('isAdmin');
+			localStorage.removeItem('currentUserInfo'); // 新增：清除完整用户信息
 			// 清除店铺选择记录
 			localStorage.removeItem(`currentShop_${currentUserName}`);
 			window.location.href = 'login.html';
@@ -792,6 +799,9 @@ function initUserDropdown() {
 
 	// 保存新增店铺按钮事件（新增）
 	$('#btnSaveShop').off('click').click(addNewShop);
+
+	// 新增：充值记录按钮事件
+	$('#btnRechargeRecord').off('click').click(showRechargeRecordModal);
 }
 
 /**
@@ -801,7 +811,9 @@ function bindEvents() {
 	// 功能按钮事件
 	$('#btnAdd').off('click').click(showAddPlanModal);
 	$('#btnLoadData').off('click').click(loadDataFromJson);
-	$('#btnCompareTodayTomorrow').off('click').click(showCompareModal);
+	// 修改：绑定对比按钮事件到新的处理函数
+	$('#btnCompareTodayTomorrow').off('click').click(handleCompareButtonClick);
+	// $('#btnCompareTodayTomorrow').off('click').click(showCompareModal);
 	$('#btnShowTimeline').off('click').click(() => switchView('timeline'));
 	$('#btnShowTable').off('click').click(() => switchView('table'));
 
@@ -1181,6 +1193,72 @@ function copyCompareResult() {
 }
 
 /**
+ * 新增：处理对比按钮点击事件（包含会员判断）
+ */
+function handleCompareButtonClick() {
+	// 检查用户是否为有效会员
+	const isMember = isUserValidMember();
+
+	if (isMember) {
+		// 会员用户：执行原有对比逻辑
+		showCompareModal();
+	} else {
+		// 非会员用户：显示会员提醒
+		showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
+
+		// // 可选：显示更醒目的弹窗提示
+		// if (confirm('您的会员权限已过期，无法使用今日/明日计划对比功能！\n\n是否了解会员充值详情？')) {
+		// 	// 这里可以跳转到充值页面，或者显示充值联系方式
+		// 	// window.location.href = 'recharge.html';
+		// 	alert('请联系管理员：XXX-XXXXXXX 进行会员充值');
+		// }
+	}
+}
+
+/**
+ * 新增：判断当前用户是否为有效会员
+ * @returns {boolean} 是否为有效会员
+ */
+function isUserValidMember() {
+	// 优先从localStorage获取完整用户信息
+	const userInfoStr = localStorage.getItem('currentUserInfo');
+	debugger;
+	if (userInfoStr) {
+		try {
+			currentUserInfo = JSON.parse(userInfoStr);
+			// 检查会员到期时间
+			if (currentUserInfo.memberExpireTime) {
+				return !isDateExpired(currentUserInfo.memberExpireTime);
+			}
+		} catch (e) {
+			console.error('解析用户信息失败：', e);
+		}
+	}
+
+	// 备用方案：从USER_INFO_LIST获取
+	const userInfo = USER_INFO_LIST.find(user => user.userName === currentUserName);
+	if (userInfo && userInfo.memberExpireTime) {
+		return !isDateExpired(userInfo.memberExpireTime);
+	}
+
+	// 无会员信息视为非会员
+	return false;
+}
+
+/**
+ * 辅助函数：判断日期是否过期
+ * @param {string} expireTime - ISO格式的过期时间字符串
+ * @returns {boolean} - 是否过期
+ */
+function isDateExpired(expireTime) {
+	if (!expireTime) return true; // 无过期时间默认视为过期
+	const expireDate = new Date(expireTime);
+	const now = new Date();
+	// 比较时间戳，当前时间大于过期时间则视为过期
+	return now.getTime() > expireDate.getTime();
+}
+
+/**
  * 切换视图
  * @param {string} viewType 视图类型：timeline/table
  */
@@ -1235,3 +1313,276 @@ $(document).ready(async function() {
 	// 核心修复：确保页面初始化是异步的，等待数据加载完成
 	await initPage();
 });
+
+/**
+ * 最终版：加载当前用户的充值记录
+ * 加载失败时显示空数据，不展示mock示例
+ * @returns {Promise} Promise对象
+ */
+async function loadRechargeRecords() {
+	try {
+		showToast(`正在加载【${currentUserName}】的充值记录...`, 'info');
+
+		// 1. 从统一的充值记录文件读取所有数据
+		const response = await fetch('/data/recharge-records.json', {
+			cache: 'no-cache',
+			method: 'GET'
+		});
+
+		if (!response.ok) {
+			throw new Error(`加载充值记录文件失败：${response.status}`);
+		}
+
+		// 2. 获取所有充值记录
+		const allRechargeRecords = await response.json();
+
+		// 3. 验证当前用户信息（确保有用户ID）
+		if (!currentUserInfo || !currentUserInfo.id) {
+			throw new Error('当前用户信息不完整，缺少用户ID');
+		}
+
+		// 4. 根据当前用户ID筛选对应的充值记录
+		rechargeRecords = allRechargeRecords.filter(record =>
+			record.userId === currentUserInfo.id
+		);
+
+		console.log(`[加载充值记录] 加载完成，共筛选出${rechargeRecords.length}条记录`, rechargeRecords);
+
+		// 5. 无记录提示
+		if (rechargeRecords.length === 0) {
+			showToast(`【${currentUserName}】暂无充值记录`, 'info');
+		}
+
+		return rechargeRecords;
+	} catch (error) {
+		console.error('[加载充值记录] 失败：', error);
+
+		// 关键修改：加载失败时清空数据，不设置mock数据
+		rechargeRecords = [];
+
+		// 仅提示加载失败，表格会显示"暂无充值记录"
+		showToast('充值记录加载失败，请稍后重试', 'error');
+		return rechargeRecords;
+	}
+}
+
+/**
+ * 最终版：渲染充值记录表格
+ * 适配真实的recharge-records.json数据字段
+ */
+function renderRechargeRecordTable() {
+	const $tbody = $('#rechargeRecordTableBody');
+	$tbody.empty();
+
+	if (rechargeRecords.length === 0) {
+		$tbody.append(`<tr><td colspan="7" class="text-center">【${currentUserName}】暂无充值记录</td></tr>`);
+		return;
+	}
+
+	// 按充值时间倒序排序
+	const sortedRecords = [...rechargeRecords].sort((a, b) =>
+		new Date(b.rechargeTime) - new Date(a.rechargeTime)
+	);
+
+	// 字段映射函数 - 格式化显示
+	const formatPaymentMethod = (method) => {
+		const methodMap = {
+			'wechat': '微信支付',
+			'alipay': '支付宝',
+			'cash': '现金',
+			'admin': '后台手动',
+			'default': '未知方式'
+		};
+		return methodMap[method] || methodMap['default'];
+	};
+
+	const formatRechargeType = (type) => {
+		const typeMap = {
+			'normal': '普通充值',
+			'renew': '续费',
+			'upgrade': '升级',
+			'default': '未知类型'
+		};
+		return typeMap[type] || typeMap['default'];
+	};
+
+	const formatPaymentStatus = (status) => {
+		switch (status) {
+			case 'success':
+				return '<span class="recharge-status status-success">支付成功</span>';
+			case 'fail':
+				return '<span class="recharge-status status-failed">支付失败</span>';
+			case 'pending':
+				return '<span class="recharge-status status-pending">待支付</span>';
+			default:
+				return '<span class="recharge-status">未知状态</span>';
+		}
+	};
+
+	// // 时间格式化函数（兼容ISO格式）
+	// const formatIsoDate = (isoStr) => {
+	// 	if (!isoStr) return '无';
+	// 	try {
+	// 		const date = new Date(isoStr);
+	// 		return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+	// 	} catch (e) {
+	// 		return isoStr;
+	// 	}
+	// };
+
+	// 时间格式化函数（无时间）
+	const formatDate = (isoStr) => {
+		if (!isoStr) return '无';
+		try {
+			const date = new Date(isoStr);
+			return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+		} catch (e) {
+			return isoStr;
+		}
+	};
+
+	// 时间格式化函数（紧凑版）
+	const formatCompactDate = (isoStr) => {
+		if (!isoStr) return '无';
+		try {
+			const date = new Date(isoStr);
+			return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+		} catch (e) {
+			return isoStr;
+		}
+	};
+
+	// 完整时间格式化函数（用于Tooltip）
+	const formatFullDate = (isoStr) => {
+		if (!isoStr) return '无';
+		try {
+			const date = new Date(isoStr);
+			return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+		} catch (e) {
+			return isoStr;
+		}
+	};
+
+	// sortedRecords.forEach(record => {
+	// 	// const $tr = $(`
+	// 	//           <tr>
+	// 	//               <td>${record.rechargeId || 'N/A'}</td>
+	// 	//               <td>¥${parseFloat(record.rechargeAmount).toFixed(2)}</td>
+	// 	//               <td>${record.rechargeMonths} 个月</td>
+	// 	//               <td>${formatRechargeType(record.rechargeType)}</td>
+	// 	//               <td>${formatPaymentMethod(record.paymentMethod)}</td>
+	// 	//               <td>${formatPaymentStatus(record.paymentStatus)}</td>
+	// 	//               <td>${formatIsoDate(record.rechargeTime)}</td>
+	// 	//               <td>${formatIsoDate(record.originalExpireTime)}</td>
+	// 	//               <td>${formatIsoDate(record.newExpireTime)}</td>
+	// 	//               <td>${record.operator || '无'}</td>
+	// 	//               <td>${record.remark || '无'}</td>
+	// 	//           </tr>
+	// 	//       `);
+	// 	const $tr = $(`
+	//            <tr>
+	//                <td>¥${parseFloat(record.rechargeAmount).toFixed(2)}</td>
+	//                <td>${record.rechargeMonths} 个月</td>
+	//                <td>${formatPaymentMethod(record.paymentMethod)}</td>
+	//                <td>${formatPaymentStatus(record.paymentStatus)}</td>
+	//                <td>${formatCompactDate(record.newExpireTime)}</td>
+	//                <td>${record.remark || '无'}</td>
+	//                <td>${formatCompactDate(record.rechargeTime)}</td>
+	//            </tr>
+	//        `);
+	// 	$tbody.append($tr);
+	// });
+
+	sortedRecords.forEach(record => {
+		// 准备每个单元格的显示文本和完整文本
+		const cells = [{
+				display: `¥${parseFloat(record.rechargeAmount).toFixed(2)}`,
+				full: `¥${parseFloat(record.rechargeAmount).toFixed(2)}`
+			},
+			{
+				display: `${record.rechargeMonths}个月`,
+				full: `${record.rechargeMonths}个月`
+			},
+			{
+				display: formatPaymentMethod(record.paymentMethod),
+				full: formatPaymentMethod(record.paymentMethod)
+			},
+			{
+				display: formatPaymentStatus(record.paymentStatus),
+				full: record.paymentStatus === 'success' ? '支付成功' : record.paymentStatus === 'fail' ?
+					'支付失败' : record.paymentStatus === 'pending' ? '待支付' : '未知状态'
+			},
+			{
+				display: formatDate(record.newExpireTime),
+				full: formatDate(record.newExpireTime)
+			},
+			{
+				display: record.remark || '无',
+				full: record.remark || '无'
+			},
+			{
+				display: formatCompactDate(record.rechargeTime),
+				full: formatFullDate(record.rechargeTime)
+			}
+		];
+
+		// 构建表格行
+		const $tr = $('<tr></tr>');
+		cells.forEach(cell => {
+			const $td = $(`<td data-full-text="${cell.full}">${cell.display}</td>`);
+			$tr.append($td);
+		});
+
+		$tbody.append($tr);
+	});
+
+	// 绑定鼠标事件，显示Tooltip
+	bindRechargeTableTooltip();
+}
+
+/**
+ * 绑定充值记录表格的Tooltip事件
+ */
+function bindRechargeTableTooltip() {
+	let tooltipTimeout;
+	const $tooltip = $('<div class="recharge-tooltip"></div>');
+	$('body').append($tooltip);
+
+	$('.recharge-table td').on('mouseenter', function(e) {
+		const $this = $(this);
+		const fullText = $this.data('full-text');
+
+		// 如果显示文本和完整文本相同，就不显示Tooltip
+		if ($this.text().trim() === fullText.trim()) return;
+
+		clearTimeout(tooltipTimeout);
+		$tooltip.text(fullText);
+		$tooltip.addClass('show');
+
+		// 定位Tooltip在鼠标上方
+		const offset = $this.offset();
+		const tooltipWidth = $tooltip.outerWidth();
+		const tooltipHeight = $tooltip.outerHeight();
+
+		$tooltip.css({
+			top: e.pageY - tooltipHeight - 10,
+			left: e.pageX - (tooltipWidth / 2)
+		});
+	}).on('mouseleave', function() {
+		tooltipTimeout = setTimeout(() => {
+			$tooltip.removeClass('show');
+		}, 100);
+	});
+}
+
+/**
+ * 新增：显示充值记录弹窗
+ */
+async function showRechargeRecordModal() {
+	// 加载充值记录
+	await loadRechargeRecords();
+	// 渲染表格
+	renderRechargeRecordTable();
+	// 显示模态框
+	$('#rechargeRecordModal').modal('show');
+}

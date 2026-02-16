@@ -41,6 +41,10 @@
 							<div class="dropdown-item" id="btnAddShop">
 								<i class="fa fa-store"></i> 新增店铺
 							</div>
+							<!-- 新增：充值记录选项 -->
+							<div class="dropdown-item" id="btnRechargeRecord">
+								<i class="fa fa-history"></i> 充值记录
+							</div>
 							<div class="dropdown-item" id="btnAdminLogout">
 								<i class="fa fa-sign-out"></i> 退出登录
 							</div>
@@ -259,6 +263,47 @@
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
 						<button type="button" class="btn btn-primary" id="btnSaveShop">确认新增</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 新增：充值记录模态框 -->
+		<div class="modal fade" id="rechargeRecordModal" tabindex="-1" role="dialog">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">
+							<i class="fa fa-history"></i> 充值记录查询
+						</h4>
+					</div>
+					<div class="modal-body">
+						<div class="recharge-table-wrapper">
+							<table class="table table-bordered table-hover recharge-table">
+								<thead>
+									<tr>
+										<!-- <th>充值ID</th> -->
+										<th>充值金额</th>
+										<th>充值时长</th>
+										<!-- <th>充值类型</th> -->
+										<th>支付方式</th>
+										<th>支付状态</th>
+										<!-- <th>原到期时间</th> -->
+										<th>到期时间</th>
+										<!-- <th>操作人</th> -->
+										<th>备注</th>
+										<th>充值时间</th>
+									</tr>
+								</thead>
+								<tbody id="rechargeRecordTableBody"></tbody>
+							</table>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
 					</div>
 				</div>
 			</div>
