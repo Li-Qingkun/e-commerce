@@ -324,16 +324,47 @@
 			.table {
 				background-color: var(--card-bg);
 				width: 100%;
+				border-collapse: collapse;
+				/* 补充：合并边框，避免缝隙 */
 			}
 
 			.table th {
 				text-align: center;
 				background-color: rgba(0, 0, 0, 0.02);
+				padding: 12px 8px;
+				/* 补充：增加内边距，优化排版 */
+				border: 1px solid var(--border-color);
 			}
 
 			.table td {
 				text-align: center;
 				vertical-align: middle;
+				padding: 12px 8px;
+				/* 补充：增加内边距，优化排版 */
+				border: 1px solid var(--border-color);
+			}
+
+			/* 表格行 hover 基础样式 */
+			.table tbody tr:hover {
+				background-color: rgba(0, 0, 0, 0.05);
+				transition: background-color 0.2s;
+			}
+
+			/* 深色模式表格样式修复 */
+			[data-theme="dark"] .table th {
+				background-color: rgba(255, 255, 255, 0.05);
+				color: var(--text-color);
+			}
+
+			[data-theme="dark"] .table tbody tr:hover {
+				background-color: rgba(255, 255, 255, 0.1);
+				color: var(--text-color);
+				/* 强制文字颜色继承自全局变量 */
+			}
+
+			[data-theme="dark"] .table td,
+			[data-theme="dark"] .table th {
+				border-color: var(--border-color);
 			}
 
 			.shop-list-tag {
