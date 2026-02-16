@@ -3,7 +3,7 @@ const CONFIG = {
 	dateCellWidth: 80, // 时间轴单元格宽度
 	planHeight: 40, // 计划块高度
 	planMargin: 5, // 计划块间距
-	jsonFilePath: '/data/' // JSON文件存储目录（需提前创建）
+	jsonFilePath: '/data/ss-data/' // JSON文件存储目录（需提前创建）
 };
 
 // ===================== 全局变量 =====================
@@ -122,7 +122,7 @@ function getJsonFileFullPath() {
  */
 async function loadUserInfoFromJson() {
 	try {
-		const response = await fetch(`${CONFIG.jsonFilePath}userdata.json`, {
+		const response = await fetch(`/data/userdata.json`, {
 			cache: 'no-cache', // 禁用缓存，确保获取最新数据
 			method: 'GET',
 			headers: {
