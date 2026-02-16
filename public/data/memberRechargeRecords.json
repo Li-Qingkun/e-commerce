@@ -1,0 +1,37 @@
+[{
+		"rechargeId": "a1b2c3d4-e5f6-4a5b-9c8d-7e6f5a4b3c2d",
+		"userId": "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
+		"rechargeAmount": 100.00,
+		"rechargeType": "微信支付",
+		"memberTypeAfterRecharge": "普通会员",
+		"expireTimeExtension": "6个月",
+		"newExpireTime": "2026-08-12T09:40:56.599Z",
+		"rechargeTime": "2026-02-12T09:40:56.599Z",
+		"operator": "系统自动",
+		"remark": "首次开通普通会员"
+	},
+	{
+		"rechargeId": "b2c3d4e5-f6a7-5b6c-0d9e-8f7e6d5c4b3a",
+		"userId": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+		"rechargeAmount": 500.00,
+		"rechargeType": "支付宝支付",
+		"memberTypeAfterRecharge": "VIP会员",
+		"expireTimeExtension": "12个月",
+		"newExpireTime": "2027-02-12T09:41:09.656Z",
+		"rechargeTime": "2026-02-12T09:41:09.656Z",
+		"operator": "管理员111",
+		"remark": "开通VIP会员"
+	},
+	{
+		"rechargeId": "c3d4e5f6-a7b8-6c7d-1e0f-9e8f7e6d5c4b",
+		"userId": "8e4e09c0-c01e-4c9c-9c0c-0c9c0c9c0c9c",
+		"rechargeAmount": 1000.00,
+		"rechargeType": "对公转账",
+		"memberTypeAfterRecharge": "超级会员",
+		"expireTimeExtension": "24个月",
+		"newExpireTime": "2028-02-12T09:46:11.571Z",
+		"rechargeTime": "2026-02-12T09:46:11.571Z",
+		"operator": "系统管理员",
+		"remark": "超级管理员账户开通超级会员"
+	}
+]
