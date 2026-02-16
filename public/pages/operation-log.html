@@ -1,0 +1,236 @@
+<!-- pages/operation-log.html -->
+<div class="page-header">
+	<h2 class="page-title">操作日志</h2>
+	<div class="log-filter">
+		<input type="text" id="logSearch" placeholder="搜索操作类型/描述/操作人">
+		<select id="logStatusFilter">
+			<option value="">全部状态</option>
+			<option value="success">成功</option>
+			<option value="fail">失败</option>
+		</select>
+		<select id="logTypeFilter">
+			<option value="">全部操作类型</option>
+			<option value="新增用户">新增用户</option>
+			<option value="编辑用户">编辑用户</option>
+			<option value="删除用户">删除用户</option>
+			<option value="登录">登录</option>
+			<option value="退出">退出</option>
+		</select>
+		<button id="btnClearLog" class="btn btn-danger btn-sm">清空日志</button>
+	</div>
+</div>
+<div class="card">
+	<table class="table table-bordered table-hover log-table">
+		<thead>
+			<tr>
+				<th>序号</th>
+				<th>操作时间</th>
+				<th>操作类型</th>
+				<th>操作人</th>
+				<th>操作状态</th>
+				<th>操作描述</th>
+				<th>IP地址</th>
+			</tr>
+		</thead>
+		<tbody id="logTableBody">
+			<tr>
+				<td colspan="7" class="empty-tip">加载日志中...</td>
+			</tr>
+		</tbody>
+	</table>
+	<div class="pagination" id="logPagination">
+		<!-- 分页控件（可选） -->
+	</div>
+</div>
+
+<script>
+	// 日志页面初始化
+	function initOperationLog() {
+		console.log('操作日志页面初始化');
+		loadOperationLogs();
+		bindLogEvents();
+	}
+
+	// 加载操作日志
+	function loadOperationLogs() {
+		const $tbody = $('#logTableBody');
+		$tbody.empty().append('<tr><td colspan="7" class="empty-tip">加载日志中...</td></tr>');
+
+		fetch(`/data/operation-logs.json?_=${new Date().getTime()}`, {
+				method: 'GET',
+				cache: 'no-cache'
+			})
+			.then(res => {
+				if (res.ok) return res.json();
+				return [];
+			})
+			.then(logs => {
+				$tbody.empty();
+				if (!Array.isArray(logs) || logs.length === 0) {
+					$tbody.append('<tr><td colspan="7" class="empty-tip">暂无操作日志</td></tr>');
+					return;
+				}
+
+				// 应用筛选条件
+				logs = filterLogs(logs);
+
+				// 渲染日志列表
+				logs.forEach((log, index) => {
+					const $tr = $(`
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${log.operationTimeStr || '-'}</td>
+                        <td>${log.operationType || '-'}</td>
+                        <td>${log.operator || '-'}</td>
+                        <td><span class="status-tag ${log.status}">${log.status === 'success' ? '成功' : '失败'}</span></td>
+                        <td title="${log.operationDesc || '-'}">${log.operationDesc || '-'}</td>
+                        <td>${log.ip || '-'}</td>
+                    </tr>
+                `);
+					$tbody.append($tr);
+				});
+			})
+			.catch(err => {
+				console.error('加载操作日志失败：', err);
+				$tbody.empty().append('<tr><td colspan="7" class="empty-tip">加载日志失败</td></tr>');
+			});
+	}
+
+	// 日志筛选
+	function filterLogs(logs) {
+		const searchKey = $('#logSearch').val().toLowerCase().trim();
+		const status = $('#logStatusFilter').val();
+		const type = $('#logTypeFilter').val();
+
+		return logs.filter(log => {
+			// 搜索关键词筛选
+			const matchSearch = !searchKey ||
+				(log.operationType && log.operationType.toLowerCase().includes(searchKey)) ||
+				(log.operationDesc && log.operationDesc.toLowerCase().includes(searchKey)) ||
+				(log.operator && log.operator.toLowerCase().includes(searchKey));
+
+			// 状态筛选
+			const matchStatus = !status || log.status === status;
+
+			// 操作类型筛选
+			const matchType = !type || log.operationType === type;
+
+			return matchSearch && matchStatus && matchType;
+		});
+	}
+
+	// 绑定日志页面事件
+	function bindLogEvents() {
+		// 搜索/筛选事件
+		$('#logSearch, #logStatusFilter, #logTypeFilter').on('input change', function() {
+			loadOperationLogs();
+		});
+
+		// 清空日志
+		$('#btnClearLog').click(function() {
+			if (!confirm('确定清空所有操作日志吗？此操作不可恢复！')) return;
+
+			$(this).prop('disabled', true).text('清空中...');
+
+			fetch('/aspx/SaveOperationLogs.aspx', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
+					body: 'logs=[]'
+				})
+				.then(res => {
+					if (!res.ok) throw new Error('清空日志失败');
+					showLogToast('日志清空成功！', 'success');
+					loadOperationLogs();
+					// 记录清空日志操作
+					window.recordOperationLog('清空日志', '手动清空所有操作日志', 'admin', 'success');
+				})
+				.catch(err => {
+					showLogToast('清空日志失败：' + err.message, 'error');
+					window.recordOperationLog('清空日志', '清空日志失败：' + err.message, 'admin', 'fail');
+				})
+				.finally(() => {
+					$(this).prop('disabled', false).text('清空日志');
+				});
+		});
+	}
+
+	// 日志页面Toast提示
+	function showLogToast(message, type = 'info') {
+		const $toast = $(`
+        <div class="toast ${type}">
+            ${message}
+        </div>
+    `);
+		$('body').append($toast);
+		setTimeout(() => {
+			$toast.remove();
+		}, 3000);
+	}
+
+	// 挂载初始化函数
+	window.initOperationLog = initOperationLog;
+</script>
+
+<style>
+	/* 日志页面样式 */
+	.log-filter {
+		display: flex;
+		gap: 10px;
+		margin-bottom: 15px;
+		align-items: center;
+	}
+
+	.log-filter input,
+	.log-filter select {
+		padding: 8px 10px;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		font-size: 14px;
+	}
+
+	.log-filter input {
+		width: 200px;
+	}
+
+	.status-tag {
+		padding: 2px 8px;
+		border-radius: 4px;
+		font-size: 12px;
+		color: #fff;
+	}
+
+	.status-tag.success {
+		background-color: #00C851;
+	}
+
+	.status-tag.fail {
+		background-color: #ff4444;
+	}
+
+	.log-table td {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 300px;
+	}
+
+	.toast {
+		position: fixed;
+		top: 20px;
+		right: 20px;
+		padding: 10px 20px;
+		border-radius: 4px;
+		color: #fff;
+		z-index: 9999;
+	}
+
+	.toast.success {
+		background-color: #00C851;
+	}
+
+	.toast.error {
+		background-color: #ff4444;
+	}
+</style>

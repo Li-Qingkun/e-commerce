@@ -3,20 +3,23 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>迹戈管理系统 - 用户管理</title>
+		<title>迹戈管理系统</title>
 		<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
-		<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<!-- <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+		<!-- 替换原来的font-awesome引用 -->
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
 		<link rel="stylesheet" href="css/admin_index.css">
 	</head>
 	<body>
 		<!-- 左侧边栏 -->
 		<div class="sidebar" id="sidebar">
 			<div class="sidebar-header">
-				<img src="https://via.placeholder.com/32/1677ff/ffffff?text=JG" alt="迹戈管理系统">
+				<img src="images/logo.png" alt="logo">
 				<h3>迹戈管理系统</h3>
 			</div>
 			<div class="sidebar-menu">
-				<div class="menu-item active" data-target="user-management">
+				<div class="menu-item active" data-target="user-management" data-page="user-management"
+					data-path="仪表盘 / 用户管理">
 					<i class="fa fa-user-circle"></i>
 					<span class="text">用户管理</span>
 				</div>
@@ -26,20 +29,20 @@
 					<i class="fa fa-caret-down"></i>
 				</div>
 				<div class="sub-menu">
-					<div class="menu-item">
+					<div class="menu-item" data-page="data-backup" data-path="仪表盘 / 系统管理 / 数据备份">
 						<i class="fa fa-database"></i>
 						<span class="text">数据备份</span>
 					</div>
-					<div class="menu-item">
+					<div class="menu-item" data-page="system-settings" data-path="仪表盘 / 系统管理 / 系统设置">
 						<i class="fa fa-sliders"></i>
 						<span class="text">系统设置</span>
 					</div>
 				</div>
-				<div class="menu-item">
+				<div class="menu-item" data-page="data-analysis" data-path="仪表盘 / 数据分析">
 					<i class="fa fa-line-chart"></i>
 					<span class="text">数据分析</span>
 				</div>
-				<div class="menu-item">
+				<div class="menu-item" data-page="operation-log" data-path="仪表盘 / 操作日志">
 					<i class="fa fa-file-text-o"></i>
 					<span class="text">操作日志</span>
 				</div>
@@ -52,7 +55,7 @@
 			<div class="top-nav">
 				<div class="nav-left">
 					<i class="fa fa-bars nav-toggle" id="navToggle"></i>
-					<div class="nav-path">
+					<div class="nav-path" id="navPath">
 						仪表盘 <span class="separator">/</span> 用户管理
 					</div>
 				</div>
@@ -79,76 +82,9 @@
 				</div>
 			</div>
 
-			<!-- 内容区域 -->
-			<div class="content-area">
-				<div class="page-header">
-					<h2 class="page-title">用户管理</h2>
-					<button class="btn-add-user" id="btnAddUser">
-						<i class="fa fa-plus"></i> 新增用户
-					</button>
-				</div>
-				<div class="card">
-					<table class="table table-bordered table-hover">
-						<thead>
-							<tr>
-								<th>序号</th>
-								<th>用户名</th>
-								<th>密码</th>
-								<th>身份</th>
-								<th>店铺列表</th>
-								<th>创建时间</th>
-								<th>最后修改时间</th>
-								<th>操作</th>
-							</tr>
-						</thead>
-						<tbody id="userTableBody">
-							<!-- 动态加载用户数据 -->
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-
-		<!-- 新增/编辑用户弹窗 -->
-		<div class="modal" id="userModal">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h3 class="modal-title" id="modalTitle">新增用户</h3>
-					<i class="fa fa-times modal-close" id="modalClose"></i>
-				</div>
-				<div class="modal-body">
-					<input type="hidden" id="editUserName">
-					<div class="form-group">
-						<label for="modalUserName">用户名</label>
-						<input type="text" id="modalUserName" placeholder="请输入用户名（唯一）">
-						<span class="duplicate-tip" id="userNameTip">用户名已存在！</span>
-					</div>
-					<div class="form-group">
-						<label for="modalPassword">密码</label>
-						<input type="password" id="modalPassword" placeholder="请输入密码">
-					</div>
-					<div class="form-group">
-						<label for="modalConfirmPwd">确认密码</label>
-						<input type="password" id="modalConfirmPwd" placeholder="请再次输入密码">
-						<span class="password-tip" id="passwordTip">两次密码不一致！</span>
-					</div>
-					<div class="form-group">
-						<label for="modalRole">用户身份</label>
-						<select id="modalRole">
-							<option value="normal">普通用户</option>
-							<option value="admin">管理员</option>
-						</select>
-					</div>
-					<div class="form-group">
-						<label for="modalShopList">店铺列表</label>
-						<input type="text" id="modalShopList" placeholder="请输入店铺名称，多个店铺用英文逗号分隔">
-						<small class="text-muted">示例：XXX专卖店,XXX旗舰店</small>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button class="btn-cancel" id="btnModalCancel">取消</button>
-					<button class="btn-save" id="btnModalSave">保存</button>
-				</div>
+			<!-- 内容区域 - 改为空容器，用于动态加载子页面 -->
+			<div class="content-area" id="contentContainer">
+				<!-- 子页面内容会动态加载到这里 -->
 			</div>
 		</div>
 

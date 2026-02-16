@@ -1,0 +1,52 @@
+﻿[
+  {
+    "logId": "log_1771225134464_w4q292nn1",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【王浩丞】成功，身份：普通用户，店铺：祥铁旗舰店",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-16T06:58:54.464Z",
+    "operationTimeStr": "2026/2/16 14:58:54",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771225127182_dq8bljbgu",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【111】成功，身份：管理员，店铺：111",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-16T06:58:47.183Z",
+    "operationTimeStr": "2026/2/16 14:58:47",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771225124568_nmrfas9yd",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【张云翔】成功，身份：普通用户，店铺：众合祥汽车配件",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-16T06:58:44.568Z",
+    "operationTimeStr": "2026/2/16 14:58:44",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771225122869_41ab0srpn",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【张云翔】成功，身份：普通用户，店铺：众合祥汽车配件",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-16T06:58:42.869Z",
+    "operationTimeStr": "2026/2/16 14:58:42",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771225107321_4nlvqzlkg",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【王浩丞】成功，身份：普通用户，店铺：祥铁旗舰店",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-16T06:58:27.321Z",
+    "operationTimeStr": "2026/2/16 14:58:27",
+    "ip": "127.0.0.1"
+  }
+]
