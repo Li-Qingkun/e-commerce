@@ -138,7 +138,13 @@ function loadPage(pageName, pagePath) {
  * @param {String} operator 操作人（默认admin）
  * @param {String} status 操作状态（success/fail）
  */
-function recordOperationLog(operationType, operationDesc, operator = 'admin', status = 'success') {
+function recordOperationLog(operationType, operationDesc, status = 'success') {
+	// 核心改造：自动获取当前登录用户
+	let operator = '未登录用户';
+	const storedUserName = localStorage.getItem('currentUserName');
+	if (storedUserName) {
+		operator = storedUserName; // 使用当前登录用户名
+	}
 	// 1. 构造日志对象
 	const logItem = {
 		logId: generateUUID(), // 唯一ID

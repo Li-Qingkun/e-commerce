@@ -549,14 +549,14 @@
 		if (editUserName === PROTECTED_ADMIN_USER && userRole !== 'admin') {
 			showToast('超级管理员账户身份禁止修改！', 'error');
 			// 记录失败日志
-			recordOperationLog('编辑用户', `尝试修改超级管理员【${editUserName}】身份，操作被拒绝`, 'admin', 'fail');
+			recordOperationLog('编辑用户', `尝试修改超级管理员【${editUserName}】身份，操作被拒绝`, 'fail');
 			return;
 		}
 
 		// 基础校验
 		if (!userName) {
 			showToast('请输入用户名！', 'error');
-			recordOperationLog(editUserName ? '编辑用户' : '新增用户', `用户名为空，操作失败`, 'admin', 'fail');
+			recordOperationLog(editUserName ? '编辑用户' : '新增用户', `用户名为空，操作失败`, 'fail');
 			return;
 		}
 
@@ -661,7 +661,7 @@
 				const operationType = editUserName ? '编辑用户' : '新增用户';
 				const operationDesc =
 					`${operationType}【${userName}】成功，身份：${userRole === 'admin' ? '管理员' : '普通用户'}，店铺：${shopInput}`;
-				recordOperationLog(operationType, operationDesc, 'admin', 'success');
+				recordOperationLog(operationType, operationDesc, 'success');
 
 				showToast(editUserName ? '用户编辑成功！' : '用户新增成功！', 'success');
 				closeUserModal();
@@ -679,7 +679,7 @@
 	function deleteUser(userName) {
 		if (userName === PROTECTED_ADMIN_USER) {
 			showToast(`超级管理员账户【${PROTECTED_ADMIN_USER}】禁止删除！`, 'error');
-			recordOperationLog('删除用户', `尝试删除超级管理员【${userName}】，操作被拒绝`, 'admin', 'fail');
+			recordOperationLog('删除用户', `尝试删除超级管理员【${userName}】，操作被拒绝`, 'fail');
 			return;
 		}
 
@@ -713,7 +713,7 @@
 				if (!result.success) throw new Error(result.msg || "删除失败");
 
 				// 记录成功日志
-				recordOperationLog('删除用户', `删除用户【${userName}】成功`, 'admin', 'success');
+				recordOperationLog('删除用户', `删除用户【${userName}】成功`, 'success');
 
 				$(`tr[data-username="${userName}"]`).fadeOut(300, function() {
 					$(this).remove();
@@ -725,7 +725,7 @@
 				$(`.btn-delete-user[data-username="${userName}"]`).prop("disabled", false).html(
 					'<i class="fa fa-trash"></i> 删除');
 				// 记录失败日志
-				recordOperationLog('删除用户', `删除用户【${userName}】失败：${err.message}`, 'admin', 'fail');
+				recordOperationLog('删除用户', `删除用户【${userName}】失败：${err.message}`, 'fail');
 				showToast("删除失败：" + err.message, 'error');
 				console.error("删除失败：", err);
 			});
