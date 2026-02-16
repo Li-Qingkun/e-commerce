@@ -1,0 +1,65 @@
+﻿[
+  {
+    "userName": "张云翔",
+    "password": "1",
+    "role": "normal",
+    "shopList": [
+      {
+        "shopName": "众合祥汽车配件"
+      }
+    ],
+    "createTime": "2026-02-12T09:40:56.599Z",
+    "updateTime": "2026-02-13T18:25:35.303Z"
+  },
+  {
+    "userName": "111",
+    "password": "1",
+    "role": "admin",
+    "shopList": [
+      {
+        "shopName": "1"
+      }
+    ],
+    "createTime": "2026-02-12T09:41:09.656Z",
+    "updateTime": "2026-02-13T18:25:17.227Z"
+  },
+  {
+    "userName": "李庆坤",
+    "password": "1",
+    "role": "normal",
+    "shopList": [
+      {
+        "shopName": "得力沐璞汽车用品专卖店"
+      },
+      {
+        "shopName": "迈库雷汽车用品专卖店"
+      }
+    ],
+    "createTime": "2026-02-12T09:43:02.396Z",
+    "updateTime": "2026-02-14T10:20:58.761Z"
+  },
+  {
+    "userName": "admin",
+    "password": "admin123",
+    "role": "admin",
+    "shopList": [
+      {
+        "shopName": "超级管理员"
+      }
+    ],
+    "createTime": "2026-02-12T09:46:11.571Z",
+    "updateTime": "2026-02-12T09:46:11.571Z"
+  },
+  {
+    "userName": "王浩丞",
+    "password": "1",
+    "role": "normal",
+    "shopList": [
+      {
+        "shopName": "祥铁旗舰店"
+      }
+    ],
+    "createTime": "2026-02-13T18:25:53.090Z",
+    "updateTime": "2026-02-13T18:25:53.090Z"
+  }
+]

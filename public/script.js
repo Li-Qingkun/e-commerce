@@ -1,0 +1,1237 @@
+// ===================== 全局配置 =====================
+const CONFIG = {
+	dateCellWidth: 80, // 时间轴单元格宽度
+	planHeight: 40, // 计划块高度
+	planMargin: 5, // 计划块间距
+	jsonFilePath: '/data/' // JSON文件存储目录（需提前创建）
+};
+
+// ===================== 全局变量 =====================
+let orderPlans = []; // 订单计划数据
+let currentUserName = ''; // 当前登录用户名
+let currentShopName = ''; // 当前选中店铺名称
+let userShopList = []; // 当前用户的店铺列表
+// 用户信息JSON（初始为空，确保每次都从文件加载）
+let USER_INFO_LIST = [];
+
+// ===================== 工具函数 =====================
+/**
+ * 显示Toast提示
+ * @param {string} message 提示信息
+ * @param {string} type 类型：success/error/info/warning
+ * @param {number} duration 显示时长(ms)
+ */
+function showToast(message, type = 'info', duration = 3000) {
+	const $container = $('#toastContainer');
+	const iconMap = {
+		success: '<i class="fa fa-check-circle"></i>',
+		error: '<i class="fa fa-exclamation-circle"></i>',
+		info: '<i class="fa fa-info-circle"></i>',
+		warning: '<i class="fa fa-exclamation-triangle"></i>'
+	};
+
+	const $toast = $(`
+        <div class="toast ${type}">
+            ${iconMap[type] || ''}
+            <span>${message}</span>
+        </div>
+    `);
+
+	$container.append($toast);
+
+	setTimeout(() => {
+		$toast.remove();
+	}, duration);
+}
+
+/**
+ * 格式化日期（仅日期 YYYY-MM-DD）
+ * @param {Date} date 日期对象
+ * @returns {string} 格式化后的日期字符串
+ */
+function formatDateOnly(date) {
+	if (!date || isNaN(date.getTime())) {
+		console.warn('无效的日期对象：', date);
+		return '';
+	}
+	return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;
+}
+
+/**
+ * 格式化日期时间（YYYY-MM-DD HH:mm:ss）
+ * @param {Date} date 日期对象
+ * @returns {string} 格式化后的字符串
+ */
+function formatDate(date) {
+	if (!date || isNaN(date.getTime())) {
+		console.warn('无效的日期对象：', date);
+		return '';
+	}
+	return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())} ${padZero(date.getHours())}:${padZero(date.getMinutes())}:${padZero(date.getSeconds())}`;
+}
+
+/**
+ * 格式化datetime-local格式（YYYY-MM-DDTHH:mm）
+ * @param {Date} date 日期对象
+ * @returns {string} 格式化后的字符串
+ */
+function formatDateTimeLocal(date) {
+	if (!date || isNaN(date.getTime())) {
+		return '';
+	}
+	const year = date.getFullYear();
+	const month = padZero(date.getMonth() + 1);
+	const day = padZero(date.getDate());
+	const hour = padZero(date.getHours());
+	const minute = padZero(date.getMinutes());
+	return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
+/**
+ * 数字补零
+ * @param {number} num 数字
+ * @returns {string} 补零后的字符串
+ */
+function padZero(num) {
+	return num < 10 ? `0${num}` : num;
+}
+
+/**
+ * 生成JSON文件名
+ * @returns {string} 格式化后的文件名
+ */
+function getJsonFileName() {
+	// 替换特殊字符，避免文件名错误
+	const safeUserName = currentUserName.replace(/[\\/:*?"<>|]/g, '_');
+	const safeShopName = currentShopName.replace(/[\\/:*?"<>|]/g, '_');
+	return `${safeUserName}_${safeShopName}.json`;
+}
+
+/**
+ * 获取JSON文件完整路径
+ * @returns {string} 完整路径
+ */
+function getJsonFileFullPath() {
+	return `${CONFIG.jsonFilePath}${getJsonFileName()}`;
+}
+
+// ===================== 用户信息操作函数（修复核心问题） =====================
+/**
+ * 加载用户信息从JSON文件（核心修复：确保每次都加载最新数据）
+ * @returns {Promise} Promise对象
+ */
+async function loadUserInfoFromJson() {
+	try {
+		const response = await fetch(`${CONFIG.jsonFilePath}userdata.json`, {
+			cache: 'no-cache', // 禁用缓存，确保获取最新数据
+			method: 'GET',
+			headers: {
+				'Cache-Control': 'no-store, no-cache, must-revalidate'
+			}
+		});
+
+		if (response.status === 404) {
+			console.log('用户信息文件不存在，使用空数据并创建文件');
+			USER_INFO_LIST = [];
+			await saveUserInfoToJson(); // 创建初始文件
+			return USER_INFO_LIST;
+		}
+
+		if (!response.ok) {
+			throw new Error(`加载用户信息失败：${response.status}`);
+		}
+
+		const userData = await response.json();
+		USER_INFO_LIST = userData; // 更新全局用户数据
+		console.log('✅ 成功加载最新用户数据：', USER_INFO_LIST);
+		return USER_INFO_LIST;
+	} catch (error) {
+		console.error('[加载用户信息] 失败：', error);
+		showToast('加载用户信息失败，请检查文件路径', 'error');
+		return USER_INFO_LIST;
+	}
+}
+
+/**
+ * 保存用户信息到JSON文件
+ * @returns {Promise<{success: boolean, msg: string}>} 保存结果
+ */
+async function saveUserInfoToJson() {
+	try {
+		// 确认文件名是userdata.json（匹配你实际的文件名称）
+		const fileName = 'userdata.json';
+		const filePath = CONFIG.jsonFilePath;
+
+		// 调用保存接口，传递文件名和数据
+		const response = await fetch('/aspx/SaveJsonFile.aspx', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+			},
+			body: `fileName=${encodeURIComponent(fileName)}&filePath=${encodeURIComponent(filePath)}&data=${encodeURIComponent(JSON.stringify(USER_INFO_LIST, null, 2))}`
+		});
+
+		if (!response.ok) {
+			throw new Error(`保存用户信息失败：${response.status}`);
+		}
+
+		const result = await response.json();
+		if (result.success) {
+			console.log('用户信息保存成功：', result.msg);
+			return {
+				success: true,
+				msg: result.msg
+			};
+		} else {
+			throw new Error(result.msg || '保存用户信息失败');
+		}
+	} catch (error) {
+		console.error('[保存用户信息] 失败：', error);
+		return {
+			success: false,
+			msg: `保存失败：${error.message}`
+		};
+	}
+}
+
+/**
+ * 验证旧密码是否正确
+ * @param {string} oldPwd 输入的旧密码
+ * @returns {boolean} 验证结果
+ */
+function verifyOldPassword(oldPwd) {
+	const userInfo = USER_INFO_LIST.find(user => user.userName === currentUserName);
+	if (!userInfo) {
+		showToast('未找到当前用户信息', 'error');
+		return false;
+	}
+	return userInfo.password === oldPwd;
+}
+
+/**
+ * 修改密码核心逻辑
+ */
+async function changePassword() {
+	const oldPwd = $('#oldPwd').val().trim();
+	const newPwd = $('#newPwd').val().trim();
+	const confirmPwd = $('#confirmPwd').val().trim();
+
+	// 基础验证
+	if (!oldPwd) {
+		showToast('请输入旧密码', 'error');
+		return;
+	}
+	if (!newPwd) {
+		showToast('请输入新密码', 'error');
+		return;
+	}
+	if (newPwd !== confirmPwd) {
+		showToast('两次输入的新密码不一致', 'error');
+		return;
+	}
+	if (oldPwd === newPwd) {
+		showToast('新密码不能与旧密码相同', 'error');
+		return;
+	}
+
+	// 验证旧密码
+	const isPwdCorrect = verifyOldPassword(oldPwd);
+	if (!isPwdCorrect) {
+		showToast('旧密码输入错误', 'error');
+		return;
+	}
+
+	// 更新密码
+	const userIndex = USER_INFO_LIST.findIndex(user => user.userName === currentUserName);
+	if (userIndex === -1) {
+		showToast('未找到当前用户信息', 'error');
+		return;
+	}
+
+	USER_INFO_LIST[userIndex].password = newPwd;
+	USER_INFO_LIST[userIndex].updateTime = new Date().toISOString();
+
+	// 保存修改
+	const saveResult = await saveUserInfoToJson();
+	if (saveResult.success) {
+		showToast('密码修改成功，即将退出登录', 'success');
+		// 关闭模态框
+		$('#changePwdModal').modal('hide');
+
+		// 直接清除缓存并退出，无需询问
+		setTimeout(() => {
+			// 清除所有登录相关缓存
+			localStorage.removeItem('currentUserName');
+			localStorage.removeItem('isAdmin');
+			localStorage.removeItem(`currentShop_${currentUserName}`);
+			// 直接跳转到登录页
+			window.location.href = 'login.html';
+		}, 2000);
+	} else {
+		showToast(saveResult.msg, 'error');
+	}
+}
+
+/**
+ * 新增店铺核心逻辑（修复：保存后立即刷新店铺列表）
+ */
+async function addNewShop() {
+	const newShopName = $('#newShopName').val().trim();
+	if (!newShopName) {
+		showToast('请输入店铺名称', 'error');
+		return;
+	}
+
+	// 获取当前用户信息
+	const userIndex = USER_INFO_LIST.findIndex(user => user.userName === currentUserName);
+	if (userIndex === -1) {
+		showToast('未找到当前用户信息', 'error');
+		return;
+	}
+
+	// 检查店铺是否已存在
+	const currentUser = USER_INFO_LIST[userIndex];
+	if (!currentUser.shopList) {
+		currentUser.shopList = [];
+	}
+	const shopExists = currentUser.shopList.some(shop => shop.shopName === newShopName);
+	if (shopExists) {
+		showToast('该店铺名称已存在', 'error');
+		return;
+	}
+
+	// 新增店铺
+	currentUser.shopList.push({
+		shopName: newShopName
+	});
+	currentUser.updateTime = new Date().toISOString();
+
+	// 保存修改
+	const saveResult = await saveUserInfoToJson();
+	if (saveResult.success) {
+		showToast(`店铺【${newShopName}】新增成功，页面即将刷新`, 'success');
+		// 关闭模态框
+		$('#addShopModal').modal('hide');
+		// 核心修复：刷新前重新加载用户数据并更新店铺列表
+		setTimeout(async () => {
+			await loadUserInfoFromJson(); // 重新加载最新的用户数据
+			getUserShopList(); // 重新获取店铺列表
+			initShopSwitcher(); // 重新初始化店铺导航栏
+			window.location.reload(); // 最后刷新页面
+		}, 1500);
+	} else {
+		showToast(saveResult.msg, 'error');
+	}
+}
+
+// ===================== 店铺切换核心函数（核心修复） =====================
+/**
+ * 获取当前用户的店铺列表（确保从最新的USER_INFO_LIST读取）
+ */
+function getUserShopList() {
+	console.log('🔍 获取当前用户店铺列表，用户名：', currentUserName);
+	console.log('🔍 当前用户数据：', USER_INFO_LIST.find(user => user.userName === currentUserName));
+
+	const userInfo = USER_INFO_LIST.find(user => user.userName === currentUserName);
+	if (userInfo && userInfo.shopList && Array.isArray(userInfo.shopList)) {
+		// 核心修复：确保正确提取店铺名称
+		userShopList = userInfo.shopList.map(item => {
+			// 兼容不同的数据格式
+			if (typeof item === 'string') return item;
+			return item.shopName || '';
+		}).filter(shopName => shopName.trim() !== ''); // 过滤空值
+		console.log('✅ 提取到的店铺列表：', userShopList);
+	} else {
+		userShopList = ['默认店铺'];
+		console.log('⚠️ 未找到店铺列表，使用默认店铺');
+	}
+
+	// 首次加载默认选第一个店铺
+	const savedShop = localStorage.getItem(`currentShop_${currentUserName}`);
+	currentShopName = savedShop && userShopList.includes(savedShop) ? savedShop : userShopList[0];
+	console.log('✅ 当前选中店铺：', currentShopName);
+}
+
+/**
+ * 初始化店铺切换按钮（确保每次都重新生成）
+ */
+function initShopSwitcher() {
+	const $shopBtnGroup = $('#shopBtnGroup');
+	if (!$shopBtnGroup || userShopList.length === 0) {
+		console.log('⚠️ 店铺按钮容器不存在或店铺列表为空');
+		return;
+	}
+
+	// 清空原有按钮
+	$shopBtnGroup.empty();
+	console.log('🔄 重新生成店铺按钮，店铺列表：', userShopList);
+
+	// 生成店铺按钮
+	userShopList.forEach(shopName => {
+		const $btn = $(
+			`<button class="shop-btn ${shopName === currentShopName ? 'active' : ''}">${shopName}</button>`);
+
+		// 点击事件：切换店铺并加载数据
+		$btn.click(function() {
+			// 更新选中状态
+			$('.shop-btn').removeClass('active');
+			$(this).addClass('active');
+
+			// 更新当前店铺
+			currentShopName = shopName;
+
+			// 保存到本地存储
+			localStorage.setItem(`currentShop_${currentUserName}`, currentShopName);
+
+			// 加载对应店铺数据
+			loadDataFromJson();
+
+			// 新增：点击店铺后关闭移动端店铺列表
+			$('#shopSwitcher').removeClass('show');
+		});
+
+		$shopBtnGroup.append($btn);
+	});
+	console.log('✅ 店铺按钮生成完成');
+}
+
+// ===================== 数据加载/保存函数 =====================
+/**
+ * 加载本地JSON文件数据
+ * @returns {Promise} Promise对象
+ */
+async function loadUserData() {
+	try {
+		const jsonFileFullPath = getJsonFileFullPath();
+		console.log(`[加载数据] 尝试加载文件：${jsonFileFullPath}`);
+
+		// 直接加载本地JSON文件
+		const response = await fetch(jsonFileFullPath, {
+			cache: 'no-cache',
+			method: 'GET'
+		});
+
+		// 文件不存在（404），创建空文件并返回空数据
+		if (response.status === 404) {
+			console.log(`[加载数据] 文件不存在，将创建空文件：${jsonFileFullPath}`);
+			showToast(`【${currentShopName}】数据文件不存在，已创建空文件`, 'info');
+			orderPlans = [];
+			// 保存空数据到文件
+			await saveDataToJsonFile();
+			return orderPlans;
+		}
+
+		if (!response.ok) {
+			throw new Error(`文件加载失败：${response.status}`);
+		}
+
+		const rawData = await response.json();
+
+		// 解析数据（保持原有解析逻辑）
+		if (Array.isArray(rawData)) {
+			orderPlans = rawData.map((innerItem, index) => {
+				const planObj = Array.isArray(innerItem) ? innerItem[1] : innerItem;
+				if (!planObj) return null;
+
+				return {
+					ID: planObj.ID || index + 1,
+					Code: planObj.Code || '',
+					Name: planObj.Name || '',
+					SkuName: planObj.SkuName || '',
+					SkuPrice: planObj.SkuPrice || '',
+					createTime: planObj.createTime ? new Date(planObj.createTime) : new Date(),
+					ReleasePlans: planObj.ReleasePlans ? planObj.ReleasePlans.map(detail => ({
+						ReleaseDate: detail.ReleaseDate ? new Date(detail.ReleaseDate) :
+							new Date(),
+						ReleaseQuantity: detail.ReleaseQuantity || 0,
+						ReleaseName: detail.ReleaseName || ''
+					})) : []
+				};
+			}).filter(item => item !== null);
+		} else {
+			orderPlans = [];
+		}
+
+		console.log(`[加载数据] 加载完成，共${orderPlans.length}条数据`);
+		return orderPlans;
+	} catch (err) {
+		console.error('[加载数据] 加载失败：', err);
+		// 加载失败时使用空数据
+		orderPlans = [];
+		showToast(`加载【${currentShopName}】数据失败，使用空数据`, 'warning');
+		return orderPlans;
+	}
+}
+
+/**
+ * 保存数据到本地JSON文件
+ * @returns {Promise<{success: boolean, msg: string}>} 保存结果
+ */
+async function saveDataToJsonFile() {
+	try {
+		const jsonFileFullPath = getJsonFileFullPath();
+		// 格式化数据（保持原有格式）
+		const saveData = orderPlans.map(plan => ({
+			ID: plan.ID,
+			Code: plan.Code,
+			Name: plan.Name,
+			SkuName: plan.SkuName,
+			SkuPrice: plan.SkuPrice,
+			createTime: plan.createTime.toISOString(),
+			ReleasePlans: plan.ReleasePlans.map(detail => ({
+				ReleaseDate: formatDateOnly(detail.ReleaseDate),
+				ReleaseQuantity: detail.ReleaseQuantity,
+				ReleaseName: detail.ReleaseName
+			}))
+		}));
+
+		// 前端无法直接创建文件，需要后端接口配合
+		// 调用保存接口，传递文件名和数据
+		const response = await fetch('/aspx/SaveJsonFile.aspx', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+			},
+			body: `fileName=${encodeURIComponent(getJsonFileName())}&filePath=${encodeURIComponent(CONFIG.jsonFilePath)}&data=${encodeURIComponent(JSON.stringify(saveData, null, 2))}`
+		});
+
+		if (!response.ok) {
+			throw new Error(`保存请求失败：${response.status}`);
+		}
+
+		const result = await response.json();
+		if (result.success) {
+			showToast(`【${currentShopName}】数据保存成功`, 'success');
+			return {
+				success: true,
+				msg: result.msg
+			};
+		} else {
+			throw new Error(result.msg || '保存失败');
+		}
+	} catch (error) {
+		console.error('[保存数据] 保存失败：', error);
+		showToast(`【${currentShopName}】保存失败：${error.message}`, 'error');
+		return {
+			success: false,
+			msg: `保存失败：${error.message}`
+		};
+	}
+}
+
+// ===================== 页面渲染函数 =====================
+/**
+ * 生成时间轴头部
+ */
+function generateTimelineHeader() {
+	const $head = $('#timelineHeader');
+	$head.empty();
+
+	if (orderPlans.length === 0 || !orderPlans.some(p => p.ReleasePlans && p.ReleasePlans.length)) {
+		return;
+	}
+
+	// 获取所有计划的日期范围
+	const allDates = [];
+	orderPlans.forEach(p => {
+		if (p.ReleasePlans && Array.isArray(p.ReleasePlans)) {
+			p.ReleasePlans.forEach(d => allDates.push(new Date(d.ReleaseDate)));
+		}
+	});
+
+	const minD = new Date(Math.min(...allDates));
+	const maxD = new Date(Math.max(...allDates));
+	const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+
+	// 生成日期列
+	$head.css('display', 'flex');
+	let cur = new Date(minD);
+	while (cur <= maxD) {
+		const dateStr = formatDateOnly(cur);
+		const weekDay = weekDays[cur.getDay()];
+		$head.append(`
+            <div class="timeline-date-item">
+                <div class="date-text">${dateStr}</div>
+                <div class="weekday-text">星期${weekDay}</div>
+            </div>
+        `);
+		cur.setDate(cur.getDate() + 1);
+	}
+}
+
+/**
+ * 渲染时间轴内容
+ */
+function renderTimelineContent() {
+	const $container = $('#timelineContent');
+	$container.empty();
+
+	if (orderPlans.length === 0) {
+		$container.append(`<div class="empty-tip">【${currentShopName}】暂无时间轴数据</div>`);
+		return;
+	}
+
+	// 按创建时间倒序排序
+	const sortedPlans = [...orderPlans].sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
+
+	// 获取日期列表
+	const $headerDates = $('#timelineHeader .timeline-date-item');
+	const headerDateList = [];
+	$headerDates.each(function() {
+		headerDateList.push(new Date($(this).find('.date-text').text()));
+	});
+
+	const dateCellWidth = $headerDates.eq(0).outerWidth() || CONFIG.dateCellWidth;
+	const planColors = ['#428bca', '#5cb85c', '#f0ad4e', '#d9534f', '#9954bb', '#5bc0de'];
+	let currentTop = 10;
+	const rowHeight = CONFIG.planHeight + CONFIG.planMargin;
+
+	// 渲染计划块
+	sortedPlans.forEach((plan, planIndex) => {
+		if (!plan.ReleasePlans || !Array.isArray(plan.ReleasePlans) || plan.ReleasePlans.length === 0) return;
+
+		// 计算计划块位置
+		const planTop = currentTop;
+		currentTop += rowHeight;
+
+		const planDates = plan.ReleasePlans.map(d => new Date(d.ReleaseDate));
+		const firstDate = new Date(Math.min(...planDates));
+		const lastDate = new Date(Math.max(...planDates));
+
+		const startIndex = headerDateList.findIndex(d => d.setHours(0, 0, 0, 0) === firstDate.setHours(0, 0, 0,
+			0));
+		const endIndex = headerDateList.findIndex(d => d.setHours(0, 0, 0, 0) === lastDate.setHours(0, 0, 0,
+			0));
+
+		if (startIndex === -1 || endIndex === -1) return;
+
+		const planWidth = (endIndex - startIndex + 1) * dateCellWidth;
+		const planLeft = startIndex * dateCellWidth;
+		const colorIndex = planIndex % planColors.length;
+		const planColor = planColors[colorIndex];
+
+		// 计算总数量
+		const totalQuantity = plan.ReleasePlans.reduce((sum, d) => sum + (d.ReleaseQuantity || 0), 0);
+
+		// 创建计划块
+		const $planItem = $(`
+            <div class="timeline-plan-item" 
+                 style="left:${planLeft}px; width:${planWidth}px; top:${planTop}px; background:${planColor};">
+                <div class="plan-name">${plan.Name || '未知车型'} (总:${totalQuantity})</div>
+            </div>
+        `);
+
+		// 绑定事件和提示
+		$planItem.dblclick(() => showEditPlanModal(plan.ID));
+		$planItem.attr('title', `车型ID：${plan.Code || '无'}\n车型：${plan.Name || '未知车型'}\nSKU名称：${plan.SkuName}\nSKU价格：${plan.SkuPrice || '0.00'}\n总数量：${totalQuantity}\n${
+            plan.ReleasePlans.map(d => `${formatDateOnly(d.ReleaseDate)} ${d.ReleaseQuantity}单（${d.ReleaseName || '无备注'}）`).join('\n')
+        }`);
+
+		$container.append($planItem);
+	});
+
+	// 渲染今日红线
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+	const todayIndex = headerDateList.findIndex(d => d.setHours(0, 0, 0, 0) === today.getTime());
+
+	if (todayIndex !== -1) {
+		const lineX = (todayIndex * dateCellWidth) + (dateCellWidth / 2);
+		const $todayLine = $(`
+            <div class="timeline-current-line" 
+                 style="left:${lineX}px; top:0; bottom:0; width:2px; background-color:var(--error-color); position:absolute; z-index:999;">
+            </div>
+        `);
+		$container.append($todayLine);
+		$container.scrollLeft(lineX - $container.width() / 2);
+	}
+}
+
+/**
+ * 刷新时间轴
+ */
+function refreshTimeline() {
+	generateTimelineHeader();
+	renderTimelineContent();
+}
+
+// 刷新计划表格（按createTime倒序排序+修复显示问题）
+function refreshOrderPlanTable() {
+	console.log(`【刷新计划表格】开始执行，当前店铺：${currentShopName}，orderPlans长度：`, orderPlans.length);
+	const $tbody = $('#planTableBody'); // 你的表格tbody ID
+	$tbody.empty();
+	if (orderPlans.length === 0) {
+		console.log(`【刷新计划表格】${currentShopName}无数据，显示空提示`);
+		$tbody.append(`<tr><td colspan="6" class="text-center">【${currentShopName}】暂无计划数据</td></tr>`);
+		return;
+	}
+
+	// 【核心修复】按createTime倒序排序（新增的计划在最上方）
+	const sortedPlans = [...orderPlans].sort((a, b) => {
+		// 转成Date对象比较，确保排序准确
+		return new Date(b.createTime) - new Date(a.createTime);
+	});
+
+	sortedPlans.forEach((plan, index) => {
+		console.log(`【刷新计划表格】渲染表格行${index}：${plan.Name || '未知车型'}`);
+		// 拼接放单日期+数量（保留你原有显示规则）
+		const releaseInfo = plan.ReleasePlans && Array.isArray(plan.ReleasePlans) ?
+			plan.ReleasePlans.map(d => `${formatDateOnly(d.ReleaseDate)}(${d.ReleaseQuantity}单)`).join('<br>') :
+			'无';
+
+		// 保留你原有表格列结构，添加data-label属性适配卡片布局
+		const $tr = $(`
+            <tr>
+                <td data-label="车型ID">${plan.Code || '无'}</td>
+                <td data-label="车型名称">${plan.Name || '未知车型'}</td>
+                <td data-label="SKU名称">${plan.SkuName || '未指定'}</td>
+                <td data-label="SKU价格">${plan.SkuPrice || '未固定'}</td>
+                <td data-label="创建时间">${formatDate(plan.createTime)}</td>
+                <td data-label="操作">
+                    <button class="btn btn-sm btn-primary btn-edit" data-id="${plan.ID || index}">编辑</button>
+                    <button class="btn btn-sm btn-danger btn-delete" data-id="${plan.ID || index}">删除</button>
+                </td>
+            </tr>
+        `);
+		$tbody.append($tr);
+	});
+
+	// 绑定编辑/删除事件（保留你原有逻辑）
+	console.log('【刷新计划表格】绑定编辑/删除按钮事件');
+	$('.btn-edit').off('click').click(function() {
+		const planId = $(this).data('id');
+		console.log(`【按钮点击】编辑按钮被点击，计划ID：${planId}`);
+		showEditPlanModal(planId);
+	});
+	$('.btn-delete').off('click').click(function() {
+		const planId = $(this).data('id');
+		console.log(`【按钮点击】删除按钮被点击，计划ID：${planId}`);
+		deletePlan(planId);
+	});
+	console.log('【刷新计划表格】执行完成，已按createTime倒序排序');
+}
+
+// ===================== 交互函数 =====================
+/**
+ * 初始化页面（核心修复：确保数据加载完成后再初始化店铺列表）
+ */
+async function initPage() {
+	console.log('🚀 开始初始化页面');
+
+	// 关键修复：先加载最新的用户信息（强制刷新）
+	await loadUserInfoFromJson();
+
+	// 获取当前用户的店铺列表（使用最新数据）
+	getUserShopList();
+
+	// 初始化店铺切换按钮（基于最新的店铺列表）
+	initShopSwitcher();
+
+	// 绑定事件
+	bindEvents();
+
+	// 加载数据并渲染（首次加载第一个店铺）
+	loadDataFromJson();
+
+	// 初始化视图按钮样式
+	$('#btnShowTimeline').removeClass('btn-default').addClass('btn-primary');
+	$('#btnShowTable').removeClass('btn-primary').addClass('btn-default');
+
+	// 滚动同步逻辑
+	initScrollSync();
+	// 初始化用户下拉菜单（包含新增功能）
+	initUserDropdown();
+
+	console.log('✅ 页面初始化完成');
+}
+
+/**
+ * 初始化用户下拉菜单（新增修改密码/新增店铺功能）
+ */
+function initUserDropdown() {
+	// 用户下拉菜单
+	$('#userDropdown').click(function(e) {
+		e.stopPropagation();
+		$('#userMenu').toggleClass('show');
+	});
+
+	// 点击其他区域关闭下拉菜单
+	$(document).click(function() {
+		$('#userMenu').removeClass('show');
+	});
+
+	// 退出登录按钮事件
+	$('#btnAdminLogout').off('click').click(function() {
+		if (confirm('确定退出后台管理系统？')) {
+			localStorage.removeItem('currentUserName');
+			localStorage.removeItem('isAdmin');
+			// 清除店铺选择记录
+			localStorage.removeItem(`currentShop_${currentUserName}`);
+			window.location.href = 'login.html';
+		}
+	});
+
+	// 修改密码按钮事件（新增）
+	$('#btnChangePwd').off('click').click(function() {
+		// 清空表单
+		$('#changePwdForm')[0].reset();
+		// 显示模态框
+		$('#changePwdModal').modal('show');
+	});
+
+	// 保存密码修改按钮事件（新增）
+	$('#btnSavePwd').off('click').click(changePassword);
+
+	// 新增店铺按钮事件（新增）
+	$('#btnAddShop').off('click').click(function() {
+		// 清空表单
+		$('#addShopForm')[0].reset();
+		// 显示模态框
+		$('#addShopModal').modal('show');
+	});
+
+	// 保存新增店铺按钮事件（新增）
+	$('#btnSaveShop').off('click').click(addNewShop);
+}
+
+/**
+ * 绑定页面事件
+ */
+function bindEvents() {
+	// 功能按钮事件
+	$('#btnAdd').off('click').click(showAddPlanModal);
+	$('#btnLoadData').off('click').click(loadDataFromJson);
+	$('#btnCompareTodayTomorrow').off('click').click(showCompareModal);
+	$('#btnShowTimeline').off('click').click(() => switchView('timeline'));
+	$('#btnShowTable').off('click').click(() => switchView('table'));
+
+	// 模态框相关事件
+	$('#btnAddDetail').off('click').click(() => addDetailRow());
+	$('#btnSaveForm').off('click').click(savePlanForm);
+	$('#btnCopyCompare').off('click').click(copyCompareResult);
+
+	// ===================== 新增：移动端店铺切换交互事件 =====================
+	// 移动端店铺切换按钮点击事件（显示/隐藏店铺列表）
+	$('#shopMobileToggle').off('click').click(function() {
+		$('#shopSwitcher').toggleClass('show');
+	});
+
+	// 点击页面其他区域关闭店铺列表（排除店铺切换区域和触发按钮）
+	$(document).off('click', '.shop-switcher-handler').on('click', '.shop-switcher-handler', function(e) {
+		if (!$(e.target).closest('#shopSwitcher, #shopMobileToggle').length) {
+			$('#shopSwitcher').removeClass('show');
+		}
+	});
+	// 兼容直接绑定document的方式（确保生效）
+	$(document).click(function(e) {
+		if (!$(e.target).closest('#shopSwitcher, #shopMobileToggle').length) {
+			$('#shopSwitcher').removeClass('show');
+		}
+	});
+	// =======================================================================
+}
+
+/**
+ * 初始化滚动同步
+ */
+function initScrollSync() {
+	const $timelineHeader = $('#timelineHeader');
+	const $timelineContent = $('#timelineContent');
+	const $timelineContainer = $('#timelineContainer');
+
+	// 内容滚动同步到头部
+	$timelineContent.on('scroll', function() {
+		$timelineHeader.scrollLeft($(this).scrollLeft());
+	});
+
+	// 容器滚动同步
+	$timelineContainer.on('scroll', function() {
+		const scrollLeft = $(this).scrollLeft();
+		$timelineHeader.scrollLeft(scrollLeft);
+		$timelineContent.scrollLeft(scrollLeft);
+	});
+
+	// 头部滚动同步到内容
+	$timelineHeader.on('scroll', function() {
+		const scrollLeft = $(this).scrollLeft();
+		$timelineContent.scrollLeft(scrollLeft);
+		$timelineContainer.scrollLeft(scrollLeft);
+	});
+}
+
+/**
+ * 加载数据并刷新视图
+ */
+async function loadDataFromJson() {
+	showToast(`正在加载【${currentShopName}】数据...`, 'info');
+	await loadUserData();
+	refreshTimeline();
+	refreshOrderPlanTable();
+	showToast(`【${currentShopName}】数据加载完成，共${orderPlans.length}条计划`, 'success');
+}
+
+/**
+ * 显示新增计划弹窗
+ */
+function showAddPlanModal() {
+	$('#planForm')[0].reset();
+	$('#editMode').val('add');
+	$('#txtID').val('');
+	$('#originalId').val('');
+	$('#modalTitle').text(`新增计划（${currentShopName}）`);
+
+	// 清空明细表格
+	$('#detailTableBody').empty();
+	addDetailRow();
+
+	$('#editModal').modal('show');
+}
+
+/**
+ * 显示编辑计划弹窗
+ * @param {string|number} planId 计划ID
+ */
+function showEditPlanModal(planId) {
+	const plan = orderPlans.find(p => p.ID == planId);
+	if (!plan) {
+		showToast('未找到该计划！', 'error');
+		return;
+	}
+
+	// 填充表单数据
+	$('#txtID').val(plan.ID);
+	$('#originalId').val(plan.ID);
+	$('#editMode').val('edit');
+	$('#modalTitle').text(`编辑计划（${currentShopName}）`);
+	$('#txtCode').val(plan.Code);
+	$('#txtName').val(plan.Name);
+	$('#txtSkuName').val(plan.SkuName);
+	$('#txtSkuPrice').val(plan.SkuPrice);
+	$('#txtCreateTime').val(formatDateTimeLocal(plan.createTime));
+
+	// 填充明细数据
+	$('#detailTableBody').empty();
+	if (plan.ReleasePlans && Array.isArray(plan.ReleasePlans)) {
+		plan.ReleasePlans.forEach(detail => addDetailRow(detail));
+	} else {
+		addDetailRow();
+	}
+
+	$('#editModal').modal('show');
+}
+
+/**
+ * 添加明细行
+ * @param {object} detail 明细数据
+ */
+function addDetailRow(detail = null) {
+	const $tbody = $('#detailTableBody');
+	const rowIndex = $tbody.find('tr').length;
+
+	const releaseDate = detail ? formatDateOnly(detail.ReleaseDate) : '';
+	const quantity = detail ? detail.ReleaseQuantity : '';
+	const remark = detail ? detail.ReleaseName : '';
+
+	const $tr = $(`
+        <tr data-index="${rowIndex}">
+            <td><input type="date" class="form-control detail-date" value="${releaseDate}" required></td>
+            <td><input type="number" class="form-control detail-count" value="${quantity}" min="1" required></td>
+            <td><input type="text" class="form-control detail-remark" value="${remark}"></td>
+            <td><button type="button" class="btn btn-sm btn-danger btn-remove-detail">删除</button></td>
+        </tr>
+    `);
+
+	$tbody.append($tr);
+
+	// 绑定删除事件
+	$('.btn-remove-detail').off('click').click(function() {
+		$(this).closest('tr').remove();
+	});
+}
+
+/**
+ * 保存计划表单
+ */
+async function savePlanForm() {
+	// 获取表单数据
+	const editMode = $('#editMode').val();
+	const planId = $('#originalId').val();
+	const code = $('#txtCode').val().trim();
+	const name = $('#txtName').val().trim();
+	const skuname = $('#txtSkuName').val().trim();
+	const skuprice = $('#txtSkuPrice').val().trim();
+	const createTime = $('#txtCreateTime').val() ? new Date($('#txtCreateTime').val()) : new Date();
+
+	// 验证必填项
+	if (!code) {
+		showToast('车型ID不能为空！', 'error');
+		return;
+	}
+
+	if (!name) {
+		showToast('车型名称不能为空！', 'error');
+		return;
+	}
+
+	// 获取明细数据
+	const details = [];
+	let hasValidDetail = false;
+
+	$('#detailTableBody tr').each(function() {
+		const $tr = $(this);
+		const date = $tr.find('.detail-date').val().trim();
+		const quantity = $tr.find('.detail-count').val().trim();
+		const remark = $tr.find('.detail-remark').val().trim();
+
+		if (date && quantity) {
+			details.push({
+				ReleaseDate: new Date(date),
+				ReleaseQuantity: parseInt(quantity),
+				ReleaseName: remark
+			});
+			hasValidDetail = true;
+		}
+	});
+
+	if (!hasValidDetail) {
+		showToast('至少添加一条有效的放单明细！', 'error');
+		return;
+	}
+
+	// 构造计划数据
+	const planData = {
+		ID: editMode === 'add' ? Date.now() : planId,
+		Code: code,
+		Name: name,
+		SkuName: skuname,
+		SkuPrice: skuprice,
+		createTime: createTime,
+		ReleasePlans: details
+	};
+
+	// 更新数据
+	if (editMode === 'add') {
+		orderPlans.push(planData);
+		showToast(`【${currentShopName}】计划新增成功`, 'success');
+	} else {
+		const index = orderPlans.findIndex(p => p.ID == planId);
+		if (index !== -1) {
+			orderPlans[index] = planData;
+			showToast(`【${currentShopName}】计划编辑成功`, 'success');
+		}
+	}
+
+	// 刷新视图并保存
+	refreshTimeline();
+	refreshOrderPlanTable();
+	$('#editModal').modal('hide');
+	await saveDataToJsonFile();
+}
+
+/**
+ * 删除计划
+ * @param {string|number} planId 计划ID
+ */
+async function deletePlan(planId) {
+	if (!confirm('确定要删除该计划吗？此操作不可恢复！')) {
+		return;
+	}
+
+	// 删除计划
+	const beforeCount = orderPlans.length;
+	orderPlans = orderPlans.filter(p => p.ID != planId);
+
+	if (orderPlans.length < beforeCount) {
+		// 刷新视图
+		refreshTimeline();
+		refreshOrderPlanTable();
+		// 保存数据
+		await saveDataToJsonFile();
+		showToast(`【${currentShopName}】计划删除成功`, 'success');
+	} else {
+		showToast('删除失败，未找到该计划', 'error');
+	}
+}
+
+/**
+ * 显示今日/明日对比弹窗
+ */
+function showCompareModal() {
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+	const tomorrow = new Date(today);
+	tomorrow.setDate(tomorrow.getDate() + 1);
+
+	// 整理今日/明日数据
+	const todayMap = new Map();
+	const tomorrowMap = new Map();
+
+	orderPlans.forEach(plan => {
+		if (plan.ReleasePlans && Array.isArray(plan.ReleasePlans)) {
+			plan.ReleasePlans.forEach(detail => {
+				const detailDate = new Date(detail.ReleaseDate);
+				detailDate.setHours(0, 0, 0, 0);
+
+				const remark = detail.ReleaseName?.trim() || plan.Name || '未知计划';
+				const planData = {
+					Quantity: detail.ReleaseQuantity || 0,
+					Remark: remark || '无',
+					SkuName: plan.SkuName || '未指定',
+					SkuPrice: plan.SkuPrice || '0'
+				};
+
+				if (detailDate.getTime() === today.getTime()) {
+					todayMap.set(plan.Name, planData);
+				} else if (detailDate.getTime() === tomorrow.getTime()) {
+					tomorrowMap.set(plan.Name, planData);
+				}
+			});
+		}
+	});
+
+	// 分类整理对比结果
+	const compareResult = {
+		"新加单": [],
+		"加单": [],
+		"减单": [],
+		"停单": [],
+		"改放单词": []
+	};
+
+	// 遍历所有车型
+	const allPlanNames = [...new Set([...todayMap.keys(), ...tomorrowMap.keys()])];
+	allPlanNames.forEach(name => {
+		const todayItem = todayMap.get(name) || {
+			Quantity: 0,
+			Remark: '无',
+			SkuName: '未指定',
+			SkuPrice: '0'
+		};
+		const tomorrowItem = tomorrowMap.get(name) || {
+			Quantity: 0,
+			Remark: '无',
+			SkuName: '未指定',
+			SkuPrice: '0'
+		};
+		const isNewPlan = todayItem.Quantity === 0 && tomorrowItem.Quantity > 0;
+
+		// 分类判断
+		if (isNewPlan) {
+			const skuNamePart = tomorrowItem.SkuName === '未指定' ?
+				'' :
+				` (${tomorrowItem.SkuName})`;
+			compareResult["新加单"].push(
+				`${tomorrowItem.Remark || name} * ${tomorrowItem.Quantity}  ${tomorrowItem.SkuPrice}*1${skuNamePart}`
+			);
+		} else if (tomorrowItem.Quantity > todayItem.Quantity && todayItem.Quantity > 0) {
+			const diff = tomorrowItem.Quantity - todayItem.Quantity;
+			compareResult["加单"].push(`${todayItem.Remark || name} 加${diff}单`);
+		} else if (tomorrowItem.Quantity < todayItem.Quantity && tomorrowItem.Quantity > 0) {
+			const diff = todayItem.Quantity - tomorrowItem.Quantity;
+			compareResult["减单"].push(`${todayItem.Remark || name} 减${diff}单`);
+		} else if (todayItem.Quantity > 0 && tomorrowItem.Quantity === 0) {
+			compareResult["停单"].push(`${todayItem.Remark || name} 停单`);
+		}
+
+		// 改放单词判断
+		if (!isNewPlan && tomorrowItem.Quantity > 0 &&
+			todayItem.Remark.trim() && tomorrowItem.Remark.trim() &&
+			todayItem.Remark !== tomorrowItem.Remark) {
+			compareResult["改放单词"].push(`${todayItem.Remark} 改为 ${tomorrowItem.Remark}`);
+		}
+	});
+
+	// 生成对比文本
+	let compareText = `${currentShopName} 私域单：\n`;
+	Object.keys(compareResult).forEach(category => {
+		if (compareResult[category].length > 0) {
+			compareText += `【${category}】\n`;
+			compareResult[category].forEach(item => {
+				compareText += `${item}\n`;
+			});
+		}
+	});
+
+	// 兜底提示
+	if (allPlanNames.length === 0) {
+		compareText += `→ ${currentShopName} 今日和明日均无放单计划\n`;
+	} else if (Object.values(compareResult).every(arr => arr.length === 0)) {
+		compareText += `→ ${currentShopName} 今日和明日放单计划无任何变化\n`;
+	}
+
+	// 显示弹窗
+	$('#compareResult').val(compareText);
+	$('#compareModal').modal('show');
+}
+
+/**
+ * 复制对比结果
+ */
+function copyCompareResult() {
+	const $textarea = $('#compareResult');
+	$textarea.select();
+
+	try {
+		document.execCommand('copy');
+		showToast('对比结果已复制到剪贴板', 'success');
+	} catch (err) {
+		console.error('复制失败：', err);
+		showToast('复制失败，请手动复制', 'error');
+	}
+}
+
+/**
+ * 切换视图
+ * @param {string} viewType 视图类型：timeline/table
+ */
+function switchView(viewType) {
+	const $timelineBtn = $('#btnShowTimeline');
+	const $tableBtn = $('#btnShowTable');
+
+	if (viewType === 'timeline') {
+		// 显示时间轴视图
+		$('#timelineContainerWrapper').show();
+		$('#tableContainer').hide();
+
+		$timelineBtn.removeClass('btn-default').addClass('btn-primary');
+		$tableBtn.removeClass('btn-primary').addClass('btn-default');
+	} else {
+		// 显示表格视图
+		$('#timelineContainerWrapper').hide();
+		$('#tableContainer').show();
+
+		$tableBtn.removeClass('btn-default').addClass('btn-primary');
+		$timelineBtn.removeClass('btn-primary').addClass('btn-default');
+	}
+}
+
+/**
+ * 退出登录
+ */
+function logout() {
+	if (confirm('确定要退出登录吗？')) {
+		localStorage.removeItem('currentUserName');
+		// 清除店铺选择记录
+		localStorage.removeItem(`currentShop_${currentUserName}`);
+		window.location.href = 'login.html';
+	}
+}
+
+// ===================== 页面入口（核心修复） =====================
+$(document).ready(async function() {
+	// 验证登录状态
+	currentUserName = localStorage.getItem('currentUserName');
+	if (!currentUserName || currentUserName.trim() === '') {
+		showToast('请先登录系统', 'warning');
+		setTimeout(() => {
+			window.location.href = 'login.html';
+		}, 1500);
+		return;
+	}
+
+	currentUserName = currentUserName.trim();
+	$('#userNameDisplay').text(`登录用户：${currentUserName}`);
+
+	// 核心修复：确保页面初始化是异步的，等待数据加载完成
+	await initPage();
+});

@@ -1,0 +1,342 @@
+﻿[
+  {
+    "ID": "10",
+    "Code": "3801656500871626866",
+    "Name": "长安CS75",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-09T08:06:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-11",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-12",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-13",
+        "ReleaseQuantity": 0,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-14",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": "9",
+    "Code": "3801273611063525577",
+    "Name": "大众车系",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-09T08:05:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-11",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-12",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-13",
+        "ReleaseQuantity": 0,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-14",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": "8",
+    "Code": "3802582966018900097",
+    "Name": "凯美瑞",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-09T08:04:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-11",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-12",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-13",
+        "ReleaseQuantity": 0,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-14",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": "5",
+    "Code": "3801274238061641800",
+    "Name": "吉利银河车系",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-07T08:04:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-08",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "搜索+二维码"
+      },
+      {
+        "ReleaseDate": "2026-02-09",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "搜索+二维码"
+      },
+      {
+        "ReleaseDate": "2026-02-10",
+        "ReleaseQuantity": 3,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": "6",
+    "Code": "3801274727679524947",
+    "Name": "零跑车系",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-07T08:04:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-08",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "搜索+二维码"
+      },
+      {
+        "ReleaseDate": "2026-02-09",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "搜索+二维码"
+      },
+      {
+        "ReleaseDate": "2026-02-10",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "搜索+二维码"
+      }
+    ]
+  },
+  {
+    "ID": "7",
+    "Code": "3801271590214303929",
+    "Name": "哈弗大狗",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-07T08:04:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-08",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-09",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-10",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "搜索+二维码"
+      }
+    ]
+  },
+  {
+    "ID": "1",
+    "Code": "3801273971647840515",
+    "Name": "奥迪车系",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-03T08:04:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-05",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-06",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-07",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": "2",
+    "Code": "3801274435755966541",
+    "Name": "宝马车系",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-03T08:04:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-05",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "搜索+二维码"
+      },
+      {
+        "ReleaseDate": "2026-02-06",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-07",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": "3",
+    "Code": "3801272590933295255",
+    "Name": "方程豹车系",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-03T08:04:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-05",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "搜索+二维码"
+      },
+      {
+        "ReleaseDate": "2026-02-06",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-07",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": "4",
+    "Code": "3801271351910728600",
+    "Name": "小鹏车系",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-03T08:04:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-05",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "搜索+二维码"
+      },
+      {
+        "ReleaseDate": "2026-02-06",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-07",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": "1770792312692",
+    "Code": "3801274016770162817",
+    "Name": "昂科威plus",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-11T06:45:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-15",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "昂科威plus脚垫"
+      },
+      {
+        "ReleaseDate": "2026-02-16",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "昂科威plus脚垫"
+      },
+      {
+        "ReleaseDate": "2026-02-17",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": "1770792423422",
+    "Code": "3801654701196444144",
+    "Name": "荣放RAV4",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-11T06:47:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-15",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "荣放RAV4脚垫"
+      },
+      {
+        "ReleaseDate": "2026-02-16",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "荣放RAV4脚垫"
+      },
+      {
+        "ReleaseDate": "2026-02-17",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "荣放RAV4脚垫"
+      }
+    ]
+  },
+  {
+    "ID": 1771064370039,
+    "Code": "3801653951892423141",
+    "Name": "星越L脚垫",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-14T10:19:30.039Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-15",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-16",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-17",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  }
+]

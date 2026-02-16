@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>迹戈管理系统 - 用户管理</title>
+		<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+		<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<style>
+			:root {
+				--primary-color: #1677ff;
+				--bg-color: #f5f7fa;
+				--sidebar-bg: #001529;
+				--text-color: #333;
+				--card-bg: #fff;
+				--border-color: #e8e8e8;
+				--error-color: #ff4d4f;
+			}
+
+			[data-theme="dark"] {
+				--primary-color: #1677ff;
+				--bg-color: #141414;
+				--sidebar-bg: #000;
+				--text-color: #fff;
+				--card-bg: #1f1f1f;
+				--border-color: #303030;
+			}
+
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			body {
+				font-family: "Microsoft YaHei", Arial, sans-serif;
+				background-color: var(--bg-color);
+				color: var(--text-color);
+				height: 100vh;
+				margin: 0;
+				padding: 0;
+				display: flex;
+				position: relative;
+			}
+
+			/* 侧边栏 */
+			.sidebar {
+				width: 220px;
+				background-color: var(--sidebar-bg);
+				color: #fff;
+				display: flex;
+				flex-direction: column;
+				transition: width 0.3s ease;
+			}
+
+			.sidebar.collapsed {
+				width: 60px;
+			}
+
+			.sidebar-header {
+				padding: 20px;
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			}
+
+			.sidebar-header img {
+				width: 32px;
+				height: 32px;
+			}
+
+			.sidebar-header h3 {
+				font-size: 16px;
+				font-weight: 600;
+				white-space: nowrap;
+			}
+
+			.sidebar.collapsed .sidebar-header h3 {
+				display: none;
+			}
+
+			.sidebar-menu {
+				flex: 1;
+				overflow-y: auto;
+				padding: 10px 0;
+			}
+
+			.menu-item {
+				padding: 12px 20px;
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				cursor: pointer;
+				transition: background-color 0.2s;
+			}
+
+			.menu-item:hover,
+			.menu-item.active {
+				background-color: rgba(255, 255, 255, 0.1);
+			}
+
+			.menu-item i {
+				width: 20px;
+				text-align: center;
+			}
+
+			.menu-item .text {
+				white-space: nowrap;
+			}
+
+			.sidebar.collapsed .menu-item .text {
+				display: none;
+			}
+
+			.menu-item.has-sub .fa-caret-down {
+				margin-left: auto;
+				transition: transform 0.2s;
+			}
+
+			.menu-item.has-sub.open .fa-caret-down {
+				transform: rotate(180deg);
+			}
+
+			.sub-menu {
+				background-color: rgba(0, 0, 0, 0.2);
+				max-height: 0;
+				overflow: hidden;
+				transition: max-height 0.3s ease;
+			}
+
+			.sub-menu.open {
+				max-height: 500px;
+			}
+
+			.sub-menu .menu-item {
+				padding-left: 40px;
+				font-size: 13px;
+			}
+
+			/* 主内容区 */
+			.main-content {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				overflow: hidden;
+				position: relative;
+			}
+
+			/* 顶部导航栏 */
+			.top-nav {
+				height: 60px;
+				background-color: var(--card-bg);
+				border-bottom: 1px solid var(--border-color);
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 0 20px;
+			}
+
+			.nav-left {
+				display: flex;
+				align-items: center;
+				gap: 15px;
+			}
+
+			.nav-toggle {
+				cursor: pointer;
+				font-size: 18px;
+			}
+
+			.nav-path {
+				font-size: 14px;
+				color: var(--text-color);
+			}
+
+			.nav-path .separator {
+				margin: 0 5px;
+				color: #999;
+			}
+
+			.nav-right {
+				display: flex;
+				align-items: center;
+				gap: 20px;
+			}
+
+			.search-box {
+				position: relative;
+			}
+
+			.search-box input {
+				background-color: var(--bg-color);
+				border: 1px solid var(--border-color);
+				border-radius: 6px;
+				padding: 6px 10px 6px 30px;
+				font-size: 13px;
+				width: 180px;
+				color: var(--text-color);
+			}
+
+			.search-box i {
+				position: absolute;
+				left: 10px;
+				top: 50%;
+				transform: translateY(-50%);
+				color: #999;
+			}
+
+			.nav-icon {
+				font-size: 18px;
+				cursor: pointer;
+				color: var(--text-color);
+				position: relative;
+			}
+
+			.nav-icon .badge {
+				position: absolute;
+				top: -5px;
+				right: -5px;
+				background-color: #ff4d4f;
+				color: #fff;
+				border-radius: 10px;
+				font-size: 10px;
+				padding: 2px 5px;
+			}
+
+			.user-dropdown {
+				position: relative;
+				cursor: pointer;
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+
+			.user-avatar {
+				width: 36px;
+				height: 36px;
+				border-radius: 50%;
+				background-color: var(--primary-color);
+				color: #fff;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-weight: bold;
+			}
+
+			.user-name {
+				font-size: 14px;
+			}
+
+			.dropdown-menu {
+				position: absolute;
+				top: 50px;
+				right: 0;
+				background-color: var(--card-bg);
+				border: 1px solid var(--border-color);
+				border-radius: 8px;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+				width: 150px;
+				display: none;
+				z-index: 100;
+			}
+
+			.dropdown-menu.show {
+				display: block;
+			}
+
+			.dropdown-item {
+				padding: 10px 15px;
+				font-size: 13px;
+				cursor: pointer;
+				transition: background-color 0.2s;
+			}
+
+			.dropdown-item:hover {
+				background-color: var(--bg-color);
+			}
+
+			/* 内容区域 */
+			.content-area {
+				flex: 1;
+				overflow-y: auto;
+				padding: 20px;
+			}
+
+			.page-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 20px;
+			}
+
+			.page-title {
+				font-size: 20px;
+				font-weight: 600;
+				margin: 0;
+			}
+
+			.btn-add-user {
+				background-color: var(--primary-color);
+				color: #fff;
+				border: none;
+				padding: 8px 15px;
+				border-radius: 6px;
+				cursor: pointer;
+				display: flex;
+				align-items: center;
+				gap: 5px;
+			}
+
+			.btn-add-user:hover {
+				opacity: 0.9;
+			}
+
+			.card {
+				background-color: var(--card-bg);
+				border-radius: 12px;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+				padding: 20px;
+				margin-bottom: 20px;
+			}
+
+			.table {
+				background-color: var(--card-bg);
+				width: 100%;
+			}
+
+			.table th {
+				text-align: center;
+				background-color: rgba(0, 0, 0, 0.02);
+			}
+
+			.table td {
+				text-align: center;
+				vertical-align: middle;
+			}
+
+			.shop-list-tag {
+				display: inline-block;
+				background-color: #e8f4ff;
+				color: #1677ff;
+				padding: 2px 8px;
+				border-radius: 4px;
+				font-size: 12px;
+				margin: 0 2px 2px 0;
+			}
+
+			.role-tag {
+				display: inline-block;
+				padding: 2px 8px;
+				border-radius: 4px;
+				font-size: 12px;
+			}
+
+			.role-tag.admin {
+				background-color: #f0f9ff;
+				color: #0284c7;
+			}
+
+			.role-tag.normal {
+				background-color: #f5f5f5;
+				color: #6b7280;
+			}
+
+			[data-theme="dark"] .shop-list-tag {
+				background-color: #1e3a5f;
+				color: #40a9ff;
+			}
+
+			.empty-tip {
+				text-align: center;
+				padding: 30px;
+				color: #999;
+			}
+
+			/* 弹窗样式 - 强制全局居中（核心修复） */
+			.modal {
+				position: fixed !important;
+				top: 0 !important;
+				left: 0 !important;
+				width: 100vw !important;
+				height: 100vh !important;
+				background-color: rgba(0, 0, 0, 0.5);
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+				z-index: 9999 !important;
+				opacity: 0;
+				pointer-events: none;
+				transition: opacity 0.25s ease;
+				box-sizing: border-box;
+				padding: 20px;
+			}
+
+			.modal.show {
+				opacity: 1;
+				pointer-events: auto;
+			}
+
+			.modal-content {
+				background-color: var(--card-bg);
+				border-radius: 8px;
+				width: 100%;
+				max-width: 500px;
+				padding: 20px;
+				min-width: 300px;
+				box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+				transform: scale(1);
+				transition: transform 0.25s ease;
+				box-sizing: border-box;
+				position: relative;
+			}
+
+			.modal:not(.show) .modal-content {
+				transform: scale(0.95);
+			}
+
+			.modal-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 15px;
+				padding-bottom: 10px;
+				border-bottom: 1px solid var(--border-color);
+			}
+
+			.modal-title {
+				font-size: 18px;
+				font-weight: 600;
+				margin: 0;
+			}
+
+			.modal-close {
+				cursor: pointer;
+				font-size: 20px;
+				color: #999;
+			}
+
+			.modal-body .form-group {
+				margin-bottom: 15px;
+				position: relative;
+			}
+
+			.modal-body label {
+				display: block;
+				margin-bottom: 5px;
+				font-weight: 500;
+			}
+
+			.modal-body input,
+			.modal-body select {
+				width: 100%;
+				padding: 8px 10px;
+				border: 1px solid var(--border-color);
+				border-radius: 4px;
+				background-color: var(--bg-color);
+				color: var(--text-color);
+				outline: none;
+			}
+
+			/* 输入框聚焦样式 */
+			.modal-body input:focus,
+			.modal-body select:focus {
+				border-color: var(--primary-color);
+				box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2);
+			}
+
+			.modal-footer {
+				display: flex;
+				justify-content: flex-end;
+				gap: 10px;
+				margin-top: 20px;
+				padding-top: 10px;
+				border-top: 1px solid var(--border-color);
+			}
+
+			.btn-cancel {
+				padding: 8px 15px;
+				border: 1px solid var(--border-color);
+				border-radius: 4px;
+				background-color: var(--bg-color);
+				color: var(--text-color);
+				cursor: pointer;
+			}
+
+			.btn-save {
+				padding: 8px 15px;
+				border: none;
+				border-radius: 4px;
+				background-color: var(--primary-color);
+				color: #fff;
+				cursor: pointer;
+			}
+
+			/* 用户名重复提示样式 */
+			.duplicate-tip,
+			.password-tip {
+				position: absolute;
+				right: 10px;
+				top: 32px;
+				color: var(--error-color);
+				font-size: 12px;
+				display: none;
+			}
+
+			.duplicate-tip.show,
+			.password-tip.show {
+				display: inline-block;
+			}
+
+			/* 输入框错误状态样式 */
+			.modal-body input.error {
+				border-color: var(--error-color);
+			}
+
+			/* Toast 提示样式 */
+			.toast-container {
+				position: fixed;
+				bottom: 20px;
+				right: 20px;
+				z-index: 99999;
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+			}
+
+			.toast {
+				padding: 12px 20px;
+				border-radius: 6px;
+				color: #fff;
+				font-size: 14px;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+				animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+				opacity: 1;
+			}
+
+			/* 不同类型的 Toast 颜色 */
+			.toast.success {
+				background-color: #52c41a;
+				/* 成功：绿色 */
+			}
+
+			.toast.error {
+				background-color: #ff4d4f;
+				/* 错误：红色 */
+			}
+
+			.toast.info {
+				background-color: #1890ff;
+				/* 信息：蓝色 */
+			}
+
+			/* 动画效果 */
+			@keyframes slideIn {
+				from {
+					transform: translateX(100%);
+					opacity: 0;
+				}
+
+				to {
+					transform: translateX(0);
+					opacity: 1;
+				}
+			}
+
+			@keyframes fadeOut {
+				from {
+					opacity: 1;
+				}
+
+				to {
+					opacity: 0;
+				}
+			}
+
+			/* 禁用按钮样式增强 */
+			.btn.disabled {
+				opacity: 0.6;
+				cursor: not-allowed;
+				pointer-events: none;
+			}
+		</style>
+	</head>
+	<body>
+		<!-- 左侧边栏 -->
+		<div class="sidebar" id="sidebar">
+			<div class="sidebar-header">
+				<img src="https://via.placeholder.com/32/1677ff/ffffff?text=JG" alt="迹戈管理系统">
+				<h3>迹戈管理系统</h3>
+			</div>
+			<div class="sidebar-menu">
+				<div class="menu-item active" data-target="user-management">
+					<i class="fa fa-user-circle"></i>
+					<span class="text">用户管理</span>
+				</div>
+				<div class="menu-item has-sub">
+					<i class="fa fa-cogs"></i>
+					<span class="text">系统管理</span>
+					<i class="fa fa-caret-down"></i>
+				</div>
+				<div class="sub-menu">
+					<div class="menu-item">
+						<i class="fa fa-database"></i>
+						<span class="text">数据备份</span>
+					</div>
+					<div class="menu-item">
+						<i class="fa fa-sliders"></i>
+						<span class="text">系统设置</span>
+					</div>
+				</div>
+				<div class="menu-item">
+					<i class="fa fa-line-chart"></i>
+					<span class="text">数据分析</span>
+				</div>
+				<div class="menu-item">
+					<i class="fa fa-file-text-o"></i>
+					<span class="text">操作日志</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- 主内容区 -->
+		<div class="main-content">
+			<!-- 顶部导航栏 -->
+			<div class="top-nav">
+				<div class="nav-left">
+					<i class="fa fa-bars nav-toggle" id="navToggle"></i>
+					<div class="nav-path">
+						仪表盘 <span class="separator">/</span> 用户管理
+					</div>
+				</div>
+				<div class="nav-right">
+					<div class="search-box">
+						<i class="fa fa-search"></i>
+						<input type="text" placeholder="搜索用户...">
+					</div>
+					<i class="fa fa-bell nav-icon" title="消息通知">
+						<span class="badge">3</span>
+					</i>
+					<i class="fa fa-cog nav-icon" title="系统设置"></i>
+					<i class="fa fa-moon-o nav-icon" id="themeToggle" title="切换夜间模式"></i>
+					<div class="user-dropdown" id="userDropdown">
+						<div class="user-avatar">A</div>
+						<span class="user-name">admin</span>
+						<i class="fa fa-caret-down"></i>
+						<div class="dropdown-menu" id="userMenu">
+							<div class="dropdown-item" id="btnAdminLogout">
+								<i class="fa fa-sign-out"></i> 退出登录
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 内容区域 -->
+			<div class="content-area">
+				<div class="page-header">
+					<h2 class="page-title">用户管理</h2>
+					<button class="btn-add-user" id="btnAddUser">
+						<i class="fa fa-plus"></i> 新增用户
+					</button>
+				</div>
+				<div class="card">
+					<table class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th>序号</th>
+								<th>用户名</th>
+								<th>密码</th>
+								<th>身份</th>
+								<th>店铺列表</th>
+								<th>创建时间</th>
+								<th>最后修改时间</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody id="userTableBody">
+							<!-- 动态加载用户数据 -->
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<!-- 新增/编辑用户弹窗 -->
+		<div class="modal" id="userModal">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3 class="modal-title" id="modalTitle">新增用户</h3>
+					<i class="fa fa-times modal-close" id="modalClose"></i>
+				</div>
+				<div class="modal-body">
+					<input type="hidden" id="editUserName">
+					<div class="form-group">
+						<label for="modalUserName">用户名</label>
+						<input type="text" id="modalUserName" placeholder="请输入用户名（唯一）">
+						<span class="duplicate-tip" id="userNameTip">用户名已存在！</span>
+					</div>
+					<div class="form-group">
+						<label for="modalPassword">密码</label>
+						<input type="password" id="modalPassword" placeholder="请输入密码">
+					</div>
+					<div class="form-group">
+						<label for="modalConfirmPwd">确认密码</label>
+						<input type="password" id="modalConfirmPwd" placeholder="请再次输入密码">
+						<span class="password-tip" id="passwordTip">两次密码不一致！</span>
+					</div>
+					<div class="form-group">
+						<label for="modalRole">用户身份</label>
+						<select id="modalRole">
+							<option value="normal">普通用户</option>
+							<option value="admin">管理员</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="modalShopList">店铺列表</label>
+						<input type="text" id="modalShopList" placeholder="请输入店铺名称，多个店铺用英文逗号分隔">
+						<small class="text-muted">示例：XXX专卖店,XXX旗舰店</small>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn-cancel" id="btnModalCancel">取消</button>
+					<button class="btn-save" id="btnModalSave">保存</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Toast 提示容器 -->
+		<div class="toast-container" id="toastContainer"></div>
+
+		<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+		<script>
+			// 定义受保护的超级管理员账户（不可删除/不可修改身份）
+			const PROTECTED_ADMIN_USER = 'admin';
+
+			$(document).ready(function() {
+				// 验证管理员权限
+				const isAdmin = localStorage.getItem('isAdmin');
+				if (isAdmin !== 'true') {
+					showToast('无管理员权限，请登录！', 'error');
+					window.location.href = 'login.html';
+					return;
+				}
+
+				// 初始化页面
+				initPage();
+			});
+
+			/**
+			 * 显示 Toast 提示
+			 * @param {string} message - 提示内容
+			 * @param {string} type - 提示类型：success | error | info
+			 * @param {number} duration - 显示时长（毫秒），默认3000ms
+			 */
+			function showToast(message, type = 'info', duration = 3000) {
+				const $container = $('#toastContainer');
+
+				// 创建 Toast 元素
+				const $toast = $(`
+                <div class="toast ${type}">
+                    ${message}
+                </div>
+            `);
+
+				// 添加到容器中
+				$container.append($toast);
+
+				// 自动移除
+				setTimeout(() => {
+					$toast.remove();
+				}, duration);
+			}
+
+			/**
+			 * 校验密码表单（移除密码长度限制）
+			 */
+			function validatePasswordForm() {
+				const isEdit = !!$('#editUserName').val().trim();
+				const password = $('#modalPassword').val().trim();
+				const confirmPwd = $('#modalConfirmPwd').val().trim();
+				const $tip = $('#passwordTip');
+				const $pwdInput = $('#modalConfirmPwd');
+				const $saveBtn = $('#btnModalSave');
+
+				// 编辑模式：密码可选（为空则不修改）
+				if (isEdit && !password && !confirmPwd) {
+					$tip.removeClass('show');
+					$pwdInput.removeClass('error');
+					return true;
+				}
+
+				// 新增模式：密码可选（取消必填限制）
+				let isValid = true;
+
+				// 仅校验密码一致性（如果输入了密码）
+				if (password || confirmPwd) {
+					if (password !== confirmPwd) {
+						$tip.addClass('show');
+						$pwdInput.addClass('error');
+						isValid = false;
+					} else {
+						$tip.removeClass('show');
+						$pwdInput.removeClass('error');
+					}
+				} else {
+					$tip.removeClass('show');
+					$pwdInput.removeClass('error');
+				}
+
+				// 用户名重复校验
+				const userNameExist = $('#userNameTip').hasClass('show');
+				if (userNameExist) {
+					isValid = false;
+				}
+
+				// 启用/禁用保存按钮
+				$saveBtn.prop('disabled', !isValid);
+				return isValid;
+			}
+
+			function initPage() {
+				// 侧边栏折叠/展开
+				$('#navToggle').click(function() {
+					$('#sidebar').toggleClass('collapsed');
+				});
+
+				// 子菜单展开/收起
+				$('.menu-item.has-sub').click(function() {
+					$(this).toggleClass('open');
+					$(this).next('.sub-menu').toggleClass('open');
+				});
+
+				// 模式切换（日间/夜间）
+				$('#themeToggle').click(function() {
+					const currentTheme = document.body.getAttribute('data-theme');
+					if (currentTheme === 'dark') {
+						document.body.removeAttribute('data-theme');
+						$(this).removeClass('fa-sun-o').addClass('fa-moon-o');
+					} else {
+						document.body.setAttribute('data-theme', 'dark');
+						$(this).removeClass('fa-moon-o').addClass('fa-sun-o');
+					}
+				});
+
+				// 用户下拉菜单
+				$('#userDropdown').click(function(e) {
+					e.stopPropagation();
+					$('#userMenu').toggleClass('show');
+				});
+				$(document).click(function() {
+					$('#userMenu').removeClass('show');
+				});
+
+				// 退出登录
+				$('#btnAdminLogout').click(function() {
+					if (!confirm('确定退出后台管理系统？')) return;
+					localStorage.removeItem('isAdmin');
+					localStorage.removeItem('currentUserName');
+					window.location.href = 'login.html';
+				});
+
+				// 加载用户数据
+				loadAllUsers();
+
+				// 新增用户按钮（默认选中普通用户）
+				$('#btnAddUser').click(function() {
+					$('#modalTitle').text('新增用户');
+					$('#editUserName').val('');
+					$('#modalUserName').val('').removeAttr('disabled').removeClass('error');
+					$('#modalPassword').val('');
+					$('#modalConfirmPwd').val('');
+					$('#modalRole').val('normal'); // 默认普通用户
+					$('#modalShopList').val('').removeAttr('disabled');
+					$('#userNameTip').removeClass('show');
+					$('#passwordTip').removeClass('show');
+					$('#btnModalSave').prop('disabled', false).css('opacity', '1');
+					$('#userModal').addClass('show');
+					setTimeout(() => $('#modalUserName').focus(), 100);
+				});
+
+				// 实时校验用户名
+				let userNameCheckTimer = null;
+				$('#modalUserName').on('input blur', function() {
+					const $this = $(this);
+					const userName = $this.val().trim();
+					const $tip = $('#userNameTip');
+					const $saveBtn = $('#btnModalSave');
+
+					if (!userName) {
+						$tip.removeClass('show');
+						$this.removeClass('error');
+						clearTimeout(userNameCheckTimer);
+						validatePasswordForm();
+						return;
+					}
+
+					clearTimeout(userNameCheckTimer);
+					userNameCheckTimer = setTimeout(() => {
+						fetch(`/data/userdata.json?_=${new Date().getTime()}`, {
+								cache: 'no-cache'
+							})
+							.then(res => res.ok ? res.json() : [])
+							.then(data => {
+								if (!Array.isArray(data)) data = [];
+								const editUserName = $('#editUserName').val().trim();
+								const isExist = data.some(u =>
+									u.userName && u.userName.trim() === userName && u.userName !==
+									editUserName
+								);
+
+								if (isExist) {
+									$tip.addClass('show');
+									$this.addClass('error');
+									$saveBtn.prop('disabled', true).css('opacity', '0.6');
+								} else {
+									$tip.removeClass('show');
+									$this.removeClass('error');
+									validatePasswordForm();
+								}
+							})
+							.catch(err => {
+								console.error('实时校验用户名失败：', err);
+								$tip.removeClass('show');
+								validatePasswordForm();
+							});
+					}, 500);
+				});
+
+				// 实时校验密码一致性（仅校验一致性，移除长度限制）
+				$('#modalPassword, #modalConfirmPwd').on('input', validatePasswordForm);
+
+				// 关闭弹窗
+				$('#modalClose, #btnModalCancel').click(function() {
+					$('#userModal').removeClass('show');
+					setTimeout(() => {
+						$('#modalTitle').text('新增用户');
+						$('#editUserName').val('');
+						$('#modalUserName').val('').removeAttr('disabled').removeClass('error');
+						$('#modalPassword').val('');
+						$('#modalConfirmPwd').val('');
+						$('#modalRole').val('normal');
+						$('#modalShopList').val('').removeAttr('disabled');
+						$('#userNameTip').removeClass('show');
+						$('#passwordTip').removeClass('show');
+						$('#btnModalSave').prop('disabled', false).css('opacity', '1');
+					}, 300);
+				});
+
+				// 点击弹窗外部关闭
+				$('#userModal').click(function(e) {
+					if (e.target === this) {
+						$('#userModal').removeClass('show');
+					}
+				});
+
+				// 阻止弹窗内容区事件冒泡
+				$('.modal-content').click(function(e) {
+					e.stopPropagation();
+				});
+
+				// 保存用户
+				$('#btnModalSave').click(function() {
+					saveUser();
+				});
+
+				// 编辑用户事件（修复：直接使用 .data() 获取的对象数组）
+				$('#userTableBody').on('click', '.btn-edit-user', function() {
+					try {
+						const userName = $(this).data('username');
+						const password = $(this).data('password') || '';
+						const role = $(this).data('role') || 'normal';
+						const shopList = $(this).data('shoplist') || []; // 直接获取数组，无需解析
+						const shopNames = shopList.map(shop => shop.shopName || '').join(',');
+
+						// 保护逻辑：如果是admin账户，禁用身份修改
+						if (userName === PROTECTED_ADMIN_USER) {
+							$('#modalRole').val('admin').prop('disabled', true);
+							showToast('超级管理员账户身份禁止修改！', 'info');
+						} else {
+							$('#modalRole').val(role).prop('disabled', false);
+						}
+
+						$('#modalTitle').text('编辑用户');
+						$('#editUserName').val(userName);
+						$('#modalUserName').val(userName).attr('disabled', true).removeClass('error');
+						$('#modalPassword').val(password);
+						$('#modalConfirmPwd').val(password);
+						$('#modalShopList').val(shopNames).removeAttr('disabled');
+						$('#userNameTip').removeClass('show');
+						$('#passwordTip').removeClass('show');
+						$('#btnModalSave').prop('disabled', false).css('opacity', '1');
+						$('#userModal').addClass('show');
+						setTimeout(() => $('#modalPassword').focus(), 100);
+					} catch (e) {
+						console.error('编辑弹窗加载失败：', e);
+						showToast('加载编辑数据失败，请重试！', 'error');
+					}
+				});
+
+				// 删除用户事件
+				$('#userTableBody').on('click', '.btn-delete-user', function() {
+					const userName = $(this).data('username');
+					deleteUser(userName);
+				});
+			}
+
+			/**
+			 * 加载所有用户数据（新增身份字段展示，添加admin账户UI保护）
+			 */
+			function loadAllUsers() {
+				const $tbody = $('#userTableBody');
+				$tbody.empty().append('<tr><td colspan="8" class="empty-tip">加载中...</td></tr>');
+
+				const timestamp = new Date().getTime();
+				fetch(`/data/userdata.json?_=${timestamp}`, {
+						method: 'GET',
+						cache: 'no-cache',
+						headers: {
+							'Cache-Control': 'no-cache',
+							'Pragma': 'no-cache'
+						}
+					})
+					.then(response => {
+						if (response.ok) {
+							return response.json();
+						} else if (response.status === 404) {
+							$tbody.empty().append('<tr><td colspan="8" class="empty-tip">暂无用户数据</td></tr>');
+							return [];
+						}
+						throw new Error(`获取用户数据失败 [${response.status}]`);
+					})
+					.then(userData => {
+						$tbody.empty();
+						if (!Array.isArray(userData) || userData.length === 0) {
+							if ($tbody.find('tr').length === 0) {
+								$tbody.append('<tr><td colspan="8" class="empty-tip">暂无用户数据</td></tr>');
+							}
+							return;
+						}
+
+						userData.forEach((user, index) => {
+							const createTime = user.createTime ? new Date(user.createTime).toLocaleString() : '未知';
+							const updateTime = user.updateTime ? new Date(user.updateTime).toLocaleString() : '未知';
+							const showPwd = user.password ? user.password.substring(0, 3) + '****' : '未设置';
+							// 处理身份字段
+							const userRole = user.role || 'normal';
+							const roleText = userRole === 'admin' ? '管理员' : '普通用户';
+							const roleClass = userRole === 'admin' ? 'admin' : 'normal';
+
+							// 判断是否为受保护的admin账户
+							const isProtected = user.userName === PROTECTED_ADMIN_USER;
+
+							let shopHtml = '';
+							if (user.shopList && user.shopList.length > 0) {
+								user.shopList.forEach(shop => {
+									shopHtml += `<span class="shop-list-tag">${shop.shopName || '-'}</span>`;
+								});
+							} else {
+								shopHtml = '-';
+							}
+
+							// 1. 先创建整行 HTML
+							const $tr = $(`
+                            <tr data-username="${user.userName}">
+                                <td>${index + 1}</td>
+                                <td>${user.userName || '-'}</td>
+                                <td>${showPwd}</td>
+                                <td><span class="role-tag ${roleClass}">${roleText}</span></td>
+                                <td>${shopHtml}</td>
+                                <td>${createTime}</td>
+                                <td>${updateTime}</td>
+                                <td></td>
+                            </tr>
+                        `);
+
+							// 2. 单独创建编辑按钮，使用 jQuery .data() 方法直接存储对象
+							const $editBtn = $(
+								`<button class="btn btn-sm btn-primary btn-edit-user ${isProtected ? 'disabled' : ''}" 
+								        ${isProtected ? 'title="超级管理员账户部分操作受限"' : ''}>
+									<i class="fa fa-edit"></i> 编辑
+								</button>`
+							);
+							$editBtn.data('username', user.userName);
+							$editBtn.data('password', user.password || '');
+							$editBtn.data('role', userRole); // 存储身份信息
+							$editBtn.data('shoplist', user.shopList || []); // 直接存储数组对象
+
+							// 3. 创建删除按钮（admin账户禁用）
+							const $deleteBtn = $(
+								`<button class="btn btn-sm btn-danger btn-delete-user ${isProtected ? 'disabled' : ''}" 
+								        ${isProtected ? 'title="超级管理员账户禁止删除"' : ''}>
+									<i class="fa fa-trash"></i> 删除
+								</button>`
+							);
+							$deleteBtn.data('username', user.userName);
+
+							// 4. 将按钮追加到操作列
+							$tr.find('td:last-child').append($editBtn).append(' ').append($deleteBtn);
+							$tbody.append($tr);
+						});
+					})
+					.catch(err => {
+						console.error('加载用户数据失败：', err);
+						$tbody.empty().append('<tr><td colspan="8" class="empty-tip">加载用户数据失败</td></tr>');
+					});
+			}
+
+			/**
+			 * 保存用户（新增/编辑）- 移除密码长度限制，新增admin身份保护
+			 */
+			function saveUser() {
+				const editUserName = $('#editUserName').val().trim();
+				const userName = $('#modalUserName').val().trim();
+				const password = $('#modalPassword').val().trim();
+				const confirmPwd = $('#modalConfirmPwd').val().trim();
+				const userRole = $('#modalRole').val() || 'normal'; // 获取身份
+				const shopInput = $('#modalShopList').val().trim();
+
+				// 保护逻辑：禁止修改admin账户的身份
+				if (editUserName === PROTECTED_ADMIN_USER && userRole !== 'admin') {
+					showToast('超级管理员账户身份禁止修改！', 'error');
+					return;
+				}
+
+				// 1. 基础校验
+				if (!userName) {
+					showToast('请输入用户名！', 'error');
+					return;
+				}
+
+				// 仅校验密码一致性（如果输入了密码），移除长度限制
+				if (password || confirmPwd) {
+					if (password !== confirmPwd) {
+						showToast('两次密码输入不一致！', 'error');
+						return;
+					}
+				}
+
+				if (!shopInput) {
+					showToast('请输入店铺名称！', 'error');
+					return;
+				}
+
+				// 2. 处理店铺列表数据
+				const shopList = shopInput.split(',')
+					.map(shop => shop.trim())
+					.filter(shop => shop)
+					.map(shop => ({
+						shopName: shop
+					}));
+				const now = new Date().toISOString();
+
+				// 3. 先请求服务器最新数据
+				const timestamp = new Date().getTime();
+				fetch(`/data/userdata.json?_=${timestamp}`, {
+						method: 'GET',
+						cache: 'no-cache',
+						headers: {
+							'Cache-Control': 'no-cache',
+							'Pragma': 'no-cache'
+						}
+					})
+					.then(response => {
+						if (response.ok) return response.json();
+						if (response.status === 404) return [];
+						throw new Error(`获取最新用户数据失败 [${response.status}]`);
+					})
+					.then(latestUserData => {
+						if (!Array.isArray(latestUserData)) latestUserData = [];
+						let newUserData = [...latestUserData];
+
+						// 4. 新增用户
+						if (!editUserName) {
+							const isUserNameExist = latestUserData.some(user =>
+								user.userName && user.userName.trim() === userName
+							);
+							if (isUserNameExist) {
+								showToast(`用户名【${userName}】已存在！`, 'error');
+								throw new Error(`用户名重复：${userName}`);
+							}
+							// 新增用户（包含身份字段，默认普通用户）
+							newUserData.push({
+								userName: userName,
+								password: password, // 不再限制长度
+								role: userRole,
+								shopList: shopList,
+								createTime: now,
+								updateTime: now
+							});
+						} else {
+							// 编辑用户：密码为空则保留原密码，admin账户强制保留admin身份
+							newUserData = newUserData.map(user => {
+								if (user.userName === editUserName) {
+									return {
+										...user,
+										shopList: shopList,
+										password: password || user.password,
+										role: editUserName === PROTECTED_ADMIN_USER ? 'admin' :
+										userRole, // 强制保护admin身份
+										updateTime: now
+									};
+								}
+								return user;
+							});
+						}
+
+						// 5. 提交到后端保存
+						return fetch('/aspx/SaveUserData.aspx', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+							},
+							body: `data=${encodeURIComponent(JSON.stringify(newUserData, null, 2))}`
+						});
+					})
+					.then(response => {
+						if (!response.ok) throw new Error(`保存请求失败 [${response.status}]`);
+						return response.text();
+					})
+					.then(text => {
+						let res = {
+							success: false
+						};
+						try {
+							res = JSON.parse(text);
+						} catch (e) {
+							res.success = text.includes('success') || text.includes('成功');
+						}
+
+						if (!res.success) throw new Error(res.msg || '保存失败');
+
+						showToast(editUserName ? '用户编辑成功！' : '用户新增成功！', 'success');
+						$('#userModal').removeClass('show');
+						setTimeout(loadAllUsers, 300);
+					})
+					.catch(err => {
+						console.error('保存用户失败：', err);
+						showToast(err.message || '保存用户失败，请重试！', 'error');
+					});
+			}
+
+			/**
+			 * 删除用户（添加admin账户保护）
+			 */
+			function deleteUser(userName) {
+				// 核心保护逻辑：禁止删除admin账户
+				if (userName === PROTECTED_ADMIN_USER) {
+					showToast(`超级管理员账户【${PROTECTED_ADMIN_USER}】禁止删除！`, 'error');
+					return;
+				}
+
+				if (!confirm(`确定删除用户【${userName}】吗？`)) return;
+
+				$(`.btn-delete-user[data-username="${userName}"]`).prop("disabled", true).text("删除中...");
+
+				fetch("/data/userdata.json?t=" + new Date().getTime(), {
+						cache: "no-cache"
+					})
+					.then(res => {
+						if (!res.ok) throw new Error("读取数据失败");
+						return res.json();
+					})
+					.then(list => {
+						var newList = list.filter(u => u.userName != userName);
+
+						return fetch("/aspx/SaveUserData.aspx", {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/x-www-form-urlencoded"
+							},
+							body: "data=" + encodeURIComponent(JSON.stringify(newList, null, 2))
+						});
+					})
+					.then(res => {
+						if (!res.ok) throw new Error("提交删除请求失败");
+						return res.json();
+					})
+					.then(result => {
+						if (!result.success) throw new Error(result.msg || "删除失败");
+
+						$(`tr[data-username="${userName}"]`).fadeOut(300, function() {
+							$(this).remove();
+							loadAllUsers();
+						});
+						showToast("用户删除成功！", 'success');
+					})
+					.catch(err => {
+						$(`.btn-delete-user[data-username="${userName}"]`).prop("disabled", false).html(
+							'<i class="fa fa-trash"></i> 删除');
+						showToast("删除失败：" + err.message, 'error');
+						console.error("删除失败：", err);
+					});
+			}
+		</script>
+	</body>
+</html>

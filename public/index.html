@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>放单计划管理系统</title>
+		<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+		<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<!-- 顶部导航栏 - 优化移动端布局 -->
+		<nav class="navbar navbar-custom">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<a class="navbar-brand" href="index.html">
+						<i class="fa fa-calendar-check-o"></i> 放单计划管理系统
+					</a>
+					<!-- 移动端店铺切换触发按钮 -->
+					<div class="shop-mobile-toggle" id="shopMobileToggle">
+						<i class="fa fa-store"></i> 切换店铺
+					</div>
+				</div>
+
+				<!-- 店铺切换按钮组 -->
+				<div class="shop-switcher" id="shopSwitcher">
+					<span class="shop-label">当前店铺：</span>
+					<div class="shop-btn-group" id="shopBtnGroup">
+						<!-- 店铺按钮会通过JS动态生成 -->
+					</div>
+				</div>
+
+				<div class="navbar-right nav-user-area">
+					<div class="user-dropdown" id="userDropdown">
+						<span class="user-info" id="userNameDisplay">登录用户：</span>
+						<i class="fa fa-caret-down"></i>
+						<div class="dropdown-menu" id="userMenu">
+							<div class="dropdown-item" id="btnChangePwd">
+								<i class="fa fa-key"></i> 修改密码
+							</div>
+							<div class="dropdown-item" id="btnAddShop">
+								<i class="fa fa-store"></i> 新增店铺
+							</div>
+							<div class="dropdown-item" id="btnAdminLogout">
+								<i class="fa fa-sign-out"></i> 退出登录
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<!-- 内容容器 - 保留原有结构 -->
+		<div class="main-container">
+			<!-- 功能按钮区 -->
+			<div class="btn-toolbar">
+				<div class="btn-group left-btn-group">
+					<button class="btn btn-primary" id="btnAdd">
+						<i class="fa fa-plus"></i> 新增计划
+					</button>
+					<button class="btn btn-warning" id="btnLoadData">
+						<i class="fa fa-refresh"></i> 加载数据
+					</button>
+					<button class="btn btn-info" id="btnCompareTodayTomorrow">
+						<i class="fa fa-calendar-check-o"></i> 今日/明日计划对比
+					</button>
+				</div>
+				<div class="btn-group right-btn-group">
+					<button class="btn btn-primary active" id="btnShowTimeline">
+						<i class="fa fa-timeline"></i> 时间轴视图
+					</button>
+					<button class="btn btn-default" id="btnShowTable">
+						<i class="fa fa-table"></i> 表格视图
+					</button>
+				</div>
+			</div>
+
+			<!-- 时间轴容器 -->
+			<div id="timelineContainerWrapper" class="content-wrapper">
+				<div id="timelineContainer" class="timeline-container">
+					<div id="timelineHeader" class="timeline-header"></div>
+					<div id="timelineContent" class="timeline-content"></div>
+				</div>
+			</div>
+
+			<!-- 表格容器 -->
+			<div id="tableContainer" class="content-wrapper" style="display: none;">
+				<table class="table table-bordered table-hover">
+					<thead>
+						<tr>
+							<th>车型ID</th>
+							<th>车型名称</th>
+							<th>SKU名称</th>
+							<th>SKU价格</th>
+							<th>创建时间</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody id="planTableBody"></tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- 新增/编辑模态框 -->
+		<div class="modal fade" id="editModal" tabindex="-1" role="dialog">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title" id="modalTitle">计划编辑</h4>
+					</div>
+					<div class="modal-body">
+						<form id="planForm">
+							<div class="form-group hidden">
+								<label for="txtID">计划ID</label>
+								<input type="text" class="form-control" id="txtID" readonly>
+							</div>
+							<input type="hidden" id="originalId">
+							<input type="hidden" id="editMode" value="add">
+
+							<div class="form-group">
+								<label for="txtCode">车型ID <span class="required">*</span></label>
+								<input type="text" class="form-control" id="txtCode" placeholder="请输入车型ID">
+							</div>
+							<div class="form-group">
+								<label for="txtName">车型名称 <span class="required">*</span></label>
+								<input type="text" class="form-control" id="txtName" placeholder="请输入车型名称">
+							</div>
+							<div class="form-group">
+								<label for="txtSkuName">SKU名称</label>
+								<input type="text" class="form-control" id="txtSkuName" placeholder="请输入SKU名称">
+							</div>
+							<div class="form-group">
+								<label for="txtSkuPrice">SKU售价</label>
+								<input type="number" step="0.01" class="form-control" id="txtSkuPrice"
+									placeholder="请输入SKU售价">
+							</div>
+							<div class="form-group hidden">
+								<label for="txtCreateTime">创建时间</label>
+								<input type="datetime-local" class="form-control" id="txtCreateTime">
+							</div>
+
+							<div class="form-group">
+								<label>放单明细 <span class="required">*</span></label>
+								<table class="table table-bordered" id="detailTable">
+									<thead>
+										<tr>
+											<th>放单日期</th>
+											<th>放单数量</th>
+											<th>备注</th>
+											<th>操作</th>
+										</tr>
+									</thead>
+									<tbody id="detailTableBody"></tbody>
+								</table>
+								<button type="button" class="btn btn-sm btn-success" id="btnAddDetail">
+									<i class="fa fa-plus"></i> 添加明细
+								</button>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-primary" id="btnSaveForm">保存</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 今日/明日对比弹窗 -->
+		<div id="compareModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">
+							<i class="fa fa-calendar"></i> 今日/明日计划对比
+						</h4>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label>对比结果（可直接复制）：</label>
+							<textarea id="compareResult" class="form-control" rows="15" readonly
+								style="font-family: monospace;"></textarea>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+						<button type="button" class="btn btn-info" id="btnCopyCompare">
+							<i class="fa fa-copy"></i> 复制内容
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 修改密码模态框 -->
+		<div class="modal fade" id="changePwdModal" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">
+							<i class="fa fa-key"></i> 修改密码
+						</h4>
+					</div>
+					<div class="modal-body">
+						<form id="changePwdForm">
+							<div class="form-group">
+								<label for="oldPwd">旧密码 <span class="required">*</span></label>
+								<input type="password" class="form-control" id="oldPwd" placeholder="请输入旧密码" required>
+							</div>
+							<div class="form-group">
+								<label for="newPwd">新密码 <span class="required">*</span></label>
+								<input type="password" class="form-control" id="newPwd" placeholder="请输入新密码" required>
+							</div>
+							<div class="form-group">
+								<label for="confirmPwd">确认新密码 <span class="required">*</span></label>
+								<input type="password" class="form-control" id="confirmPwd" placeholder="请再次输入新密码"
+									required>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-primary" id="btnSavePwd">保存修改</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 新增店铺模态框 -->
+		<div class="modal fade" id="addShopModal" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">
+							<i class="fa fa-store"></i> 新增店铺
+						</h4>
+					</div>
+					<div class="modal-body">
+						<form id="addShopForm">
+							<div class="form-group">
+								<label for="newShopName">店铺名称 <span class="required">*</span></label>
+								<input type="text" class="form-control" id="newShopName" placeholder="请输入新增店铺名称"
+									required>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-primary" id="btnSaveShop">确认新增</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Toast提示容器 -->
+		<div class="toast-container" id="toastContainer"></div>
+
+		<!-- 引入JS -->
+		<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+		<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+		<script src="script.js"></script>
+	</body>
+</html>

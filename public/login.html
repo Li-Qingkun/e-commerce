@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>放单计划管理系统 - 登录</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        :root {
+            --primary-color: #1677ff;
+            --bg-color: #f5f7fa;
+            --card-bg: #fff;
+            --text-color: #333;
+            --border-color: #e8e8e8;
+            --error-color: #ff4d4f;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #1677ff;
+            --bg-color: #141414;
+            --card-bg: #1f1f1f;
+            --text-color: #fff;
+            --border-color: #303030;
+            --error-color: #ff4d4f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .login-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2);
+        }
+
+        .form-control.error {
+            border-color: var(--error-color);
+        }
+
+        .error-tip {
+            position: absolute;
+            right: 0;
+            top: 38px;
+            font-size: 12px;
+            color: var(--error-color);
+            display: none;
+        }
+
+        .error-tip.show {
+            display: inline-block;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-bottom: 15px;
+        }
+
+        .btn-login:hover {
+            opacity: 0.9;
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-switch {
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .form-switch a {
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-left: 5px;
+        }
+
+        .form-switch a:hover {
+            text-decoration: underline;
+        }
+
+        /* Toast 提示样式 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            padding: 12px 20px;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+        }
+
+        .toast.success {
+            background-color: #52c41a;
+        }
+
+        .toast.error {
+            background-color: #ff4d4f;
+        }
+
+        .toast.info {
+            background-color: #1890ff;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* 隐藏注册表单的身份字段 */
+        .role-field {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-logo">JG</div>
+            <h2 class="login-title" id="formTitle">用户登录</h2>
+        </div>
+
+        <!-- 登录表单 -->
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" class="form-control" placeholder="请输入用户名">
+                <span class="error-tip" id="usernameTip">用户名不能为空</span>
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" class="form-control" placeholder="请输入密码">
+                <span class="error-tip" id="passwordTip">密码不能为空</span>
+            </div>
+            <button type="button" class="btn-login" id="btnLogin">登录</button>
+            <div class="form-switch">
+                还没有账号？<a href="javascript:switchToRegister()" id="toRegister">立即注册</a>
+            </div>
+        </form>
+
+        <!-- 注册表单 -->
+        <form id="registerForm" style="display: none;">
+            <div class="form-group">
+                <label for="regUsername">用户名</label>
+                <input type="text" id="regUsername" class="form-control" placeholder="请输入用户名（唯一）">
+                <span class="error-tip" id="regUsernameTip">用户名不能为空</span>
+            </div>
+            <div class="form-group">
+                <label for="regPassword">密码</label>
+                <input type="password" id="regPassword" class="form-control" placeholder="请输入密码">
+                <span class="error-tip" id="regPasswordTip">密码不能为空</span>
+            </div>
+            <div class="form-group">
+                <label for="regConfirmPwd">确认密码</label>
+                <input type="password" id="regConfirmPwd" class="form-control" placeholder="请再次输入密码">
+                <span class="error-tip" id="regConfirmPwdTip">两次密码不一致</span>
+            </div>
+            <!-- 隐藏的身份字段，默认值为普通用户 -->
+            <div class="form-group role-field">
+                <label for="regRole">用户身份</label>
+                <input type="hidden" id="regRole" value="normal">
+            </div>
+            <div class="form-group">
+                <label for="regShopList">店铺列表</label>
+                <input type="text" id="regShopList" class="form-control" placeholder="请输入店铺名称，多个店铺用英文逗号分隔">
+                <span class="error-tip" id="regShopListTip">店铺列表不能为空</span>
+            </div>
+            <button type="button" class="btn-login" id="btnRegister">注册</button>
+            <div class="form-switch">
+                已有账号？<a href="javascript:switchToLogin()" id="toLogin">立即登录</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Toast 提示容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // 初始化页面
+            initLoginPage();
+        });
+
+        /**
+         * 显示 Toast 提示
+         */
+        function showToast(message, type = 'info', duration = 3000) {
+            const $container = $('#toastContainer');
+            const $toast = $(`<div class="toast ${type}">${message}</div>`);
+            
+            $container.append($toast);
+            
+            setTimeout(() => {
+                $toast.remove();
+            }, duration);
+        }
+
+        /**
+         * 初始化登录页面
+         */
+        function initLoginPage() {
+            // 登录按钮点击事件
+            $('#btnLogin').click(handleLogin);
+            
+            // 注册按钮点击事件
+            $('#btnRegister').click(handleRegister);
+            
+            // 密码框回车触发登录
+            $('#password').on('keydown', function(e) {
+                if (e.key === 'Enter' || e.keyCode === 13) {
+                    handleLogin();
+                }
+            });
+            
+            // 注册页面密码框回车触发注册
+            $('#regConfirmPwd').on('keydown', function(e) {
+                if (e.key === 'Enter' || e.keyCode === 13) {
+                    handleRegister();
+                }
+            });
+            
+            // 实时校验登录表单
+            $('#username, #password').on('input', function() {
+                validateLoginForm();
+            });
+            
+            // 实时校验注册表单
+            $('#regUsername, #regPassword, #regConfirmPwd, #regShopList').on('input', function() {
+                validateRegisterForm();
+            });
+            
+            // 检查是否已登录
+            checkLoginStatus();
+        }
+
+        /**
+         * 切换到登录表单
+         */
+        function switchToLogin() {
+            $('#registerForm').hide();
+            $('#loginForm').show();
+            $('#formTitle').text('用户登录');
+            // 清空错误提示
+            $('.error-tip').removeClass('show');
+            $('.form-control').removeClass('error');
+        }
+
+        /**
+         * 切换到注册表单
+         */
+        function switchToRegister() {
+            $('#loginForm').hide();
+            $('#registerForm').show();
+            $('#formTitle').text('用户注册');
+            // 清空错误提示
+            $('.error-tip').removeClass('show');
+            $('.form-control').removeClass('error');
+        }
+
+        /**
+         * 校验登录表单（取消密码长度限制）
+         */
+        function validateLoginForm() {
+            const username = $('#username').val().trim();
+            const password = $('#password').val().trim();
+            let isValid = true;
+
+            // 用户名校验
+            if (!username) {
+                $('#usernameTip').addClass('show');
+                $('#username').addClass('error');
+                isValid = false;
+            } else {
+                $('#usernameTip').removeClass('show');
+                $('#username').removeClass('error');
+            }
+
+            // 密码校验（仅非空，取消长度限制）
+            if (!password) {
+                $('#passwordTip').addClass('show');
+                $('#password').addClass('error');
+                isValid = false;
+            } else {
+                $('#passwordTip').removeClass('show');
+                $('#password').removeClass('error');
+            }
+
+            // 启用/禁用登录按钮
+            $('#btnLogin').prop('disabled', !isValid);
+            return isValid;
+        }
+
+        /**
+         * 校验注册表单（取消密码长度限制）
+         */
+        function validateRegisterForm() {
+            const username = $('#regUsername').val().trim();
+            const password = $('#regPassword').val().trim();
+            const confirmPwd = $('#regConfirmPwd').val().trim();
+            const shopList = $('#regShopList').val().trim();
+            let isValid = true;
+
+            // 用户名校验
+            if (!username) {
+                $('#regUsernameTip').addClass('show');
+                $('#regUsername').addClass('error');
+                isValid = false;
+            } else {
+                $('#regUsernameTip').removeClass('show');
+                $('#regUsername').removeClass('error');
+            }
+
+            // 密码校验（仅非空，取消长度限制）
+            if (!password) {
+                $('#regPasswordTip').addClass('show');
+                $('#regPassword').addClass('error');
+                isValid = false;
+            } else {
+                $('#regPasswordTip').removeClass('show');
+                $('#regPassword').removeClass('error');
+            }
+
+            // 确认密码校验（仅一致性，取消长度限制）
+            if (password && confirmPwd && password !== confirmPwd) {
+                $('#regConfirmPwdTip').addClass('show');
+                $('#regConfirmPwd').addClass('error');
+                isValid = false;
+            } else {
+                $('#regConfirmPwdTip').removeClass('show');
+                $('#regConfirmPwd').removeClass('error');
+            }
+
+            // 店铺列表校验
+            if (!shopList) {
+                $('#regShopListTip').addClass('show');
+                $('#regShopList').addClass('error');
+                isValid = false;
+            } else {
+                $('#regShopListTip').removeClass('show');
+                $('#regShopList').removeClass('error');
+            }
+
+            // 启用/禁用注册按钮
+            $('#btnRegister').prop('disabled', !isValid);
+            return isValid;
+        }
+
+        /**
+         * 处理登录逻辑（按身份跳转不同页面）
+         */
+        function handleLogin() {
+            if (!validateLoginForm()) {
+                return;
+            }
+
+            const username = $('#username').val().trim();
+            const password = $('#password').val().trim();
+
+            $('#btnLogin').prop('disabled', true).text('登录中...');
+
+            // 请求用户数据
+            fetch(`/data/userdata.json?_=${new Date().getTime()}`, {
+                    cache: 'no-cache'
+                })
+                .then(response => {
+                    if (response.ok) return response.json();
+                    throw new Error('获取用户数据失败');
+                })
+                .then(userData => {
+                    if (!Array.isArray(userData)) {
+                        throw new Error('用户数据格式错误');
+                    }
+
+                    // 查找用户
+                    const user = userData.find(u => 
+                        u.userName === username && u.password === password
+                    );
+
+                    if (!user) {
+                        throw new Error('用户名或密码错误');
+                    }
+
+                    // 验证成功，存储用户信息
+                    const userRole = user.role || 'normal'; // 默认普通用户
+                    localStorage.setItem('currentUserName', username);
+                    localStorage.setItem('isAdmin', userRole === 'admin' ? 'true' : 'false');
+
+                    showToast('登录成功！', 'success');
+                    
+                    // 按身份跳转不同页面
+                    setTimeout(() => {
+                        if (userRole === 'admin') {
+                            window.location.href = 'admin_index.html';
+                        } else {
+                            window.location.href = 'index.html';
+                        }
+                    }, 1000);
+                })
+                .catch(err => {
+                    showToast(err.message, 'error');
+                    $('#btnLogin').prop('disabled', false).text('登录');
+                    console.error('登录失败：', err);
+                });
+        }
+
+        /**
+         * 处理注册逻辑（默认普通用户身份）
+         */
+        function handleRegister() {
+            if (!validateRegisterForm()) {
+                return;
+            }
+
+            const username = $('#regUsername').val().trim();
+            const password = $('#regPassword').val().trim();
+            const shopListInput = $('#regShopList').val().trim();
+            const userRole = $('#regRole').val() || 'normal'; // 默认普通用户
+
+            $('#btnRegister').prop('disabled', true).text('注册中...');
+
+            // 处理店铺列表
+            const shopList = shopListInput.split(',')
+                .map(shop => shop.trim())
+                .filter(shop => shop)
+                .map(shop => ({ shopName: shop }));
+
+            // 先获取现有用户数据
+            fetch(`/data/userdata.json?_=${new Date().getTime()}`, {
+                    cache: 'no-cache'
+                })
+                .then(response => {
+                    if (response.ok) return response.json();
+                    if (response.status === 404) return [];
+                    throw new Error('获取用户数据失败');
+                })
+                .then(existingUsers => {
+                    if (!Array.isArray(existingUsers)) existingUsers = [];
+
+                    // 检查用户名是否已存在
+                    const isExist = existingUsers.some(u => u.userName === username);
+                    if (isExist) {
+                        throw new Error('用户名已存在，请更换用户名');
+                    }
+
+                    // 构建新用户数据
+                    const newUser = {
+                        userName: username,
+                        password: password, // 不限制长度
+                        role: userRole, // 默认普通用户
+                        shopList: shopList,
+                        createTime: new Date().toISOString(),
+                        updateTime: new Date().toISOString()
+                    };
+
+                    const newUserData = [...existingUsers, newUser];
+
+                    // 保存用户数据
+                    return fetch('/aspx/SaveUserData.aspx', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+                        },
+                        body: `data=${encodeURIComponent(JSON.stringify(newUserData, null, 2))}`
+                    });
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('注册请求失败');
+                    return response.text();
+                })
+                .then(result => {
+                    let success = false;
+                    try {
+                        const res = JSON.parse(result);
+                        success = res.success;
+                    } catch (e) {
+                        success = result.includes('success') || result.includes('成功');
+                    }
+
+                    if (!success) throw new Error('注册失败，请重试');
+
+                    showToast('注册成功！即将跳转到登录页面', 'success');
+                    setTimeout(() => {
+                        switchToLogin();
+                        $('#username').val(username);
+                        $('#password').focus();
+                    }, 1500);
+                })
+                .catch(err => {
+                    showToast(err.message, 'error');
+                    $('#btnRegister').prop('disabled', false).text('注册');
+                    console.error('注册失败：', err);
+                });
+        }
+
+        /**
+         * 检查登录状态，防止重复登录
+         */
+        function checkLoginStatus() {
+            const currentUser = localStorage.getItem('currentUserName');
+            if (currentUser) {
+                const isAdmin = localStorage.getItem('isAdmin') === 'true';
+                const targetPage = isAdmin ? 'admin_index.html' : 'index.html';
+                
+                // 如果不在目标页面，自动跳转
+                if (window.location.pathname.indexOf(targetPage) === -1) {
+                    window.location.href = targetPage;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

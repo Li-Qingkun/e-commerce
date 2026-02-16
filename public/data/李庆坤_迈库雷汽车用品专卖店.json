@@ -1,0 +1,22 @@
+﻿[
+  {
+    "ID": 1771004840277,
+    "Code": "111",
+    "Name": "111",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-13T17:47:20.276Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-14",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-15",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  }
+]
