@@ -181,9 +181,9 @@ async function loadUserInfoFromJson() {
 		const userData = await response.json();
 		USER_INFO_LIST = userData; // 更新全局用户数据
 		console.log('✅ 成功加载最新用户数据：', USER_INFO_LIST);
-        
-        // 核心新增：加载最新数据后立即同步到localStorage
-        refreshCurrentUserInfo();
+
+		// 核心新增：加载最新数据后立即同步到localStorage
+		refreshCurrentUserInfo();
 		return USER_INFO_LIST;
 	} catch (error) {
 		console.error('[加载用户信息] 失败：', error);
@@ -218,9 +218,9 @@ async function saveUserInfoToJson() {
 		const result = await response.json();
 		if (result.success) {
 			console.log('用户信息保存成功：', result.msg);
-            
-            // 核心新增：保存成功后立即同步最新信息到localStorage
-            refreshCurrentUserInfo();
+
+			// 核心新增：保存成功后立即同步最新信息到localStorage
+			refreshCurrentUserInfo();
 			return {
 				success: true,
 				msg: result.msg
@@ -866,6 +866,11 @@ function bindEvents() {
 	$('#btnAddDetail').off('click').click(() => addDetailRow());
 	$('#btnSaveForm').off('click').click(savePlanForm);
 	$('#btnCopyCompare').off('click').click(copyCompareResult);
+	
+	// 批量初始化明细按钮事件
+	$('#btnBatchInitDetail').off('click').click(showBatchInitModal);
+	// 确认批量初始化按钮事件
+	$('#btnConfirmBatchInit').off('click').click(executeBatchInit);
 
 	// ===================== 新增：移动端店铺切换交互事件 =====================
 	// 移动端店铺切换按钮点击事件（显示/隐藏店铺列表）
@@ -1629,4 +1634,144 @@ async function showRechargeRecordModal() {
 	renderRechargeRecordTable();
 	// 显示模态框
 	$('#rechargeRecordModal').modal('show');
+}
+
+/**
+ * 计算两个日期之间的天数差（包含起止日期）
+ * @param {string} startDate 开始日期 YYYY-MM-DD
+ * @param {string} endDate 结束日期 YYYY-MM-DD
+ * @returns {number} 天数差
+ */
+function getDaysBetweenDates(startDate, endDate) {
+	const start = new Date(startDate);
+	const end = new Date(endDate);
+
+	// 验证日期有效性
+	if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+		return -1;
+	}
+
+	// 确保只比较日期部分
+	start.setHours(0, 0, 0, 0);
+	end.setHours(0, 0, 0, 0);
+
+	// 结束日期不能早于开始日期
+	if (end < start) {
+		return -2;
+	}
+
+	// 计算天数差
+	const diffTime = end - start;
+	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 包含起止日期
+	return diffDays;
+}
+
+/**
+ * 解析数量字符串为数字数组
+ * @param {string} quantityStr 数量字符串（英文逗号分隔）
+ * @returns {Array<number>} 数字数组，解析失败返回空数组
+ */
+function parseQuantityString(quantityStr) {
+	if (!quantityStr || quantityStr.trim() === '') {
+		return [];
+	}
+
+	// 按英文逗号分割并过滤空值
+	const parts = quantityStr.split(',').map(item => item.trim()).filter(item => item !== '');
+
+	// 验证每个部分都是正整数
+	const quantities = [];
+	for (const part of parts) {
+		const num = parseInt(part);
+		if (isNaN(num) || num < 1) {
+			return [];
+		}
+		quantities.push(num);
+	}
+
+	return quantities;
+}
+
+/**
+ * 显示批量初始化弹窗
+ */
+function showBatchInitModal() {
+	// 重置表单
+	$('#batchInitForm')[0].reset();
+	// 默认选中今天作为开始日期
+	const today = new Date();
+	const todayStr = formatDateOnly(today);
+	$('#batchStartDate').val(todayStr);
+	// 默认选中明天作为结束日期
+	const tomorrow = new Date(today);
+	tomorrow.setDate(tomorrow.getDate() + 1);
+	$('#batchEndDate').val(formatDateOnly(tomorrow));
+
+	$('#batchInitModal').modal('show');
+}
+
+/**
+ * 执行批量初始化明细
+ */
+function executeBatchInit() {
+	// 获取表单数据
+	const startDate = $('#batchStartDate').val().trim();
+	const endDate = $('#batchEndDate').val().trim();
+	const quantityStr = $('#batchQuantities').val().trim();
+
+	// 基础验证
+	if (!startDate || !endDate) {
+		showToast('请选择完整的日期范围', 'error');
+		return;
+	}
+
+	if (!quantityStr) {
+		showToast('请输入放单数量', 'error');
+		return;
+	}
+
+	// 计算日期天数
+	const daysCount = getDaysBetweenDates(startDate, endDate);
+	if (daysCount === -1) {
+		showToast('日期格式无效，请选择有效的日期', 'error');
+		return;
+	}
+	if (daysCount === -2) {
+		showToast('结束日期不能早于开始日期', 'error');
+		return;
+	}
+
+	// 解析数量
+	const quantities = parseQuantityString(quantityStr);
+	if (quantities.length === 0) {
+		showToast('放单数量格式错误，请输入正整数，使用英文逗号分隔', 'error');
+		return;
+	}
+
+	// 验证数量个数与天数匹配
+	if (quantities.length !== daysCount) {
+		showToast(`数量个数(${quantities.length})与日期天数(${daysCount})不匹配，请重新输入`, 'error');
+		return;
+	}
+
+	// 清空原有明细
+	$('#detailTableBody').empty();
+
+	// 批量生成明细行
+	const currentDate = new Date(startDate);
+	for (let i = 0; i < daysCount; i++) {
+		const detail = {
+			ReleaseDate: new Date(currentDate),
+			ReleaseQuantity: quantities[i],
+			ReleaseName: ''
+		};
+		addDetailRow(detail);
+
+		// 日期加1天
+		currentDate.setDate(currentDate.getDate() + 1);
+	}
+
+	// 关闭模态框并提示
+	$('#batchInitModal').modal('hide');
+	showToast(`成功初始化${daysCount}天的放单明细`, 'success');
 }

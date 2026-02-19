@@ -954,3 +954,29 @@ body {
 		font-size: 12px;
 	}
 }
+
+/* 批量初始化模态框样式优化 */
+#batchInitModal .form-group {
+	margin-bottom: 16px;
+}
+
+#batchInitModal .modal-body {
+	padding: 20px;
+}
+
+#batchInitModal small.text-muted {
+	margin-top: 4px;
+	display: block;
+	color: #666;
+	font-size: 12px;
+}
+
+/* 批量初始化按钮样式优化 */
+#btnBatchInitDetail {
+	transition: all 0.2s ease;
+}
+
+#btnBatchInitDetail:hover {
+	background-color: #40a9ff !important;
+	box-shadow: 0 4px 12px rgba(24, 144, 255, 0.25);
+}
