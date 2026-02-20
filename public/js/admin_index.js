@@ -1,48 +1,76 @@
 // 定义受保护的超级管理员账户
 const PROTECTED_ADMIN_USER = 'admin';
 
+// 页面映射表 - 新增：维护页面标识和路径的对应关系
+const PAGE_MAP = {
+	'user-management': {
+		path: '仪表盘 / 用户管理'
+	},
+	'data-backup': {
+		path: '仪表盘 / 系统管理 / 数据备份'
+	},
+	'system-settings': {
+		path: '仪表盘 / 系统管理 / 系统设置'
+	},
+	'data-analysis': {
+		path: '仪表盘 / 数据分析'
+	},
+	'recharge-records': {
+		path: '仪表盘 / 会员充值记录'
+	},
+	'operation-log': {
+		path: '仪表盘 / 操作日志'
+	}
+};
+
+// 默认页面
+const DEFAULT_PAGE = 'user-management';
+
 $(document).ready(function() {
 	// 验证管理员权限
 	const isAdmin = localStorage.getItem('isAdmin');
 	if (isAdmin !== 'true') {
-		// 这里复用子页面的toast逻辑，或者简单提示
 		alert('无管理员权限，请登录！');
 		window.location.href = 'login.html';
 		return;
 	}
 
-	// 初始化页面
+	// 初始化页面：直接从Hash初始化，不先加载默认页
 	initPage();
+
+	// 监听Hash变化
+	window.addEventListener('hashchange', handleHashChange);
 });
 
 function initPage() {
-	// 1. 初始化加载用户管理页面
-	loadPage('user-management', '仪表盘 / 用户管理');
+	// 1. 从URL Hash获取当前页面，没有则用默认页
+	const initialPage = getCurrentPageFromHash() || DEFAULT_PAGE;
+	const initialPath = PAGE_MAP[initialPage].path;
 
-	// 2. 菜单点击事件（所有菜单项）
+	// 2. 先更新菜单选中状态，再加载页面，避免双重选中
+	$('.menu-item').removeClass('active');
+	$(`.menu-item[data-page="${initialPage}"]`).addClass('active');
+
+	// 3. 直接加载目标页面，不先加载默认页
+	loadPage(initialPage, initialPath);
+
+	// 4. 菜单点击事件（所有菜单项）
 	$('.menu-item').click(function(e) {
-		// 先判断是否是父菜单（有子菜单的项）
 		if ($(this).hasClass('has-sub')) {
-			// 如果是父菜单，只执行展开/收起逻辑
 			$(this).toggleClass('open');
 			$(this).next('.sub-menu').toggleClass('open');
-			// 阻止事件冒泡，避免触发其他逻辑
 			e.stopPropagation();
 			return;
 		}
 
-		// 如果是子菜单项（可跳转的项），执行页面加载逻辑
-		// 移除所有激活状态
 		$('.menu-item').removeClass('active');
-		// 给当前点击的子菜单项添加激活状态
 		$(this).addClass('active');
 
-		// 获取页面信息
 		const pageName = $(this).data('page');
 		const pagePath = $(this).data('path');
 
-		// 加载对应页面
 		if (pageName) {
+			updateHash(pageName);
 			loadPage(pageName, pagePath);
 		}
 	});
@@ -52,7 +80,7 @@ function initPage() {
 		$('#sidebar').toggleClass('collapsed');
 	});
 
-	// 替换原来的菜单点击事件
+	// 子菜单展开/收起
 	$(document).on('click', '.menu-item.has-sub', function(e) {
 		e.preventDefault();
 		e.stopPropagation();
@@ -68,6 +96,7 @@ function initPage() {
 		const pageName = $(this).data('page');
 		const pagePath = $(this).data('path');
 		if (pageName) {
+			updateHash(pageName);
 			loadPage(pageName, pagePath);
 		}
 	});
@@ -103,6 +132,38 @@ function initPage() {
 }
 
 /**
+ * 从URL Hash获取当前页面
+ */
+function getCurrentPageFromHash() {
+	const hash = window.location.hash.slice(1);
+	return PAGE_MAP[hash] ? hash : null;
+}
+
+/**
+ * 更新URL Hash（不产生新历史记录）
+ */
+function updateHash(pageName) {
+	history.replaceState({
+		page: pageName
+	}, '', `#${pageName}`);
+}
+
+/**
+ * 处理Hash变化事件
+ */
+function handleHashChange() {
+	const pageName = getCurrentPageFromHash() || DEFAULT_PAGE;
+	const pagePath = PAGE_MAP[pageName].path;
+
+	// 先更新菜单选中状态
+	$('.menu-item').removeClass('active');
+	$(`.menu-item[data-page="${pageName}"]`).addClass('active');
+
+	// 再加载页面
+	loadPage(pageName, pagePath);
+}
+
+/**
  * 加载子页面
  */
 function loadPage(pageName, pagePath) {
@@ -113,18 +174,17 @@ function loadPage(pageName, pagePath) {
 	$('#contentContainer').load(`pages/${pageName}.html`, function(response, status, xhr) {
 		if (status === "success") {
 			console.log('子页面加载成功：', pageName);
-			// 根据页面名称调用对应的初始化函数
 			if (pageName === 'user-management' && window.initUserManagement) {
 				window.initUserManagement();
 			} else if (pageName === 'operation-log' && window.initOperationLog) {
 				window.initOperationLog();
 			} else if (pageName === 'recharge-records' && window.initRechargeRecords) {
-				window.initRechargeRecords(); // 新增充值记录页面初始化
+				window.initRechargeRecords();
 			}
 		} else {
 			$('#contentContainer').html(`
-                <div class="page-error">
-                    <h3>页面加载失败</h3>
+                <div class="page-error" style="text-align:center; padding: 50px; color: #ff4d4f;">
+                    <h3><i class="fa fa-exclamation-circle"></i> 页面加载失败</h3>
                     <p>无法加载 ${pageName} 页面，请检查文件是否存在</p>
                 </div>
             `);
@@ -135,51 +195,38 @@ function loadPage(pageName, pagePath) {
 
 /**
  * 通用操作日志记录函数
- * @param {String} operationType 操作类型（新增用户/编辑用户/删除用户/登录/退出等）
- * @param {String} operationDesc 操作描述（详细信息）
- * @param {String} operator 操作人（默认admin）
- * @param {String} status 操作状态（success/fail）
  */
 function recordOperationLog(operationType, operationDesc, status = 'success') {
-	// 核心改造：自动获取当前登录用户
 	let operator = '未登录用户';
 	const storedUserName = localStorage.getItem('currentUserName');
 	if (storedUserName) {
-		operator = storedUserName; // 使用当前登录用户名
+		operator = storedUserName;
 	}
-	// 1. 构造日志对象
 	const logItem = {
-		logId: generateUUID(), // 唯一ID
+		logId: generateUUID(),
 		operationType: operationType,
 		operationDesc: operationDesc,
 		operator: operator,
 		status: status,
-		operationTime: new Date().toISOString(), // 精确到毫秒的时间戳
-		operationTimeStr: new Date().toLocaleString(), // 本地时间字符串
-		ip: '127.0.0.1' // 本地测试用，实际可获取客户端IP
+		operationTime: new Date().toISOString(),
+		operationTimeStr: new Date().toLocaleString(),
+		ip: '127.0.0.1'
 	};
 
-	// 2. 读取现有日志
 	fetch(`/data/operation-logs.json?_=${new Date().getTime()}`, {
 			method: 'GET',
 			cache: 'no-cache'
 		})
 		.then(res => {
 			if (res.ok) return res.json();
-			return []; // 文件不存在则返回空数组
+			return [];
 		})
 		.then(existingLogs => {
 			if (!Array.isArray(existingLogs)) existingLogs = [];
-
-			// 3. 添加新日志（最新的在最前面）
 			const newLogs = [logItem, ...existingLogs];
-
-			// 可选：限制日志数量（保留最近1000条）
 			if (newLogs.length > 1000) {
 				newLogs.splice(1000);
 			}
-
-			// 4. 保存日志到本地文件
 			return fetch('/aspx/SaveOperationLogs.aspx', {
 				method: 'POST',
 				headers: {
@@ -194,16 +241,40 @@ function recordOperationLog(operationType, operationDesc, status = 'success') {
 		})
 		.catch(err => {
 			console.error('记录操作日志失败：', err);
-			// 失败不影响主流程，仅打印日志
 		});
 }
 
 /**
- * 生成UUID（用于日志唯一标识）
+ * 生成UUID
  */
 function generateUUID() {
 	return 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
-// 将日志函数挂载到window，供子页面调用
+/**
+ * 全局Toast提示函数
+ */
+function showToast(message, type = 'info') {
+	if ($('#toastContainer').length === 0) {
+		$('body').append('<div id="toastContainer" class="toast-container"></div>');
+	}
+	const $container = $('#toastContainer');
+	const toastId = 'toast_' + Date.now();
+	const toastHtml = `
+        <div id="${toastId}" class="toast ${type}">
+            <i class="fa ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+	$container.append(toastHtml);
+	setTimeout(() => {
+		$(`#${toastId}`).fadeOut(300, function() {
+			$(this).remove();
+		});
+	}, 3000);
+}
+
+// 挂载全局函数
 window.recordOperationLog = recordOperationLog;
+window.showToast = showToast;
+window.generateUUID = generateUUID;

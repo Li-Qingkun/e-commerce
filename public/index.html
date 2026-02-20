@@ -148,6 +148,13 @@
 
 							<div class="form-group">
 								<label>放单明细 <span class="required">*</span></label>
+								<button type="button" class="btn btn-sm btn-success" id="btnAddDetail">
+									<i class="fa fa-plus"></i> 添加明细
+								</button>
+								<button type="button" class="btn btn-sm btn-info" id="btnBatchInitDetail"
+									style="margin-left: 8px;">
+									<i class="fa fa-refresh"></i> 批量初始化
+								</button>
 								<table class="table table-bordered" id="detailTable">
 									<thead>
 										<tr>
@@ -159,13 +166,6 @@
 									</thead>
 									<tbody id="detailTableBody"></tbody>
 								</table>
-								<button type="button" class="btn btn-sm btn-success" id="btnAddDetail">
-									<i class="fa fa-plus"></i> 添加明细
-								</button>
-								<button type="button" class="btn btn-sm btn-info" id="btnBatchInitDetail"
-									style="margin-left: 8px;">
-									<i class="fa fa-refresh"></i> 批量初始化
-								</button>
 							</div>
 						</form>
 					</div>

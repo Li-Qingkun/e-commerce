@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>WPS WebOffice 测试</title>
+  <style>
+    body { margin: 0; }
+    #office-container { width: 100%; height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="office-container"></div>
+
+  <!-- 只加载WPS SDK，避免layui等无关资源干扰 -->
+  <script src="https://solution.wps.cn/static/js/web-office-sdk-solution.umd.js"></script>
+
+  <script>
+    window.addEventListener('load', async function() {
+      if (typeof WebOfficeSDK === 'undefined') {
+        console.error('WPS SDK 加载失败，请检查网络或脚本地址');
+        return;
+      }
+
+      try {
+        const instance = WebOfficeSDK.init({
+          officeType: WebOfficeSDK.OfficeType.Writer,
+          appId: 'SX20260220WPWUKC', // 你的AppID
+          fileId: 'cdTCL2P2dbeT',     // 你的FileID
+          mount: document.getElementById('office-container')
+        });
+
+        await instance.ready();
+        console.log('WPS 文档初始化成功');
+
+        const app = await instance.Application;
+        const editor = await app.ActiveOutline.Editor;
+        const doc = await editor.Document;
+
+        // 测试写入数据
+        await doc.SetTitleContent('放单计划数据测试');
+        await doc.InsertText('这是从管理系统写入的测试数据。');
+        console.log('数据写入成功');
+      } catch (error) {
+        console.error('操作失败：', error);
+      }
+    });
+  </script>
+</body>
+</html>

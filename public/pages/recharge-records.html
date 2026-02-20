@@ -1,24 +1,31 @@
 <!-- 会员充值记录页面 -->
 <div class="page-header">
 	<h2 class="page-title">会员充值记录</h2>
-	<div class="record-filter">
-		<input type="text" id="rechargeSearch" placeholder="搜索用户名/备注/操作人">
-		<select id="paymentMethodFilter">
-			<option value="">全部支付方式</option>
-			<option value="wechat">微信</option>
-			<option value="alipay">支付宝</option>
-			<option value="cash">现金</option>
-			<option value="admin">后台手动</option>
-		</select>
-		<select id="paymentStatusFilter">
-			<option value="">全部支付状态</option>
-			<option value="success">成功</option>
-			<option value="fail">失败</option>
-			<option value="pending">待支付</option>
-		</select>
-		<button id="btnRefreshRecords" class="btn btn-primary btn-sm">
-			<i class="fa fa-refresh"></i> 刷新
+	<div style="display: flex; align-items: center; gap: 10px;">
+		<!-- 新增充值按钮 -->
+		<button id="btnAddRecharge" class="btn btn-primary btn-sm">
+			<i class="fa fa-plus"></i> 新增充值
 		</button>
+		<!-- 筛选区域 -->
+		<div class="record-filter">
+			<input type="text" id="rechargeSearch" placeholder="搜索用户名/备注/操作人">
+			<select id="paymentMethodFilter">
+				<option value="">全部支付方式</option>
+				<option value="wechat">微信</option>
+				<option value="alipay">支付宝</option>
+				<option value="cash">现金</option>
+				<option value="admin">后台手动</option>
+			</select>
+			<select id="paymentStatusFilter">
+				<option value="">全部支付状态</option>
+				<option value="success">成功</option>
+				<option value="fail">失败</option>
+				<option value="pending">待支付</option>
+			</select>
+			<button id="btnRefreshRecords" class="btn btn-primary btn-sm">
+				<i class="fa fa-refresh"></i> 刷新
+			</button>
+		</div>
 	</div>
 </div>
 
@@ -48,12 +55,283 @@
 	</table>
 </div>
 
+<!-- 充值弹窗（适配父页面modal样式） -->
+<div id="rechargeModal" class="modal">
+	<div class="modal-content" style="max-width: 600px;">
+		<div class="modal-header">
+			<h3 class="modal-title">新增会员充值</h3>
+			<button class="modal-close">&times;</button>
+		</div>
+		<div class="modal-body">
+			<div class="form-group">
+				<label for="rechargeUserName">充值用户</label>
+				<select id="rechargeUserName">
+					<option value="">请选择用户</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="originalExpireTime">原到期时间</label>
+				<input type="date" id="originalExpireTime" readonly>
+			</div>
+			<div class="form-group">
+				<label for="rechargeAmount">充值金额(元)</label>
+				<input type="number" id="rechargeAmount" min="0" step="0.01" placeholder="请输入充值金额">
+			</div>
+			<div class="form-group">
+				<label for="rechargeMonths">充值时长(月)</label>
+				<input type="number" id="rechargeMonths" min="1" step="1" placeholder="请输入充值时长（按月）">
+			</div>
+			<div class="form-group">
+				<label for="newExpireTime">新到期时间</label>
+				<input type="date" id="newExpireTime" readonly>
+			</div>
+			<div class="form-group">
+				<label for="rechargeRemark">备注</label>
+				<textarea id="rechargeRemark" rows="3" placeholder="请输入备注信息（选填）"></textarea>
+			</div>
+			<!-- 隐藏字段 -->
+			<input type="hidden" id="rechargeUserId">
+			<input type="hidden" id="rechargeType" value="normal">
+			<input type="hidden" id="paymentMethod" value="wechat">
+			<input type="hidden" id="paymentStatus" value="success">
+		</div>
+		<div class="modal-footer">
+			<button id="btnCancelRecharge" class="btn-cancel">取消</button>
+			<button id="btnSaveRecharge" class="btn-save disabled">保存</button>
+		</div>
+	</div>
+</div>
+
 <script>
 	// 初始化充值记录页面
 	function initRechargeRecords() {
-		// console.log('会员充值记录页面初始化');
 		loadRechargeRecords();
 		bindRechargeEvents();
+		loadUserListForRecharge(); // 加载用户列表到下拉框
+	}
+
+	// 加载用户列表到充值弹窗的下拉框
+	function loadUserListForRecharge() {
+		const $userSelect = $('#rechargeUserName');
+		fetch(`/data/userdata.json?_=${new Date().getTime()}`, {
+				method: 'GET',
+				cache: 'no-cache'
+			})
+			.then(res => {
+				if (res.ok) return res.json();
+				return [];
+			})
+			.then(users => {
+				if (!Array.isArray(users)) return;
+				// 清空下拉框（保留默认选项）
+				$userSelect.html('<option value="">请选择用户</option>');
+				// 添加用户选项
+				users.forEach(user => {
+					if (user.userName) {
+						// 新增：VIP用户显示到期时间
+						const vipTag = user.role === 'vip' && user.memberExpireTime ?
+							` - VIP(${user.memberExpireTime}到期)` :
+							'';
+						$userSelect.append(`
+                        <option value="${user.userName}" data-userid="${user.id}" data-expiretime="${user.memberExpireTime || ''}">
+                            ${user.userName} (${user.role === 'admin' ? '管理员' : user.role === 'vip' ? 'VIP会员' : '普通用户'})${vipTag}
+                        </option>
+                    `);
+					}
+				});
+			})
+			.catch(err => {
+				console.error('加载用户列表失败：', err);
+				// 调用父页面全局的showToast
+				window.showToast('加载用户列表失败！', 'error');
+			});
+	}
+
+	// 计算新到期时间
+	function calculateNewExpireTime(originalDate, monthsToAdd) {
+		if (!originalDate || monthsToAdd <= 0) return '';
+		const newDate = new Date(originalDate);
+		newDate.setMonth(newDate.getMonth() + monthsToAdd);
+		// 转换为YYYY-MM-DD格式
+		return newDate.toISOString().slice(0, 10);
+	}
+
+	// 打开充值弹窗（适配父页面modal样式）
+	function openRechargeModal() {
+		// 重置弹窗表单
+		$('#rechargeUserName').val('');
+		$('#originalExpireTime').val('');
+		$('#rechargeAmount').val('');
+		$('#rechargeMonths').val('');
+		$('#newExpireTime').val('');
+		$('#rechargeRemark').val('');
+		$('#rechargeUserId').val('');
+		$('#btnSaveRecharge').addClass('disabled');
+
+		// 显示弹窗（添加show类，适配父页面样式）
+		$('#rechargeModal').addClass('show');
+	}
+
+	// 关闭充值弹窗（适配父页面modal样式）
+	function closeRechargeModal() {
+		$('#rechargeModal').removeClass('show');
+	}
+
+	// 保存充值记录并同步更新用户信息
+	function saveRechargeRecord() {
+		// 获取表单数据
+		const userName = $('#rechargeUserName').val().trim();
+		const userId = $('#rechargeUserId').val().trim();
+		const rechargeAmount = parseFloat($('#rechargeAmount').val()) || 0;
+		const rechargeMonths = parseInt($('#rechargeMonths').val()) || 0;
+		const originalExpireTime = $('#originalExpireTime').val().trim();
+		const newExpireTime = $('#newExpireTime').val().trim();
+		const rechargeType = $('#rechargeType').val();
+		const paymentMethod = $('#paymentMethod').val();
+		const paymentStatus = $('#paymentStatus').val();
+		const remark = $('#rechargeRemark').val().trim();
+
+		// 基础校验
+		if (!userName) {
+			window.showToast('请选择充值用户！', 'error');
+			return;
+		}
+		if (rechargeAmount <= 0) {
+			window.showToast('充值金额必须大于0！', 'error');
+			return;
+		}
+		if (rechargeMonths <= 0) {
+			window.showToast('充值时长必须大于0！', 'error');
+			return;
+		}
+		if (!originalExpireTime || !newExpireTime) {
+			window.showToast('到期时间计算失败，请重新选择用户！', 'error');
+			return;
+		}
+
+		// 构造充值记录数据
+		const now = new Date().toISOString();
+		const rechargeRecord = {
+			rechargeId: window.generateUUID(), // 使用父页面的UUID函数
+			userId: userId,
+			userName: userName,
+			rechargeAmount: rechargeAmount,
+			rechargeMonths: rechargeMonths,
+			originalExpireTime: new Date(originalExpireTime).toISOString(),
+			newExpireTime: new Date(newExpireTime).toISOString(),
+			rechargeType: rechargeType,
+			paymentMethod: paymentMethod,
+			paymentStatus: paymentStatus,
+			rechargeTime: now,
+			operator: localStorage.getItem('currentUserName') || 'admin', // 使用当前登录用户
+			remark: remark || '',
+			updateTime: now
+		};
+
+		// 第一步：读取现有充值记录并添加新记录
+		fetch(`/data/recharge-records.json?_=${new Date().getTime()}`, {
+				method: 'GET',
+				cache: 'no-cache'
+			})
+			.then(res => {
+				if (res.ok) return res.json();
+				return [];
+			})
+			.then(records => {
+				if (!Array.isArray(records)) records = [];
+				records.push(rechargeRecord);
+
+				// 保存充值记录到服务器
+				return fetch('/aspx/SaveRechargeRecords.aspx', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
+					body: `data=${encodeURIComponent(JSON.stringify(records, null, 2))}`
+				}).then(res => {
+					if (!res.ok) throw new Error('保存充值记录失败');
+					return res.json();
+				}).then(saveRes => {
+					if (!saveRes.success) throw new Error(saveRes.msg || '保存充值记录失败');
+
+					// 第二步：读取用户数据并更新用户信息
+					return fetch(`/data/userdata.json?_=${new Date().getTime()}`, {
+						method: 'GET',
+						cache: 'no-cache'
+					});
+				});
+			})
+			.then(res => {
+				if (res.ok) return res.json();
+				return [];
+			})
+			.then(users => {
+				if (!Array.isArray(users) || users.length === 0) {
+					window.showToast('用户数据为空，无法更新！', 'error');
+					throw new Error('用户数据为空');
+				}
+
+				// 找到要更新的用户并修改信息
+				const updatedUsers = users.map(user => {
+					// 按用户名匹配（也可以按userId匹配）
+					if (user.userName === userName || user.id === userId) {
+						return {
+							...user,
+							role: 'vip', // 普通用户充值后改为VIP
+							memberExpireTime: newExpireTime, // 更新会员到期时间为新到期时间
+							updateTime: now // 记录更新时间
+						};
+					}
+					return user;
+				});
+
+				// 检查是否找到并更新了用户
+				const isUserUpdated = updatedUsers.some(user =>
+					(user.userName === userName || user.id === userId) &&
+					user.role === 'vip' &&
+					user.memberExpireTime === newExpireTime
+				);
+
+				if (!isUserUpdated) {
+					window.showToast('未找到该用户，更新失败！', 'error');
+					throw new Error('未找到该用户');
+				}
+
+				// 第三步：保存更新后的用户数据（适配现有SaveUserData.aspx）
+				return fetch('/aspx/SaveUserData.aspx', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
+					body: `data=${encodeURIComponent(JSON.stringify(updatedUsers, null, 2))}`
+				});
+			})
+			.then(response => {
+				if (!response.ok) throw new Error('更新用户信息失败');
+				return response.json();
+			})
+			.then(res => {
+				// 适配后端返回的英文提示
+				if (res.success) {
+					window.showToast('充值记录添加成功，用户已升级为VIP！', 'success');
+				} else {
+					// 转换英文提示为中文
+					const errMsg = res.msg === "No data received" ? "未接收到用户数据" : res.msg;
+					throw new Error(errMsg || '更新用户信息失败');
+				}
+				closeRechargeModal();
+				loadRechargeRecords(); // 刷新充值记录列表
+				// 记录操作日志
+				window.recordOperationLog(
+					'新增充值记录',
+					`为用户【${userName}】充值${rechargeAmount}元，时长${rechargeMonths}个月，用户已升级为VIP，到期时间：${newExpireTime}`,
+					'success'
+				);
+			})
+			.catch(err => {
+				console.error('保存充值记录/更新用户信息失败：', err);
+				window.showToast(err.message || '操作失败，请重试！', 'error');
+			});
 	}
 
 	// 加载充值记录数据
@@ -104,21 +382,21 @@
 						record.paymentMethod === 'cash' ? '现金' : '后台手动';
 
 					const $tr = $(`
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${record.userName || '-'}</td>
-                        <td>${record.rechargeAmount || 0}</td>
-                        <td>${record.rechargeMonths || 0}</td>
-                        <td>${formatTime(record.originalExpireTime)}</td>
-                        <td>${formatTime(record.newExpireTime)}</td>
-                        <td>${rechargeTypeText}</td>
-                        <td>${paymentMethodText}</td>
-                        <td><span class="status-tag ${statusClass}">${statusText}</span></td>
-                        <td>${formatTime(record.rechargeTime)}</td>
-                        <td>${record.operator || '-'}</td>
-                        <td title="${record.remark || '-'}">${record.remark || '-'}</td>
-                    </tr>
-                `);
+					<tr>
+						<td>${index + 1}</td>
+						<td>${record.userName || '-'}</td>
+						<td>${record.rechargeAmount || 0}</td>
+						<td>${record.rechargeMonths || 0}</td>
+						<td>${formatTime(record.originalExpireTime)}</td>
+						<td>${formatTime(record.newExpireTime)}</td>
+						<td>${rechargeTypeText}</td>
+						<td>${paymentMethodText}</td>
+						<td><span class="status-tag ${statusClass}">${statusText}</span></td>
+						<td>${formatTime(record.rechargeTime)}</td>
+						<td>${record.operator || '-'}</td>
+						<td title="${record.remark || '-'}">${record.remark || '-'}</td>
+					</tr>
+				`);
 					$tbody.append($tr);
 				});
 			})
@@ -166,8 +444,75 @@
 				$(this).html('<i class="fa fa-refresh"></i> 刷新');
 			}, 500);
 			// 记录操作日志
-			window.recordOperationLog('查看充值记录', '手动刷新会员充值记录列表', 'success');
+			// window.recordOperationLog('查看充值记录', '手动刷新会员充值记录列表', 'success');
 		});
+
+		// 新增充值按钮事件
+		$('#btnAddRecharge').click(function() {
+			openRechargeModal();
+		});
+
+		// 关闭弹窗事件
+		$('.modal-close, #btnCancelRecharge').click(function() {
+			closeRechargeModal();
+		});
+
+		// 点击弹窗背景关闭弹窗
+		$('#rechargeModal').click(function(e) {
+			if (e.target === this) {
+				closeRechargeModal();
+			}
+		});
+
+		// 选择用户后自动填充原到期时间
+		$('#rechargeUserName').change(function() {
+			const $selected = $(this).find('option:selected');
+			const expireTime = $selected.data('expiretime');
+			const userId = $selected.data('userid');
+
+			// 填充原到期时间
+			if (expireTime) {
+				$('#originalExpireTime').val(expireTime);
+			} else {
+				$('#originalExpireTime').val('');
+			}
+			$('#rechargeUserId').val(userId);
+
+			// 触发计算新到期时间
+			calculateRechargeExpireTime();
+		});
+
+		// 充值金额/时长变化时计算新到期时间
+		$('#rechargeAmount, #rechargeMonths').on('input change', function() {
+			calculateRechargeExpireTime();
+		});
+
+		// 保存充值记录事件
+		$('#btnSaveRecharge').click(function() {
+			if (!$(this).hasClass('disabled')) {
+				saveRechargeRecord();
+			}
+		});
+	}
+
+	// 计算充值后的到期时间并更新保存按钮状态
+	function calculateRechargeExpireTime() {
+		const originalExpireTime = $('#originalExpireTime').val();
+		const rechargeMonths = parseInt($('#rechargeMonths').val()) || 0;
+		const rechargeAmount = parseFloat($('#rechargeAmount').val()) || 0;
+		const $saveBtn = $('#btnSaveRecharge');
+
+		// 计算新到期时间
+		if (originalExpireTime && rechargeMonths > 0 && rechargeAmount > 0) {
+			const newExpireTime = calculateNewExpireTime(originalExpireTime, rechargeMonths);
+			$('#newExpireTime').val(newExpireTime);
+			// 启用保存按钮（移除disabled类）
+			$saveBtn.removeClass('disabled');
+		} else {
+			$('#newExpireTime').val('');
+			// 禁用保存按钮（添加disabled类）
+			$saveBtn.addClass('disabled');
+		}
 	}
 
 	// 挂载初始化函数到window，供主页面调用
@@ -175,11 +520,11 @@
 </script>
 
 <style>
-	/* 充值记录页面样式 */
+	/* 充值记录页面样式补充（完全适配父页面样式，强制覆盖Bootstrap） */
 	.record-filter {
 		display: flex;
 		gap: 10px;
-		margin-bottom: 15px;
+		margin-bottom: 0;
 		align-items: center;
 		flex-wrap: wrap;
 	}
@@ -187,13 +532,60 @@
 	.record-filter input,
 	.record-filter select {
 		padding: 8px 10px;
-		border: 1px solid #ddd;
+		border: 1px solid var(--border-color);
 		border-radius: 4px;
 		font-size: 14px;
+		height: 36px;
+		/* 匹配父页面按钮高度 */
+		background-color: var(--bg-color);
+		color: var(--text-color);
+		outline: none;
+		box-sizing: border-box;
+	}
+
+	.record-filter input:focus,
+	.record-filter select:focus {
+		border-color: var(--primary-color);
+		box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2);
 	}
 
 	.record-filter input {
 		width: 200px;
+	}
+
+	/* 统一按钮样式 - 完全继承父页面设计，强制覆盖Bootstrap样式 */
+	.page-header .btn,
+	.record-filter .btn {
+		background-color: var(--primary-color) !important;
+		color: #fff !important;
+		border: none !important;
+		padding: 8px 15px !important;
+		border-radius: 6px !important;
+		cursor: pointer !important;
+		display: inline-flex !important;
+		align-items: center !important;
+		gap: 5px !important;
+		font-size: 14px !important;
+		transition: opacity 0.2s ease !important;
+		height: 36px !important;
+		box-sizing: border-box !important;
+		box-shadow: none !important;
+		text-shadow: none !important;
+	}
+
+	.page-header .btn:hover,
+	.record-filter .btn:hover {
+		opacity: 0.9 !important;
+		color: #fff !important;
+		background-color: var(--primary-color) !important;
+		border: none !important;
+	}
+
+	.page-header .btn-sm,
+	.record-filter .btn-sm {
+		padding: 6px 12px !important;
+		font-size: 13px !important;
+		height: 32px !important;
 	}
 
 	.recharge-table {
@@ -202,20 +594,31 @@
 	}
 
 	.recharge-table th {
-		background-color: #f5f5f5;
+		background-color: rgba(0, 0, 0, 0.02);
 		text-align: center;
-		padding: 10px;
+		padding: 12px 8px;
 		font-weight: 600;
+		border: 1px solid var(--border-color);
 	}
 
 	.recharge-table td {
-		padding: 8px 10px;
-		border: 1px solid #eee;
+		padding: 12px 8px;
+		border: 1px solid var(--border-color);
 		text-align: center;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		max-width: 200px;
+		vertical-align: middle;
+	}
+
+	/* 深色模式表格样式适配 */
+	[data-theme="dark"] .recharge-table th {
+		background-color: rgba(255, 255, 255, 0.05);
+	}
+
+	[data-theme="dark"] .recharge-table tbody tr:hover {
+		background-color: rgba(255, 255, 255, 0.1);
 	}
 
 	.status-tag {
@@ -226,20 +629,143 @@
 	}
 
 	.status-tag.success {
-		background-color: #00C851;
+		background-color: #52c41a;
+		/* 统一使用toast的成功色 */
 	}
 
 	.status-tag.danger {
-		background-color: #ff4444;
+		background-color: var(--error-color);
+		/* 继承全局错误色 */
 	}
 
 	.status-tag.warning {
-		background-color: #ffbb33;
+		background-color: #faad14;
+		/* 适配antd警告色，更协调 */
+	}
+
+	/* 深色模式状态标签适配 */
+	[data-theme="dark"] .status-tag.success {
+		background-color: #36ad26;
+	}
+
+	[data-theme="dark"] .status-tag.warning {
+		background-color: #d48806;
 	}
 
 	.empty-tip {
 		text-align: center;
 		color: #999;
+		padding: 30px;
+		/* 匹配父页面空提示样式 */
+	}
+
+	/* 充值弹窗样式补充（完全继承父页面modal样式） */
+	#rechargeModal .modal-content {
 		padding: 20px;
+		max-width: 600px;
+	}
+
+	#rechargeModal .form-group {
+		margin-bottom: 15px;
+		position: relative;
+	}
+
+	#rechargeModal label {
+		display: block;
+		margin-bottom: 5px;
+		font-weight: 500;
+	}
+
+	#rechargeModal input,
+	#rechargeModal select,
+	#rechargeModal textarea {
+		width: 100%;
+		padding: 8px 10px;
+		border: 1px solid var(--border-color);
+		border-radius: 4px;
+		background-color: var(--bg-color);
+		color: var(--text-color);
+		outline: none;
+		box-sizing: border-box;
+	}
+
+	#rechargeModal input:focus,
+	#rechargeModal select:focus,
+	#rechargeModal textarea:focus {
+		border-color: var(--primary-color);
+		box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2);
+	}
+
+	#rechargeModal input:read-only,
+	#rechargeModal input[readonly] {
+		background-color: rgba(0, 0, 0, 0.02);
+		cursor: not-allowed;
+	}
+
+	[data-theme="dark"] #rechargeModal input:read-only,
+	[data-theme="dark"] #rechargeModal input[readonly] {
+		background-color: rgba(255, 255, 255, 0.05);
+	}
+
+	#rechargeModal textarea {
+		resize: vertical;
+		min-height: 80px;
+	}
+
+	/* 弹窗按钮完全匹配父页面样式，强制覆盖Bootstrap */
+	#rechargeModal .btn-cancel {
+		padding: 8px 15px !important;
+		border: 1px solid var(--border-color) !important;
+		border-radius: 4px !important;
+		background-color: var(--bg-color) !important;
+		color: var(--text-color) !important;
+		cursor: pointer !important;
+		height: 36px !important;
+		display: inline-flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		gap: 5px !important;
+		transition: all 0.2s ease !important;
+		box-shadow: none !important;
+		text-shadow: none !important;
+	}
+
+	#rechargeModal .btn-cancel:hover {
+		background-color: rgba(0, 0, 0, 0.03) !important;
+		color: var(--text-color) !important;
+		border-color: var(--border-color) !important;
+	}
+
+	[data-theme="dark"] #rechargeModal .btn-cancel:hover {
+		background-color: rgba(255, 255, 255, 0.05) !important;
+	}
+
+	#rechargeModal .btn-save {
+		padding: 8px 15px !important;
+		border: none !important;
+		border-radius: 4px !important;
+		background-color: var(--primary-color) !important;
+		color: #fff !important;
+		cursor: pointer !important;
+		height: 36px !important;
+		display: inline-flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		gap: 5px !important;
+		transition: opacity 0.2s ease !important;
+		box-shadow: none !important;
+		text-shadow: none !important;
+	}
+
+	#rechargeModal .btn-save:hover:not(.disabled) {
+		opacity: 0.9 !important;
+		color: #fff !important;
+		background-color: var(--primary-color) !important;
+	}
+
+	#rechargeModal .btn-save.disabled {
+		opacity: 0.6 !important;
+		cursor: not-allowed !important;
+		pointer-events: none !important;
 	}
 </style>
