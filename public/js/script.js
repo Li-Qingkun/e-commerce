@@ -1191,11 +1191,11 @@ async function savePlanForm() {
 	const skuprice = $('#txtSkuPrice').val().trim();
 	const createTime = $('#txtCreateTime').val() ? new Date($('#txtCreateTime').val()) : new Date();
 
-	// 验证必填项
-	if (!code) {
-		showToast('车型ID不能为空！', 'error');
-		return;
-	}
+	// // 验证必填项
+	// if (!code) {
+	// 	showToast('车型ID不能为空！', 'error');
+	// 	return;
+	// }
 
 	if (!name) {
 		showToast('车型名称不能为空！', 'error');
