@@ -1866,7 +1866,7 @@ function parseQuantityString(quantityStr) {
 	}
 
 	// 按英文逗号分割并过滤空值
-	const parts = quantityStr.split(',').map(item => item.trim()).filter(item => item !== '');
+	const parts = quantityStr.replace(/，|、|\s+/g, ',').split(',').map(item => item.trim()).filter(item => item !== '');
 
 	// 验证每个部分都是正整数
 	const quantities = [];

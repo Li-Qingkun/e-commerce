@@ -273,7 +273,10 @@ function handleRegister() {
 	$('#btnRegister').prop('disabled', true).text('注册中...');
 
 	// 处理店铺列表
-	const shopList = shopListInput.split(',')
+	const shopList = shopListInput
+		// 替换所有常见分隔符为英文逗号：中文逗号、顿号、多个空格
+		.replace(/，|、|\s+/g, ',')
+		.split(',')
 		.map(shop => shop.trim())
 		.filter(shop => shop)
 		.map(shop => ({

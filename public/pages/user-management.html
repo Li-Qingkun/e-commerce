@@ -581,7 +581,9 @@
 		}
 
 		// 处理店铺列表
-		const shopList = shopInput.split(',')
+		const shopList = shopInput
+			.replace(/，|、|\s+/g, ',')
+			.split(',')
 			.map(shop => shop.trim())
 			.filter(shop => shop)
 			.map(shop => ({
