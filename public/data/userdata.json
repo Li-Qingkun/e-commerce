@@ -1,10 +1,10 @@
-﻿[
+[
   {
     "id": "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
     "userName": "张云翔",
     "password": "1",
     "role": "normal",
-    "memberExpireTime": "",
+    "memberExpireTime": "2026-08-13",
     "shopList": [
       {
         "shopName": "众合祥汽车配件"

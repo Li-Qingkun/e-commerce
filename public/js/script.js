@@ -895,26 +895,26 @@ async function initPage() {
 	// 初始化用户下拉菜单（包含新增功能）
 	initUserDropdown();
 
-    // ========== 兜底保障：重新绑定对比按钮 ==========
-    setTimeout(() => {
-        // 今日/明日对比按钮
-        $('#btnCompareTodayTomorrow').off('click').on('click', function() {
-            if (isUserValidMember()) {
-                showPlanCompareModal('todayTomorrow');
-            } else {
-                showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
-            }
-        });
-        
-        // 昨日/今日对比按钮
-        $('#btnCompareYesterdayToday').off('click').on('click', function() {
-            if (isUserValidMember()) {
-                showPlanCompareModal('yesterdayToday');
-            } else {
-                showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
-            }
-        });
-    }, 500);
+	// ========== 兜底保障：重新绑定对比按钮 ==========
+	setTimeout(() => {
+		// 今日/明日对比按钮
+		$('#btnCompareTodayTomorrow').off('click').on('click', function() {
+			if (isUserValidMember()) {
+				showPlanCompareModal('todayTomorrow');
+			} else {
+				showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
+			}
+		});
+
+		// 昨日/今日对比按钮
+		$('#btnCompareYesterdayToday').off('click').on('click', function() {
+			if (isUserValidMember()) {
+				showPlanCompareModal('yesterdayToday');
+			} else {
+				showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
+			}
+		});
+	}, 500);
 
 	console.log('✅ 页面初始化完成');
 }
@@ -985,33 +985,33 @@ function bindEvents() {
 	// 功能按钮事件
 	$('#btnAdd').off('click').click(showAddPlanModal);
 	$('#btnLoadData').off('click').click(loadDataFromJson);
-    // ========== 修复计划对比按钮的会员校验 ==========
-    // 今日/明日对比按钮（彻底解绑后重新绑定）
-    $('#btnCompareTodayTomorrow').off('click').on('click', function() {
-        if (isUserValidMember()) {
-            showPlanCompareModal('todayTomorrow');
-        } else {
-            showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
-        }
-    });
-    
-    // 昨日/今日对比按钮（彻底解绑后重新绑定）
-    $('#btnCompareYesterdayToday').off('click').on('click', function() {
-        if (isUserValidMember()) {
-            showPlanCompareModal('yesterdayToday');
-        } else {
-            showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
-        }
-    });
-    
-    // 兼容旧的对比函数（添加会员校验）
-    window.showCompareModal = function() {
-        if (isUserValidMember()) {
-            showPlanCompareModal('todayTomorrow');
-        } else {
-            showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
-        }
-    };
+	// ========== 修复计划对比按钮的会员校验 ==========
+	// 今日/明日对比按钮（彻底解绑后重新绑定）
+	$('#btnCompareTodayTomorrow').off('click').on('click', function() {
+		if (isUserValidMember()) {
+			showPlanCompareModal('todayTomorrow');
+		} else {
+			showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
+		}
+	});
+
+	// 昨日/今日对比按钮（彻底解绑后重新绑定）
+	$('#btnCompareYesterdayToday').off('click').on('click', function() {
+		if (isUserValidMember()) {
+			showPlanCompareModal('yesterdayToday');
+		} else {
+			showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
+		}
+	});
+
+	// 兼容旧的对比函数（添加会员校验）
+	window.showCompareModal = function() {
+		if (isUserValidMember()) {
+			showPlanCompareModal('todayTomorrow');
+		} else {
+			showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
+		}
+	};
 	// $('#btnCompareTodayTomorrow').off('click').click(showCompareModal);
 	// $('#btnShowTimeline').off('click').click(() => switchView('timeline'));
 	$('#btnShowTimeline').off('click').click(() => {
@@ -1442,40 +1442,45 @@ function copyCompareResult() {
  * @returns {boolean} 是否为有效会员
  */
 function isUserValidMember() {
-    // 先校验基础登录状态
-    if (!currentUserName || currentUserName.trim() === '') {
-        return false;
-    }
+	// 先校验基础登录状态
+	if (!currentUserName || currentUserName.trim() === '') {
+		return false;
+	}
 
-    // 优先从localStorage获取完整用户信息
-    let userInfo = null;
-    const userInfoStr = localStorage.getItem('currentUserInfo');
-    if (userInfoStr) {
-        try {
-            userInfo = JSON.parse(userInfoStr);
-        } catch (e) {
-            console.error('解析用户信息失败：', e);
-            userInfo = null;
-        }
-    }
+	// 优先从localStorage获取完整用户信息
+	let userInfo = null;
+	const userInfoStr = localStorage.getItem('currentUserInfo');
+	if (userInfoStr) {
+		try {
+			userInfo = JSON.parse(userInfoStr);
+		} catch (e) {
+			console.error('解析用户信息失败：', e);
+			userInfo = null;
+		}
+	}
 
-    // localStorage获取失败，从USER_INFO_LIST获取
-    if (!userInfo) {
-        userInfo = USER_INFO_LIST.find(user => user.userName === currentUserName);
-    }
+	// localStorage获取失败，从USER_INFO_LIST获取
+	if (!userInfo) {
+		userInfo = USER_INFO_LIST.find(user => user.userName === currentUserName);
+	}
 
-    // 无用户信息直接返回false
-    if (!userInfo) {
-        return false;
-    }
+	// 无用户信息直接返回false
+	if (!userInfo) {
+		return false;
+	}
 
-    // 检查会员到期时间
-    if (!userInfo.memberExpireTime) {
-        return false; // 无会员到期时间视为非会员
-    }
+	// 检查用户会员身份
+	if (userInfo.role === "normal") {
+		return false; // 身份是普通用户
+	}
 
-    // 验证日期有效性并判断是否过期
-    return !isDateExpired(userInfo.memberExpireTime);
+	// 检查会员到期时间
+	if (!userInfo.memberExpireTime) {
+		return false; // 无会员到期时间视为非会员
+	}
+
+	// 验证日期有效性并判断是否过期
+	return !isDateExpired(userInfo.memberExpireTime);
 }
 
 /**
