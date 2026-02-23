@@ -8,7 +8,7 @@
 		<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<link rel="stylesheet" href="css/style.css">
 	</head>
-	<body>
+	<body oncontextmenu="return false;">
 		<!-- 顶部导航栏 - 优化移动端布局 -->
 		<nav class="navbar navbar-custom">
 			<div class="container-fluid">
@@ -352,6 +352,12 @@
 					</div>
 				</div>
 			</div>
+		</div>
+		
+		<!-- 自定义右键菜单 -->
+		<div class="custom-contextmenu" id="planContextMenu">
+		    <div class="custom-contextmenu-item" id="copyPlanItem">复制</div>
+		    <div class="custom-contextmenu-item" id="deletePlanItem">删除</div>
 		</div>
 
 		<!-- Toast提示容器 -->

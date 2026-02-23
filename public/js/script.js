@@ -17,6 +17,108 @@ let USER_INFO_LIST = [];
 let currentUserInfo = null;
 // 充值记录数据（新增）
 let rechargeRecords = [];
+// 全局变量 - 存储当前右键点击的计划数据
+let currentClickPlan = null;
+
+// ===================== 新增：右键菜单初始化函数 =====================
+/**
+ * 初始化计划块右键菜单
+ */
+function initPlanContextMenu() {
+	const $contextMenu = $('#planContextMenu');
+	const $planItems = $('.timeline-plan-item');
+
+	// 为所有计划块绑定右键事件
+	$planItems.off('contextmenu').on('contextmenu', function(e) {
+		// 阻止默认右键菜单
+		e.preventDefault();
+		e.stopPropagation();
+
+		// 修复：通过data-plan-id获取唯一ID，而非名称匹配
+		const planId = $(this).data('plan-id');
+		currentClickPlan = orderPlans.find(plan => plan.ID == planId); // 用==兼容数字/字符串ID
+
+		if (currentClickPlan) {
+			// 标记当前激活的计划块
+			$planItems.removeClass('contextmenu-active');
+			$(this).addClass('contextmenu-active');
+
+			// 定位并显示右键菜单
+			$contextMenu.css({
+				left: `${e.clientX}px`,
+				top: `${e.clientY}px`,
+				display: 'block'
+			});
+		}
+	});
+
+	// 点击页面其他区域关闭右键菜单
+	$(document).off('click.planContextMenu').on('click.planContextMenu', function() {
+		$contextMenu.hide();
+		$planItems.removeClass('contextmenu-active');
+	});
+
+	// 复制计划功能实现
+	$('#copyPlanItem').off('click').on('click', async function() {
+		if (!currentClickPlan) return;
+
+		try {
+			// 深拷贝原计划数据
+			const newPlan = JSON.parse(JSON.stringify(currentClickPlan));
+
+			// 更新需要修改的字段
+			newPlan.ID = (Date.now() + Math.floor(Math.random() * 1000)).toString(); // 新ID
+			// newPlan.Code = Math.floor(Math.random() * 10000000000000000000).toString(); // 新Code
+			newPlan.createTime = new Date(); // 新创建时间
+			newPlan.Name = `${newPlan.Name}_副本`; // 副本标识
+			// 关键修复：将ReleasePlans中的日期字符串重新转换为Date对象
+			newPlan.ReleasePlans = newPlan.ReleasePlans.map(detail => ({
+				...detail,
+				ReleaseDate: new Date(detail.ReleaseDate) // 转换为Date对象
+			}));
+
+			// 将新计划添加到数据源
+			orderPlans.push(newPlan);
+
+			// 刷新视图
+			refreshTimeline();
+			refreshOrderPlanTable();
+
+			// 保存到文件
+			await saveDataToJsonFile();
+
+			// 关闭菜单并提示
+			$contextMenu.hide();
+			showToast(`成功复制计划：${newPlan.Name}`, 'success');
+		} catch (error) {
+			console.error('复制计划失败：', error);
+			showToast('复制计划失败，请重试', 'error');
+		}
+	});
+
+	// ========== 新增：删除计划功能 ==========
+	$('#deletePlanItem').off('click').on('click', async function() {
+		if (!currentClickPlan) return;
+
+		// // 复用表格删除的确认逻辑
+		// if (!confirm('确定要删除该计划吗？此操作不可恢复！')) {
+		// 	$contextMenu.hide(); // 关闭菜单
+		// 	return;
+		// }
+
+		try {
+			// 直接调用现有删除函数，保证逻辑完全一致
+			await deletePlan(currentClickPlan.ID);
+
+			// 关闭菜单
+			$contextMenu.hide();
+			$planItems.removeClass('contextmenu-active');
+		} catch (error) {
+			console.error('右键删除计划失败：', error);
+			showToast('删除计划失败，请重试', 'error');
+		}
+	});
+}
 
 // ===================== 工具函数 =====================
 /**
@@ -661,6 +763,7 @@ function renderTimelineContent() {
 		// 创建计划块
 		const $planItem = $(`
             <div class="timeline-plan-item" 
+                 data-plan-id="${plan.ID}" 
                  style="left:${planLeft}px; width:${planWidth}px; top:${planTop}px; background:${planColor};">
                 <div class="plan-name">${plan.Name || '未知车型'} (总:${totalQuantity})</div>
             </div>
@@ -690,6 +793,9 @@ function renderTimelineContent() {
 		$container.append($todayLine);
 		$container.scrollLeft(lineX - $container.width() / 2);
 	}
+
+	// ========== 新增：渲染完成后初始化右键菜单 ==========
+	initPlanContextMenu();
 }
 
 /**
@@ -698,6 +804,8 @@ function renderTimelineContent() {
 function refreshTimeline() {
 	generateTimelineHeader();
 	renderTimelineContent();
+	// 确保右键菜单重新初始化
+	initPlanContextMenu();
 }
 
 // 刷新计划表格（按createTime倒序排序+修复显示问题）
@@ -864,16 +972,21 @@ function bindEvents() {
 			showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
 		}
 	});
-    // 新增：绑定昨日/今日对比按钮
-    $('#btnCompareYesterdayToday').off('click').click(() => {
-        if (isUserValidMember()) {
-            showPlanCompareModal('yesterdayToday');
-        } else {
-            showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
-        }
-    });
+	// 新增：绑定昨日/今日对比按钮
+	$('#btnCompareYesterdayToday').off('click').click(() => {
+		if (isUserValidMember()) {
+			showPlanCompareModal('yesterdayToday');
+		} else {
+			showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
+		}
+	});
 	// $('#btnCompareTodayTomorrow').off('click').click(showCompareModal);
-	$('#btnShowTimeline').off('click').click(() => switchView('timeline'));
+	// $('#btnShowTimeline').off('click').click(() => switchView('timeline'));
+	$('#btnShowTimeline').off('click').click(() => {
+		switchView('timeline');
+		// 切换视图后重新初始化右键菜单
+		setTimeout(initPlanContextMenu, 100);
+	});
 	$('#btnShowTable').off('click').click(() => switchView('table'));
 
 	// 模态框相关事件
@@ -904,7 +1017,13 @@ function bindEvents() {
 			$('#shopSwitcher').removeClass('show');
 		}
 	});
-	// =======================================================================
+	// 阻止批量初始化明细模态框中回车键提交表单
+	$('#batchInitModal').on('keydown', function(e) {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+			$('#btnConfirmBatchInit').focus();
+		}
+	});
 }
 
 /**
@@ -943,6 +1062,8 @@ async function loadDataFromJson() {
 	await loadUserData();
 	refreshTimeline();
 	refreshOrderPlanTable();
+	// 数据加载完成后初始化右键菜单
+	initPlanContextMenu();
 	showToast(`【${currentShopName}】数据加载完成，共${orderPlans.length}条计划`, 'success');
 }
 

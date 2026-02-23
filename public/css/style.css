@@ -980,3 +980,32 @@ body {
 	background-color: #40a9ff !important;
 	box-shadow: 0 4px 12px rgba(24, 144, 255, 0.25);
 }
+
+/* 自定义右键菜单样式 */
+.custom-contextmenu {
+	position: absolute;
+	width: 120px;
+	background-color: var(--card-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	z-index: 9999;
+	display: none;
+}
+
+.custom-contextmenu-item {
+	padding: 8px 12px;
+	font-size: 14px;
+	color: var(--text-color);
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.custom-contextmenu-item:hover {
+	background-color: var(--bg-color);
+}
+
+/* 计划块右键菜单激活态 */
+.timeline-plan-item.contextmenu-active {
+	opacity: 0.85;
+}
