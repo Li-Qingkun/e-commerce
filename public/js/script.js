@@ -856,8 +856,22 @@ function bindEvents() {
 	// 功能按钮事件
 	$('#btnAdd').off('click').click(showAddPlanModal);
 	$('#btnLoadData').off('click').click(loadDataFromJson);
-	// 修改：绑定对比按钮事件到新的处理函数
-	$('#btnCompareTodayTomorrow').off('click').click(handleCompareButtonClick);
+	// 修改：绑定原有对比按钮
+	$('#btnCompareTodayTomorrow').off('click').click(() => {
+		if (isUserValidMember()) {
+			showPlanCompareModal('todayTomorrow');
+		} else {
+			showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
+		}
+	});
+    // 新增：绑定昨日/今日对比按钮
+    $('#btnCompareYesterdayToday').off('click').click(() => {
+        if (isUserValidMember()) {
+            showPlanCompareModal('yesterdayToday');
+        } else {
+            showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
+        }
+    });
 	// $('#btnCompareTodayTomorrow').off('click').click(showCompareModal);
 	$('#btnShowTimeline').off('click').click(() => switchView('timeline'));
 	$('#btnShowTable').off('click').click(() => switchView('table'));
@@ -866,7 +880,7 @@ function bindEvents() {
 	$('#btnAddDetail').off('click').click(() => addDetailRow());
 	$('#btnSaveForm').off('click').click(savePlanForm);
 	$('#btnCopyCompare').off('click').click(copyCompareResult);
-	
+
 	// 批量初始化明细按钮事件
 	$('#btnBatchInitDetail').off('click').click(showBatchInitModal);
 	// 确认批量初始化按钮事件
@@ -1116,17 +1130,38 @@ async function deletePlan(planId) {
 }
 
 /**
- * 显示今日/明日对比弹窗
+ * 通用的计划对比函数（支持不同日期范围）
+ * @param {string} compareType 对比类型：todayTomorrow / yesterdayToday
  */
-function showCompareModal() {
+function showPlanCompareModal(compareType) {
+	// 定义对比的两个日期
+	let date1, date2, titleText;
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
-	const tomorrow = new Date(today);
-	tomorrow.setDate(tomorrow.getDate() + 1);
 
-	// 整理今日/明日数据
-	const todayMap = new Map();
-	const tomorrowMap = new Map();
+	if (compareType === 'todayTomorrow') {
+		// 今日/明日对比
+		date1 = new Date(today); // 今日
+		date2 = new Date(today);
+		date2.setDate(date2.getDate() + 1); // 明日
+		titleText = '今日/明日计划对比';
+	} else if (compareType === 'yesterdayToday') {
+		// 昨日/今日对比
+		date1 = new Date(today);
+		date1.setDate(date1.getDate() - 1); // 昨日
+		date2 = new Date(today); // 今日
+		titleText = '昨日/今日计划对比';
+	} else {
+		showToast('无效的对比类型', 'error');
+		return;
+	}
+
+	// 更新弹窗标题
+	$('#compareModalTitle').html(`<i class="fa fa-calendar"></i> ${titleText}`);
+
+	// 整理对比数据（原有逻辑不变，仅替换日期变量）
+	const date1Map = new Map();
+	const date2Map = new Map();
 
 	orderPlans.forEach(plan => {
 		if (plan.ReleasePlans && Array.isArray(plan.ReleasePlans)) {
@@ -1142,16 +1177,16 @@ function showCompareModal() {
 					SkuPrice: plan.SkuPrice || '0'
 				};
 
-				if (detailDate.getTime() === today.getTime()) {
-					todayMap.set(plan.Name, planData);
-				} else if (detailDate.getTime() === tomorrow.getTime()) {
-					tomorrowMap.set(plan.Name, planData);
+				if (detailDate.getTime() === date1.getTime()) {
+					date1Map.set(plan.Name, planData);
+				} else if (detailDate.getTime() === date2.getTime()) {
+					date2Map.set(plan.Name, planData);
 				}
 			});
 		}
 	});
 
-	// 分类整理对比结果
+	// 分类整理对比结果（逻辑不变，仅替换变量名）
 	const compareResult = {
 		"新加单": [],
 		"加单": [],
@@ -1161,49 +1196,49 @@ function showCompareModal() {
 	};
 
 	// 遍历所有车型
-	const allPlanNames = [...new Set([...todayMap.keys(), ...tomorrowMap.keys()])];
+	const allPlanNames = [...new Set([...date1Map.keys(), ...date2Map.keys()])];
 	allPlanNames.forEach(name => {
-		const todayItem = todayMap.get(name) || {
+		const date1Item = date1Map.get(name) || {
 			Quantity: 0,
 			Remark: '无',
 			SkuName: '未指定',
 			SkuPrice: '0'
 		};
-		const tomorrowItem = tomorrowMap.get(name) || {
+		const date2Item = date2Map.get(name) || {
 			Quantity: 0,
 			Remark: '无',
 			SkuName: '未指定',
 			SkuPrice: '0'
 		};
-		const isNewPlan = todayItem.Quantity === 0 && tomorrowItem.Quantity > 0;
+		const isNewPlan = date1Item.Quantity === 0 && date2Item.Quantity > 0;
 
 		// 分类判断
 		if (isNewPlan) {
-			const skuNamePart = tomorrowItem.SkuName === '未指定' ?
+			const skuNamePart = date2Item.SkuName === '未指定' ?
 				'' :
-				` (${tomorrowItem.SkuName})`;
+				` (${date2Item.SkuName})`;
 			compareResult["新加单"].push(
-				`${tomorrowItem.Remark || name} * ${tomorrowItem.Quantity}  ${tomorrowItem.SkuPrice}*1${skuNamePart}`
+				`${date2Item.Remark || name} * ${date2Item.Quantity}  ${date2Item.SkuPrice}*1${skuNamePart}`
 			);
-		} else if (tomorrowItem.Quantity > todayItem.Quantity && todayItem.Quantity > 0) {
-			const diff = tomorrowItem.Quantity - todayItem.Quantity;
-			compareResult["加单"].push(`${todayItem.Remark || name} 加${diff}单`);
-		} else if (tomorrowItem.Quantity < todayItem.Quantity && tomorrowItem.Quantity > 0) {
-			const diff = todayItem.Quantity - tomorrowItem.Quantity;
-			compareResult["减单"].push(`${todayItem.Remark || name} 减${diff}单`);
-		} else if (todayItem.Quantity > 0 && tomorrowItem.Quantity === 0) {
-			compareResult["停单"].push(`${todayItem.Remark || name} 停单`);
+		} else if (date2Item.Quantity > date1Item.Quantity && date1Item.Quantity > 0) {
+			const diff = date2Item.Quantity - date1Item.Quantity;
+			compareResult["加单"].push(`${date1Item.Remark || name} 加${diff}单`);
+		} else if (date2Item.Quantity < date1Item.Quantity && date2Item.Quantity > 0) {
+			const diff = date1Item.Quantity - date2Item.Quantity;
+			compareResult["减单"].push(`${date1Item.Remark || name} 减${diff}单`);
+		} else if (date1Item.Quantity > 0 && date2Item.Quantity === 0) {
+			compareResult["停单"].push(`${date1Item.Remark || name} 停单`);
 		}
 
 		// 改放单词判断
-		if (!isNewPlan && tomorrowItem.Quantity > 0 &&
-			todayItem.Remark.trim() && tomorrowItem.Remark.trim() &&
-			todayItem.Remark !== tomorrowItem.Remark) {
-			compareResult["改放单词"].push(`${todayItem.Remark} 改为 ${tomorrowItem.Remark}`);
+		if (!isNewPlan && date2Item.Quantity > 0 &&
+			date1Item.Remark.trim() && date2Item.Remark.trim() &&
+			date1Item.Remark !== date2Item.Remark) {
+			compareResult["改放单词"].push(`${date1Item.Remark} 改为 ${date2Item.Remark}`);
 		}
 	});
 
-	// 生成对比文本
+	// 生成对比文本（调整描述文字）
 	let compareText = `${currentShopName} 私域单：\n`;
 	Object.keys(compareResult).forEach(category => {
 		if (compareResult[category].length > 0) {
@@ -1214,16 +1249,23 @@ function showCompareModal() {
 		}
 	});
 
-	// 兜底提示
+	// 兜底提示（根据对比类型调整文字）
 	if (allPlanNames.length === 0) {
-		compareText += `→ ${currentShopName} 今日和明日均无放单计划\n`;
+		const dateDesc = compareType === 'todayTomorrow' ? '今日和明日' : '昨日和今日';
+		compareText += `→ ${currentShopName} ${dateDesc}均无放单计划\n`;
 	} else if (Object.values(compareResult).every(arr => arr.length === 0)) {
-		compareText += `→ ${currentShopName} 今日和明日放单计划无任何变化\n`;
+		const dateDesc = compareType === 'todayTomorrow' ? '今日和明日' : '昨日和今日';
+		compareText += `→ ${currentShopName} ${dateDesc}放单计划无任何变化\n`;
 	}
 
 	// 显示弹窗
 	$('#compareResult').val(compareText);
 	$('#compareModal').modal('show');
+}
+
+// 保留原有函数（兼容旧调用）
+function showCompareModal() {
+	showPlanCompareModal('todayTomorrow');
 }
 
 /**
@@ -1239,29 +1281,6 @@ function copyCompareResult() {
 	} catch (err) {
 		console.error('复制失败：', err);
 		showToast('复制失败，请手动复制', 'error');
-	}
-}
-
-/**
- * 新增：处理对比按钮点击事件（包含会员判断）
- */
-function handleCompareButtonClick() {
-	// 检查用户是否为有效会员
-	const isMember = isUserValidMember();
-
-	if (isMember) {
-		// 会员用户：执行原有对比逻辑
-		showCompareModal();
-	} else {
-		// 非会员用户：显示会员提醒
-		showToast('您的会员已过期或尚未开通会员，无法使用计划对比功能，请联系管理员充值会员！', 'error', 5000);
-
-		// // 可选：显示更醒目的弹窗提示
-		// if (confirm('您的会员权限已过期，无法使用今日/明日计划对比功能！\n\n是否了解会员充值详情？')) {
-		// 	// 这里可以跳转到充值页面，或者显示充值联系方式
-		// 	// window.location.href = 'recharge.html';
-		// 	alert('请联系管理员：XXX-XXXXXXX 进行会员充值');
-		// }
 	}
 }
 

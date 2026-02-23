@@ -368,5 +368,25 @@
         "ReleaseName": ""
       }
     ]
+  },
+  {
+    "ID": "1771826918442",
+    "Code": "1",
+    "Name": "1111",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T06:08:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-23",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-24",
+        "ReleaseQuantity": 3,
+        "ReleaseName": ""
+      }
+    ]
   }
 ]
