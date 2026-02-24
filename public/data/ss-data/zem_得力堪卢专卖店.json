@@ -1,0 +1,22 @@
+﻿[
+  {
+    "ID": 1771841141213,
+    "Code": "1",
+    "Name": "红旗",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T10:05:41.213Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-23",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-24",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  }
+]

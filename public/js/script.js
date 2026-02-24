@@ -914,7 +914,7 @@ function initOrderQueryShopSelect() {
 }
 
 /**
- * 重置订单查询条件
+ * 重置订单查询条件（适配Excel格式表格）
  */
 function resetOrderQuery() {
 	// 重置店铺为当前选中店铺
@@ -925,17 +925,14 @@ function resetOrderQuery() {
 	const todayStr = formatDateOnly(today);
 	$('#queryDate').val(todayStr);
 
-	// 清空表格
+	// ========== 适配Excel格式的空提示 ==========
 	$('#orderResultTableBody').html(`
         <tr>
-            <td colspan="23" class="text-center text-muted">请点击查询按钮获取订单数据</td>
+            <td colspan="13" style="padding:2px 5px; border:1px solid #ddd; font-size:12px; text-align:center;" class="text-muted">请点击查询按钮获取订单数据</td>
         </tr>
     `);
 }
 
-/**
- * 查询订单数据
- */
 async function queryOrderData() {
 	try {
 		// 获取查询条件
@@ -952,27 +949,37 @@ async function queryOrderData() {
 			showToast('请选择查询日期', 'error');
 			return;
 		}
+		
+		const cjfId = getCjfIdByShopName(shopName);
+		if (!cjfId) {
+			showToast('未找到该店铺对应的cjfId', 'error');
+			return;
+		}
+
+		// 关键修改：添加await等待cookie获取完成
+		const cookie = await QueryCjfInfo(cjfId);
+		// 校验cookie是否有效
+		if (!cookie) {
+			showToast('获取店铺Cookie失败，无法继续查询', 'error');
+			return;
+		}
 
 		showToast('正在查询订单数据，请稍候...', 'info');
 
-		// 构建请求URL
+		// 构建请求URL：改为请求自己的aspx中转接口
 		const encodedShopName = encodeURIComponent(shopName);
-		const apiUrl =
-			`https://qnzg.cn/api/dk/seller/activity/queryOrders?app=0&activityId=&productId=&shopName=${encodedShopName}&startDt=${queryDate}&endDt=${queryDate}&orderId=&flowPoint=&pageNum=1&total=6&pageSize=100`;
-		// 定义需要传入的Cookie
-		const cookieStr =
-			'__itrace_wid=d6292dcc-3533-437f-b297-a396b3217651; zxgagree=1; dk=2cbedffd-a456-459e-9a60-da24e78a9e00; __itrace_wid=7684f9bc-595e-4ca1-2f6c-9ff4da1e72a0';
+		const encodedCookie = encodeURIComponent(cookie); // 新增：cookie含特殊字符，必须编码
+		// 注意替换为你实际的aspx文件路径（比如你的项目根目录是public，那么路径是/aspx/QueryOrderProxy.aspx）
+		const proxyApiUrl =
+			`/aspx/QueryOrderProxy.aspx?shopName=${encodedShopName}&queryDate=${queryDate}&cookie=${encodedCookie}`;
 
-		// 发送请求
-		const response = await fetch(apiUrl, {
+		// 发送请求（请求自己的后端，无跨域问题）
+		const response = await fetch(proxyApiUrl, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
-				'Cookie': cookieStr, // 关键：添加Cookie请求头
-				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' // 可选：添加User-Agent模拟浏览器
 			},
-			cache: 'no-cache',
-            credentials: 'include' // 关键：允许携带凭证（Cookie）
+			cache: 'no-cache'
 		});
 
 		if (!response.ok) {
@@ -981,7 +988,7 @@ async function queryOrderData() {
 
 		const result = await response.json();
 
-		// 处理返回结果
+		// 处理返回结果（逻辑和原来一致）
 		if (result.code === 200 && result.data && result.data.list) {
 			renderOrderTable(result.data.list);
 			showToast(`查询成功，共找到 ${result.data.list.length} 条订单`, 'success');
@@ -997,7 +1004,7 @@ async function queryOrderData() {
 		console.error('查询订单失败：', error);
 		$('#orderResultTableBody').html(`
             <tr>
-                <td colspan="23" class="text-center text-danger">查询失败：${error.message}</td>
+                <td colspan="13" class="text-center text-danger">查询失败：${error.message}</td>
             </tr>
         `);
 		showToast(`查询失败：${error.message}`, 'error');
@@ -1005,7 +1012,81 @@ async function queryOrderData() {
 }
 
 /**
- * 渲染订单表格
+ * 查询超级返信息
+ */
+function QueryCjfInfo(cjfId) {
+	// 关键：返回整个fetch的Promise链
+	return fetch(`/data/cjfInfo.json?_=${new Date().getTime()}`, {
+			cache: 'no-cache'
+		})
+		.then(response => {
+			if (response.ok) return response.json();
+			throw new Error('获取超级返信息数据失败');
+		})
+		.then(cjfData => {
+			if (!Array.isArray(cjfData)) {
+				throw new Error('超级返信息数据格式错误');
+			}
+
+			// 查找信息
+			const user = cjfData.find(u => u.id === cjfId);
+
+			if (!user) { // 新增：处理未找到匹配数据的情况
+				throw new Error('未找到该cjfId对应的超级返信息');
+			}
+
+			// 深拷贝用户对象，避免修改原数据
+			const userInfo = JSON.parse(JSON.stringify(user));
+			return userInfo.cookie; // 最终返回cookie字符串
+		})
+		.catch(err => {
+			showToast(err.message, 'error');
+			return ""; // 异常时返回空字符串，保证调用处有返回值
+		});
+}
+
+/**
+ * 根据shopName从localStorage的currentUserInfo中获取对应的cjfId
+ * @param {string} targetShopName - 要查找的店铺名称
+ * @returns {string|null} 匹配的cjfId，未找到/数据异常时返回null
+ */
+function getCjfIdByShopName(targetShopName) {
+	try {
+		// 1. 从localStorage中获取currentUserInfo字符串
+		const userInfoStr = localStorage.getItem('currentUserInfo');
+		// 校验：localStorage中无该数据时返回null
+		if (!userInfoStr) {
+			console.warn('localStorage中未找到currentUserInfo');
+			return null;
+		}
+
+		// 2. 将JSON字符串解析为JS对象
+		const currentUserInfo = JSON.parse(userInfoStr);
+		// 校验：解析后的数据结构是否包含shopList
+		if (!currentUserInfo || !Array.isArray(currentUserInfo.shopList)) {
+			console.warn('currentUserInfo中shopList格式异常');
+			return null;
+		}
+
+		// 3. 遍历shopList，根据shopName匹配对应的cjfId
+		// find方法：找到第一个匹配的元素，未找到返回undefined
+		const targetShop = currentUserInfo.shopList.find(shop => {
+			// 严格匹配shopName（如需模糊匹配，可改为shop.shopName.includes(targetShopName)）
+			return shop.shopName === targetShopName;
+		});
+
+		// 4. 返回结果：找到则返回cjfId，未找到返回null
+		return targetShop ? targetShop.cjfId : null;
+
+	} catch (error) {
+		// 捕获解析JSON、数据访问等异常
+		console.error('获取cjfId失败：', error);
+		return null;
+	}
+}
+
+/**
+ * 渲染订单表格（适配Excel原生格式）
  * @param {Array} orderList 订单列表数据
  */
 function renderOrderTable(orderList) {
@@ -1015,39 +1096,55 @@ function renderOrderTable(orderList) {
 	if (!Array.isArray(orderList) || orderList.length === 0) {
 		$tbody.html(`
             <tr>
-                <td colspan="23" class="text-center text-muted">未查询到订单数据</td>
+                <td colspan="13" class="text-center text-muted">未查询到订单数据</td>
             </tr>
         `);
 		return;
 	}
 
-	// 渲染每一行订单数据
+	// 渲染每一行订单数据（适配Excel原生格式）
 	orderList.forEach((order, index) => {
+		// 字段映射和单位转换（接口返回的是分，转换为元）
+		const productId = order.productId || '';
+		const paySuccessTime = formatPayTime(order.paySuccessTime ? order.paySuccessTime.split(' ')[0] :
+			''); // 只保留日期部分
+		const shopName = order.shopName || '';
+		const innerOrderNo = ''; // 内部单号为空
+		const orderId = order.orderId || '';
+		const feigeAccount = ''; // 飞鸽账号为空
+		const doudianPrice = order.doudianPrice ? (order.doudianPrice / 100).toFixed(0) : '0'; // 本金（转元，取整）
+		const spreadUnitPrice = order.spreadUnitPrice ? (order.spreadUnitPrice / 100).toFixed(0) :
+			'0'; // 佣金（转元，取整）
+		const goldCoinCosts = order.goldCoinCosts ? (order.goldCoinCosts / 100).toFixed(0) : '0'; // 金币（转元，取整）
+		const evaluateCost = '0'; // 评价花费为0
+
+		// 计算合计：本金+佣金+金币+评价花费
+		const total = (parseInt(doudianPrice) + parseInt(spreadUnitPrice) + parseInt(goldCoinCosts) + parseInt(
+			evaluateCost)).toString();
+		const remark = ''; // 备注为空
+		// 计算佣金合计：佣金+金币+评价花费
+		const commissionTotal = (parseInt(spreadUnitPrice) + parseInt(goldCoinCosts) + parseInt(evaluateCost))
+			.toString();
+
+		// ========== 核心修改：适配Excel原生格式 ==========
+		// 1. 移除多余样式，使用纯文本格式
+		// 2. 添加data-excel-value属性存储纯文本值（用于复制）
+		// 3. 单元格内容仅保留纯文本，无HTML标签
 		const $tr = $(`
-            <tr>
-                <td>${order.app || ''}</td>
-                <td>${order.activityId || ''}</td>
-                <td>${order.orderId || ''}</td>
-                <td>${order.productId || ''}</td>
-                <td>${order.paySuccessTime || ''}</td>
-                <td>${order.shopId || ''}</td>
-                <td>${order.shopName || ''}</td>
-                <td>${order.beizu || ''}</td>
-                <td>${order.exemptSeller || ''}</td>
-                <td>${order.doudianPrice || ''}</td>
-                <td>${order.hpfxPrice || ''}</td>
-                <td>${order.spreadUnitPrice || ''}</td>
-                <td>${order.cashCosts || ''}</td>
-                <td>${order.dfPrice || ''}</td>
-                <td>${order.guessPrice || ''}</td>
-                <td>${order.searchPrice || ''}</td>
-                <td>${order.highPrice || ''}</td>
-                <td>${order.humanPrice || ''}</td>
-                <td>${order.goldCoinCosts || ''}</td>
-                <td>${order.adPrice || ''}</td>
-                <td>${order.buyerLabelPrice || ''}</td>
-                <td>${order.genderLabelPrice || ''}</td>
-                <td>${order.ageLabelPrice || ''}</td>
+            <tr style="height:25px;">
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px;" data-excel-value="${productId}">${productId}</td>
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px;" data-excel-value="${paySuccessTime}">${paySuccessTime}</td>
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px;" data-excel-value="${shopName}">${shopName}</td>
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px;" data-excel-value="${innerOrderNo}">${innerOrderNo}</td>
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px;" data-excel-value="${orderId}">${orderId}</td>
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px;" data-excel-value="${feigeAccount}">${feigeAccount}</td>
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px; text-align:right;" data-excel-value="${doudianPrice}">${doudianPrice}</td>
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px; text-align:right;" data-excel-value="${spreadUnitPrice}">${spreadUnitPrice}</td>
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px; text-align:right;" data-excel-value="${goldCoinCosts}">${goldCoinCosts}</td>
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px; text-align:right;" data-excel-value="${evaluateCost}">${evaluateCost}</td>
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px; text-align:right;" data-excel-value="${total}">${total}</td>
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px;" data-excel-value="${remark}">${remark}</td>
+                <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px; text-align:right;" data-excel-value="${commissionTotal}">${commissionTotal}</td>
             </tr>
         `);
 
@@ -1055,47 +1152,101 @@ function renderOrderTable(orderList) {
 	});
 }
 
+// 定义格式化日期的函数
+function formatPayTime(paySuccessTime) {
+	// 校验入参是否为有效字符串
+	if (!paySuccessTime || typeof paySuccessTime !== 'string') {
+		return ''; // 入参无效时返回空字符串，也可根据需求改为'日期格式错误'
+	}
+
+	// 按横杠分割日期字符串，得到 [年, 月, 日]
+	const [year, month, day] = paySuccessTime.split('-');
+
+	// 去除月份的前导零（如'02'转为2），日期保持原样
+	const monthWithoutZero = parseInt(month, 10);
+
+	// 拼接成 月.日 格式
+	return `${monthWithoutZero}.${day}`;
+}
+
 /**
- * 复制订单表格内容
+ * 复制订单表格内容（原生Excel格式）
  */
 function copyOrderTableContent() {
 	try {
-		// 创建临时文本区域
-		const $tempTextarea = $('<textarea></textarea>');
-		$('body').append($tempTextarea);
+		// ========== 核心修改：按Excel原生格式拼接数据 ==========
+		let excelContent = '';
 
-		// 收集表格数据
-		let tableText = '';
-
-		// 收集表头
+		// 1. 拼接表头（Excel原生格式，制表符分隔）
 		$('#orderResultTable thead tr th').each(function(index) {
-			tableText += $(this).text().trim() + '\t';
+			const headerText = $(this).text().trim().replace(/\s+/g, ' '); // 清理多余空格
+			excelContent += headerText + '\t'; // 制表符分隔（Excel列分隔符）
 		});
-		tableText = tableText.trim() + '\n';
+		excelContent = excelContent.replace(/\t$/, '') + '\r\n'; // 替换最后一个制表符，换行用\r\n（Excel标准）
 
-		// 收集行数据
+		// 2. 拼接表格内容（使用data-excel-value获取纯文本值）
 		$('#orderResultTable tbody tr').each(function() {
-			let rowText = '';
+			let rowContent = '';
 			$(this).find('td').each(function() {
-				rowText += $(this).text().trim() + '\t';
+				// 优先使用data-excel-value的纯文本值，适配Excel格式
+				const cellValue = $(this).data('excel-value') || $(this).text().trim().replace(/\s+/g,
+					' ');
+				rowContent += cellValue + '\t';
 			});
-			if (rowText.trim()) {
-				tableText += rowText.trim() + '\n';
+			const trimmedRow = rowContent.replace(/\t$/, ''); // 移除行末尾制表符
+			if (trimmedRow && !trimmedRow.includes('未查询到订单数据')) { // 过滤空行和提示行
+				excelContent += trimmedRow + '\r\n';
 			}
 		});
 
-		// 复制到剪贴板
-		$tempTextarea.val(tableText);
-		$tempTextarea.select();
-		document.execCommand('copy');
+		// 3. 移除最后一个换行符，避免空行
+		excelContent = excelContent.replace(/\r\n$/, '');
 
-		// 移除临时文本区域
-		$tempTextarea.remove();
+		// 4. 复制到剪贴板（适配Excel的原生格式）
+		if (navigator.clipboard && window.isSecureContext) {
+			navigator.clipboard.writeText(excelContent).then(() => {
+				showToast('表格内容已按Excel格式复制，可直接粘贴到Excel', 'success');
+			}).catch((err) => {
+				fallbackCopyTextToClipboard(excelContent);
+			});
+		} else {
+			fallbackCopyTextToClipboard(excelContent);
+		}
 
-		showToast('表格内容已复制到剪贴板，可直接粘贴到Excel', 'success');
 	} catch (error) {
 		console.error('复制表格失败：', error);
 		showToast('复制失败，请手动复制', 'error');
+	}
+}
+
+// 降级复制函数（优化传统方式的兼容性，适配Excel格式）
+function fallbackCopyTextToClipboard(text) {
+	const tempTextarea = document.createElement('textarea');
+	// 设置textarea样式适配纯文本（避免格式错乱）
+	tempTextarea.style.position = 'absolute';
+	tempTextarea.style.left = '-9999px';
+	tempTextarea.style.top = '0';
+	tempTextarea.style.fontFamily = 'monospace'; // 等宽字体，适配Excel
+	tempTextarea.style.fontSize = '12px';
+	tempTextarea.value = text;
+
+	document.body.appendChild(tempTextarea);
+	tempTextarea.focus();
+	tempTextarea.select();
+	tempTextarea.setSelectionRange(0, text.length); // 兼容移动设备
+
+	try {
+		const successful = document.execCommand('copy');
+		if (successful) {
+			showToast('表格内容已按Excel格式复制，可直接粘贴到Excel', 'success');
+		} else {
+			throw new Error('execCommand copy 返回失败');
+		}
+	} catch (err) {
+		console.error('降级复制失败：', err);
+		showToast('复制失败，请手动复制', 'error');
+	} finally {
+		document.body.removeChild(tempTextarea);
 	}
 }
 

@@ -3,15 +3,16 @@
     "id": "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
     "userName": "张云翔",
     "password": "1",
-    "role": "normal",
-    "memberExpireTime": "2026-08-13",
+    "role": "vip",
+    "memberExpireTime": "2026-04-24",
     "shopList": [
       {
-        "shopName": "众合祥汽车配件"
+        "shopName": "众合祥汽车配件",
+        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4bed"
       }
     ],
     "createTime": "2026-02-12T09:40:56.599Z",
-    "updateTime": "2026-02-20T15:06:48.634Z"
+    "updateTime": "2026-02-24T03:09:32.847Z"
   },
   {
     "id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
@@ -30,22 +31,21 @@
   {
     "id": "7b7c8d8c-9999-4999-8999-999999999999",
     "userName": "李庆坤",
-    "password": "1",
+    "password": "lqk",
     "role": "vip",
-    "memberExpireTime": "2109-05-12",
+    "memberExpireTime": "2026-03-16",
     "shopList": [
       {
-        "shopName": "得力沐璞汽车用品专卖店"
+        "shopName": "得力沐璞汽车用品专卖店",
+		"cjfId":"1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed"
       },
       {
-        "shopName": "迈库雷汽车用品专卖店"
-      },
-      {
-        "shopName": "专卖店"
+        "shopName": "迈库雷汽车用品",
+		"cjfId":"1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4bed"
       }
     ],
     "createTime": "2026-02-12T09:43:02.396Z",
-    "updateTime": "2026-02-20T15:18:33.239Z"
+    "updateTime": "2026-02-24T08:19:28.386Z"
   },
   {
     "id": "8e4e09c0-c01e-4c9c-9c0c-0c9c0c9c0c9c",
@@ -66,13 +66,44 @@
     "userName": "王浩丞",
     "password": "1",
     "role": "vip",
-    "memberExpireTime": "2026-09-13",
+    "memberExpireTime": "2026-09-14",
     "shopList": [
       {
         "shopName": "祥铁旗舰店"
       }
     ],
     "createTime": "2026-02-13T18:25:53.090Z",
-    "updateTime": "2026-02-20T15:17:58.170Z"
+    "updateTime": "2026-02-23T09:02:30.579Z"
+  },
+  {
+    "userName": "835135131",
+    "password": "qq835135131",
+    "role": "vip",
+    "memberExpireTime": "2026-03-23",
+    "shopList": [
+      {
+        "shopName": "迈库雷旗舰店"
+      },
+      {
+        "shopName": "庆赢旗舰店"
+      },
+      {
+        "shopName": "米其林旗舰店"
+      }
+    ],
+    "createTime": "2026-02-23T07:51:50.583Z",
+    "updateTime": "2026-02-23T08:16:34.420Z"
+  },
+  {
+    "userName": "zem",
+    "password": "yunying001",
+    "role": "normal",
+    "shopList": [
+      {
+        "shopName": "得力堪卢专卖店"
+      }
+    ],
+    "createTime": "2026-02-23T10:04:07.202Z",
+    "updateTime": "2026-02-23T10:04:07.202Z"
   }
 ]

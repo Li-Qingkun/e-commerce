@@ -1,0 +1,22 @@
+﻿[
+  {
+    "ID": 1771834747337,
+    "Code": "12123",
+    "Name": "问界M8后备箱垫",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T08:19:07.337Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-23",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 3,
+        "ReleaseName": ""
+      }
+    ]
+  }
+]

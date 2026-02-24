@@ -273,19 +273,19 @@
     "createTime": "2026-02-11T06:45:00.000Z",
     "ReleasePlans": [
       {
-        "ReleaseDate": "2026-02-15",
+        "ReleaseDate": "2026-02-19",
         "ReleaseQuantity": 2,
         "ReleaseName": "昂科威plus脚垫"
       },
       {
-        "ReleaseDate": "2026-02-16",
+        "ReleaseDate": "2026-02-20",
         "ReleaseQuantity": 2,
         "ReleaseName": "昂科威plus脚垫"
       },
       {
-        "ReleaseDate": "2026-02-17",
+        "ReleaseDate": "2026-02-21",
         "ReleaseQuantity": 2,
-        "ReleaseName": ""
+        "ReleaseName": "昂科威plus脚垫"
       }
     ]
   },
@@ -298,60 +298,30 @@
     "createTime": "2026-02-11T06:47:00.000Z",
     "ReleasePlans": [
       {
-        "ReleaseDate": "2026-02-15",
+        "ReleaseDate": "2026-02-19",
         "ReleaseQuantity": 2,
         "ReleaseName": "荣放RAV4脚垫"
       },
       {
-        "ReleaseDate": "2026-02-16",
+        "ReleaseDate": "2026-02-20",
         "ReleaseQuantity": 2,
         "ReleaseName": "荣放RAV4脚垫"
       },
       {
-        "ReleaseDate": "2026-02-17",
+        "ReleaseDate": "2026-02-21",
         "ReleaseQuantity": 2,
         "ReleaseName": "荣放RAV4脚垫"
       }
     ]
   },
   {
-    "ID": 1771064370039,
+    "ID": "1771064370039",
     "Code": "3801653951892423141",
     "Name": "星越L脚垫",
     "SkuName": "",
     "SkuPrice": "",
-    "createTime": "2026-02-14T10:19:30.039Z",
+    "createTime": "2026-02-14T10:19:00.000Z",
     "ReleasePlans": [
-      {
-        "ReleaseDate": "2026-02-15",
-        "ReleaseQuantity": 2,
-        "ReleaseName": ""
-      },
-      {
-        "ReleaseDate": "2026-02-16",
-        "ReleaseQuantity": 2,
-        "ReleaseName": ""
-      },
-      {
-        "ReleaseDate": "2026-02-17",
-        "ReleaseQuantity": 2,
-        "ReleaseName": ""
-      }
-    ]
-  },
-  {
-    "ID": "1771233298814",
-    "Code": "111",
-    "Name": "1111",
-    "SkuName": "",
-    "SkuPrice": "",
-    "createTime": "2026-02-16T09:14:00.000Z",
-    "ReleasePlans": [
-      {
-        "ReleaseDate": "2026-02-18",
-        "ReleaseQuantity": 2,
-        "ReleaseName": ""
-      },
       {
         "ReleaseDate": "2026-02-19",
         "ReleaseQuantity": 2,
@@ -370,22 +340,202 @@
     ]
   },
   {
-    "ID": "1771826918442",
-    "Code": "1",
-    "Name": "1111",
+    "ID": "1771815282200",
+    "Code": "3803343926832792023",
+    "Name": "红旗车系",
     "SkuName": "",
     "SkuPrice": "",
-    "createTime": "2026-02-23T06:08:00.000Z",
+    "createTime": "2026-02-23T02:54:00.000Z",
     "ReleasePlans": [
       {
         "ReleaseDate": "2026-02-23",
         "ReleaseQuantity": 2,
-        "ReleaseName": ""
+        "ReleaseName": "得力TPE脚垫适用于红旗HS6PHEV/H5/HS5/EQM5/HS3专用全包围汽车"
       },
       {
         "ReleaseDate": "2026-02-24",
-        "ReleaseQuantity": 3,
-        "ReleaseName": ""
+        "ReleaseQuantity": 2,
+        "ReleaseName": "TPE脚垫红旗HS6PHEV/H5/HS5/EQM5/HS3专用全包围"
+      },
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "红旗H5脚垫"
+      }
+    ]
+  },
+  {
+    "ID": 1771815388221,
+    "Code": "3801273250261106827",
+    "Name": "深蓝S05",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T02:56:28.221Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-23",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "Deli/得力26款长安深蓝S05专用全包围包门槛TPE脚垫汽车用品防水"
+      },
+      {
+        "ReleaseDate": "2026-02-24",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "26款长安深蓝S05专用全包围包门槛TPE脚垫"
+      },
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "深蓝S05脚垫"
+      }
+    ]
+  },
+  {
+    "ID": 1771817079661,
+    "Code": "3801272105568436700",
+    "Name": "萤火虫",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T03:24:39.661Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-23",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "Deli/得力蔚来萤火虫firefly专用TPE全包围脚垫后备箱垫配件汽车"
+      },
+      {
+        "ReleaseDate": "2026-02-24",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "蔚来萤火虫firefly专用TPE全包围脚垫后备箱垫"
+      },
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "萤火虫脚垫"
+      }
+    ]
+  },
+  {
+    "ID": 1771825560835,
+    "Code": "3802581001264300466",
+    "Name": "沃尔沃车系",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T05:46:00.835Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "得力TPE脚垫适用于沃尔沃XC60/XC70专用全包围原厂汽车后备箱垫"
+      },
+      {
+        "ReleaseDate": "2026-02-27",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "TPE脚垫沃尔沃XC60/XC70专用全包围汽车后备箱垫"
+      },
+      {
+        "ReleaseDate": "2026-02-28",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "沃尔沃XC60脚垫/沃尔沃XC70脚垫"
+      }
+    ]
+  },
+  {
+    "ID": 1771825868681,
+    "Code": "3801274575090745498",
+    "Name": "极狐阿尔法车系",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T05:51:08.681Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "得力适用于极狐阿尔法T1/T5/S5/T6专用全包围TPE脚垫全包汽车用品"
+      },
+      {
+        "ReleaseDate": "2026-02-27",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "极狐阿尔法T1/T5/S5/T6专用全包围TPE脚垫全包"
+      },
+      {
+        "ReleaseDate": "2026-02-28",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "极狐T1脚垫"
+      }
+    ]
+  },
+  {
+    "ID": 1771826210172,
+    "Code": "3801273016118280213",
+    "Name": "本田雅阁",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T05:56:50.172Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "Deli/得力本田雅阁11十代十一代半专用全包围包门槛TPE脚垫汽车"
+      },
+      {
+        "ReleaseDate": "2026-02-27",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "本田雅阁11十代十一代半专用全包围包门槛TPE脚垫"
+      },
+      {
+        "ReleaseDate": "2026-02-28",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "雅阁脚垫/本田雅阁脚垫"
+      }
+    ]
+  },
+  {
+    "ID": 1771826338602,
+    "Code": "3801271968062374262",
+    "Name": "比亚迪元系列",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T05:58:58.602Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-03-02",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "deli得力TPE脚垫适用于比亚迪元PLUS/UP/PRO专用全包围汽车用品新"
+      },
+      {
+        "ReleaseDate": "2026-03-03",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "TPE脚垫适用于比亚迪元PLUS/UP/PRO专用全包围"
+      },
+      {
+        "ReleaseDate": "2026-03-04",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "元PLUS脚垫/元UP脚垫"
+      }
+    ]
+  },
+  {
+    "ID": 1771826463204,
+    "Code": "3801271940262527898",
+    "Name": "比亚迪海洋",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T06:01:03.204Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-03-02",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "比亚迪海狮06DMI海豹06EV海鸥05EV海豚06/06GT/05DMI脚垫全包围07"
+      },
+      {
+        "ReleaseDate": "2026-03-03",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "比亚迪海狮06DMI海豹06EV海鸥05EV海豚06/06GT/05DMI脚垫全包围07"
+      },
+      {
+        "ReleaseDate": "2026-03-04",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "海狮06脚垫/比亚迪海豚脚垫"
       }
     ]
   }

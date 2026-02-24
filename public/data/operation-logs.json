@@ -1,192 +1,92 @@
 ﻿[
   {
-    "logId": "log_1771601362286_y2mmimhv5",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:29:22.286Z",
-    "operationTimeStr": "2026/2/20 23:29:22",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771601360014_wsjww7w86",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:29:20.014Z",
-    "operationTimeStr": "2026/2/20 23:29:20",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771601351974_ibrybebgb",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:29:11.974Z",
-    "operationTimeStr": "2026/2/20 23:29:11",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771601167834_zmz4droch",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:26:07.834Z",
-    "operationTimeStr": "2026/2/20 23:26:07",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771601165067_sfz2mm186",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:26:05.067Z",
-    "operationTimeStr": "2026/2/20 23:26:05",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771601158229_6e53ckoxn",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:25:58.229Z",
-    "operationTimeStr": "2026/2/20 23:25:58",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771601154334_mlktnkrsq",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:25:54.334Z",
-    "operationTimeStr": "2026/2/20 23:25:54",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771601152915_7cv1tb9e6",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:25:52.915Z",
-    "operationTimeStr": "2026/2/20 23:25:52",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771601152169_jf5r9eryq",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:25:52.169Z",
-    "operationTimeStr": "2026/2/20 23:25:52",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771601151836_ysy08t5vc",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:25:51.836Z",
-    "operationTimeStr": "2026/2/20 23:25:51",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771600713259_w0qgmbtoa",
-    "operationType": "新增充值记录",
-    "operationDesc": "为用户【李庆坤】充值999元，时长999个月，用户已升级为VIP，到期时间：2109-05-12",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:18:33.259Z",
-    "operationTimeStr": "2026/2/20 23:18:33",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771600678182_q67cs1ur7",
-    "operationType": "新增充值记录",
-    "operationDesc": "为用户【王浩丞】充值10元，时长1个月，用户已升级为VIP，到期时间：2026-09-13",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:17:58.182Z",
-    "operationTimeStr": "2026/2/20 23:17:58",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771600671469_cugeyr5xb",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:17:51.469Z",
-    "operationTimeStr": "2026/2/20 23:17:51",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771600671244_2rtk6wtq4",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:17:51.244Z",
-    "operationTimeStr": "2026/2/20 23:17:51",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771600534011_tegppdmsh",
-    "operationType": "查看充值记录",
-    "operationDesc": "手动刷新会员充值记录列表",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:15:34.011Z",
-    "operationTimeStr": "2026/2/20 23:15:34",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "log_1771600179993_ts7mlzmor",
-    "operationType": "新增充值记录",
-    "operationDesc": "为用户【王浩丞】充值10元，时长1个月",
-    "operator": "admin",
-    "status": "success",
-    "operationTime": "2026-02-20T15:09:39.993Z",
-    "operationTimeStr": "2026/2/20 23:09:39",
-    "ip": "127.0.0.1"
-  },
-  {
-    "logId": "e7d854f1-63a3-4fa7-9424-3400cf7775d5",
+    "logId": "log_1771921168433_lnxu7o5fc",
     "operationType": "编辑用户",
-    "operationDesc": "编辑用户【张云翔】成功，身份：普通用户，店铺：众合祥汽车配件",
+    "operationDesc": "编辑用户【李庆坤】成功，身份：VIP会员，店铺：得力沐璞汽车用品专卖店,迈库雷汽车用品，到期时间：2026-03-16",
     "operator": "admin",
     "status": "success",
-    "operationTime": "2026-02-20T15:06:48.669Z",
-    "operationTimeStr": "2026/2/20 23:06:48",
+    "operationTime": "2026-02-24T08:19:28.433Z",
+    "operationTimeStr": "2026/2/24 16:19:28",
     "ip": "127.0.0.1"
   },
   {
-    "logId": "38434c11-d7b3-46fe-8af7-742c1bda96d8",
+    "logId": "log_1771902573011_95mv8vfph",
+    "operationType": "新增充值记录",
+    "operationDesc": "为用户【张云翔】充值5元，时长1个月，用户已升级为VIP，到期时间：2026-04-24",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-24T03:09:33.011Z",
+    "operationTimeStr": "2026/2/24 11:09:33",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771837350729_mk9esd43b",
+    "operationType": "新增充值记录",
+    "operationDesc": "为用户【王浩丞】充值1元，时长1个月，用户已升级为VIP，到期时间：2026-09-14",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-23T09:02:30.729Z",
+    "operationTimeStr": "2026/2/23 17:02:30",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771834596325_ber8eue8r",
+    "operationType": "新增充值记录",
+    "operationDesc": "为用户【835135131】充值10元，时长1个月，用户已升级为VIP，到期时间：2026-03-23",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-23T08:16:36.325Z",
+    "operationTimeStr": "2026/2/23 16:16:36",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771834314592_iwevrx981",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【835135131】成功，身份：VIP会员，店铺：迈库雷旗舰店,庆赢旗舰店,米其林旗舰店，到期时间：2026-03-24",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-23T08:11:54.592Z",
+    "operationTimeStr": "2026/2/23 16:11:54",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771602468628_hl9f4cja6",
     "operationType": "查看充值记录",
     "operationDesc": "手动刷新会员充值记录列表",
     "operator": "admin",
     "status": "success",
-    "operationTime": "2026-02-20T15:06:43.006Z",
-    "operationTimeStr": "2026/2/20 23:06:43",
+    "operationTime": "2026-02-20T15:47:48.628Z",
+    "operationTimeStr": "2026/2/20 23:47:48",
     "ip": "127.0.0.1"
   },
   {
-    "logId": "log_1771252683355_gmc05czm5",
+    "logId": "log_1771595865524_c4eg0jxds",
     "operationType": "编辑用户",
-    "operationDesc": "编辑用户【李庆坤】成功，身份：VIP会员，店铺：得力沐璞汽车用品专卖店,迈库雷汽车用品专卖店，到期时间：2026-02-12",
+    "operationDesc": "编辑用户【李庆坤】成功，身份：VIP会员，店铺：得力沐璞汽车用品专卖店,迈库雷汽车用品专卖店，到期时间：2026-03-16",
     "operator": "admin",
     "status": "success",
-    "operationTime": "2026-02-16T14:38:03.355Z",
-    "operationTimeStr": "2026/2/16 22:38:03",
+    "operationTime": "2026-02-20T13:57:45.524Z",
+    "operationTimeStr": "2026/2/20 21:57:45",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771248096373_6nikuef67",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【李庆坤】成功，身份：VIP会员，店铺：得力沐璞汽车用品专卖店,迈库雷汽车用品专卖店，到期时间：2026-03-16",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-16T13:21:36.373Z",
+    "operationTimeStr": "2026/2/16 21:21:36",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1771247909910_kysprmb57",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【李庆坤】成功，身份：VIP会员，店铺：得力沐璞汽车用品专卖店,迈库雷汽车用品专卖店，到期时间：2026-03-16T00:00:00.000Z",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-16T13:18:29.910Z",
+    "operationTimeStr": "2026/2/16 21:18:29",
     "ip": "127.0.0.1"
   },
   {

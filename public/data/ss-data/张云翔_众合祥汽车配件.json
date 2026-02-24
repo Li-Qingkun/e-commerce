@@ -1,49 +1,154 @@
 ﻿[
   {
-    "ID": 1770795819332,
-    "Code": "122",
-    "Name": "劳斯莱斯",
+    "ID": 1771892619331,
+    "Code": "3804942427769405514",
+    "Name": "哈弗大狗",
     "SkuName": "",
     "SkuPrice": "",
-    "createTime": "2026-02-11T07:43:39.331Z",
+    "createTime": "2026-02-24T00:23:39.312Z",
     "ReleasePlans": [
       {
-        "ReleaseDate": "2026-02-11",
-        "ReleaseQuantity": 1,
-        "ReleaseName": "1"
-      },
-      {
-        "ReleaseDate": "2026-02-12",
+        "ReleaseDate": "2026-02-24",
         "ReleaseQuantity": 2,
-        "ReleaseName": "1"
+        "ReleaseName": "168"
       },
       {
-        "ReleaseDate": "2026-02-13",
-        "ReleaseQuantity": 1,
-        "ReleaseName": "1"
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "248"
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "168/248"
       }
     ]
   },
   {
-    "ID": 1771841399870,
-    "Code": "",
-    "Name": "1111",
+    "ID": "1771892655264",
+    "Code": "3804975320927437085",
+    "Name": "哈弗H6L",
     "SkuName": "",
     "SkuPrice": "",
-    "createTime": "2026-02-23T10:09:59.870Z",
+    "createTime": "2026-02-24T00:24:00.000Z",
     "ReleasePlans": [
-      {
-        "ReleaseDate": "2026-02-23",
-        "ReleaseQuantity": 2,
-        "ReleaseName": ""
-      },
       {
         "ReleaseDate": "2026-02-24",
         "ReleaseQuantity": 2,
-        "ReleaseName": ""
+        "ReleaseName": "168"
       },
       {
         "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "248"
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "168/248"
+      }
+    ]
+  },
+  {
+    "ID": 1771892706544,
+    "Code": "3804991036212772864",
+    "Name": "吉利帝豪",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-24T00:25:06.544Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-24",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "168"
+      },
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "248"
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "168/248"
+      }
+    ]
+  },
+  {
+    "ID": "1771902216953",
+    "Code": "",
+    "Name": "本田雅阁",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-24T03:03:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 1,
+        "ReleaseName": "168"
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 1,
+        "ReleaseName": "168"
+      },
+      {
+        "ReleaseDate": "2026-02-27",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "248"
+      },
+      {
+        "ReleaseDate": "2026-02-28",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "168/248"
+      }
+    ]
+  },
+  {
+    "ID": "1771914533256",
+    "Code": "",
+    "Name": "哈弗猛龙",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-24T06:28:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-27",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": "1771914555415",
+    "Code": "",
+    "Name": "哈弗H6",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-24T06:29:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-27",
         "ReleaseQuantity": 2,
         "ReleaseName": ""
       }

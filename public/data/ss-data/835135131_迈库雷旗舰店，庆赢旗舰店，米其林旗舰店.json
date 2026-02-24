@@ -1,0 +1,92 @@
+﻿[
+  {
+    "ID": "1771833176883",
+    "Code": "111",
+    "Name": "星越L",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T07:52:00.000Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-23",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-24",
+        "ReleaseQuantity": 4,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 6,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-27",
+        "ReleaseQuantity": 4,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-28",
+        "ReleaseQuantity": 6,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": 1771833199804,
+    "Code": "小米YU7",
+    "Name": "小米YU7",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T07:53:19.804Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-24",
+        "ReleaseQuantity": 3,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": 1771833335111,
+    "Code": "问界M8",
+    "Name": "问界M8后备箱垫",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T07:55:35.111Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 3,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": 1771833789044,
+    "Code": "211",
+    "Name": "问界M+6",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-23T08:03:09.044Z",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-23",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-02-28",
+        "ReleaseQuantity": 6,
+        "ReleaseName": ""
+      }
+    ]
+  }
+]
