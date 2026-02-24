@@ -864,6 +864,241 @@ function refreshOrderPlanTable() {
 	console.log('【刷新计划表格】执行完成，已按createTime倒序排序');
 }
 
+// ===================== 订单查询功能 =====================
+/**
+ * 初始化订单查询弹窗
+ */
+function initOrderQueryModal() {
+	// 初始化店铺下拉框
+	initOrderQueryShopSelect();
+
+	// 设置默认查询日期为今日
+	const today = new Date();
+	const todayStr = formatDateOnly(today);
+	$('#queryDate').val(todayStr);
+
+	// 绑定查询按钮事件
+	$('#btnQueryOrder').off('click').on('click', queryOrderData);
+
+	// 绑定重置按钮事件
+	$('#btnResetQuery').off('click').on('click', resetOrderQuery);
+
+	// 绑定复制表格按钮事件
+	$('#btnCopyOrderTable').off('click').on('click', copyOrderTableContent);
+
+	// 绑定打开订单查询弹窗事件
+	$('#btnQueryOrderInfo').off('click').on('click', function() {
+		// 每次打开弹窗时重新初始化店铺下拉框
+		initOrderQueryShopSelect();
+		// 显示弹窗
+		$('#orderQueryModal').modal('show');
+	});
+}
+
+/**
+ * 初始化订单查询的店铺下拉框
+ */
+function initOrderQueryShopSelect() {
+	const $shopSelect = $('#queryShopName');
+	$shopSelect.empty();
+
+	// 添加用户的所有店铺选项
+	userShopList.forEach(shopName => {
+		const $option = $(`<option value="${shopName}">${shopName}</option>`);
+		// 默认选中当前店铺
+		if (shopName === currentShopName) {
+			$option.prop('selected', true);
+		}
+		$shopSelect.append($option);
+	});
+}
+
+/**
+ * 重置订单查询条件
+ */
+function resetOrderQuery() {
+	// 重置店铺为当前选中店铺
+	$('#queryShopName').val(currentShopName);
+
+	// 重置日期为今日
+	const today = new Date();
+	const todayStr = formatDateOnly(today);
+	$('#queryDate').val(todayStr);
+
+	// 清空表格
+	$('#orderResultTableBody').html(`
+        <tr>
+            <td colspan="23" class="text-center text-muted">请点击查询按钮获取订单数据</td>
+        </tr>
+    `);
+}
+
+/**
+ * 查询订单数据
+ */
+async function queryOrderData() {
+	try {
+		// 获取查询条件
+		const shopName = $('#queryShopName').val().trim();
+		const queryDate = $('#queryDate').val().trim();
+
+		// 验证条件
+		if (!shopName) {
+			showToast('请选择店铺名称', 'error');
+			return;
+		}
+
+		if (!queryDate) {
+			showToast('请选择查询日期', 'error');
+			return;
+		}
+
+		showToast('正在查询订单数据，请稍候...', 'info');
+
+		// 构建请求URL
+		const encodedShopName = encodeURIComponent(shopName);
+		const apiUrl =
+			`https://qnzg.cn/api/dk/seller/activity/queryOrders?app=0&activityId=&productId=&shopName=${encodedShopName}&startDt=${queryDate}&endDt=${queryDate}&orderId=&flowPoint=&pageNum=1&total=6&pageSize=100`;
+		// 定义需要传入的Cookie
+		const cookieStr =
+			'__itrace_wid=d6292dcc-3533-437f-b297-a396b3217651; zxgagree=1; dk=2cbedffd-a456-459e-9a60-da24e78a9e00; __itrace_wid=7684f9bc-595e-4ca1-2f6c-9ff4da1e72a0';
+
+		// 发送请求
+		const response = await fetch(apiUrl, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'Cookie': cookieStr, // 关键：添加Cookie请求头
+				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' // 可选：添加User-Agent模拟浏览器
+			},
+			cache: 'no-cache',
+            credentials: 'include' // 关键：允许携带凭证（Cookie）
+		});
+
+		if (!response.ok) {
+			throw new Error(`请求失败：${response.status}`);
+		}
+
+		const result = await response.json();
+
+		// 处理返回结果
+		if (result.code === 200 && result.data && result.data.list) {
+			renderOrderTable(result.data.list);
+			showToast(`查询成功，共找到 ${result.data.list.length} 条订单`, 'success');
+		} else {
+			$('#orderResultTableBody').html(`
+                <tr>
+                    <td colspan="23" class="text-center text-muted">${result.msg || '未查询到订单数据'}</td>
+                </tr>
+            `);
+			showToast(result.msg || '未查询到订单数据', 'info');
+		}
+	} catch (error) {
+		console.error('查询订单失败：', error);
+		$('#orderResultTableBody').html(`
+            <tr>
+                <td colspan="23" class="text-center text-danger">查询失败：${error.message}</td>
+            </tr>
+        `);
+		showToast(`查询失败：${error.message}`, 'error');
+	}
+}
+
+/**
+ * 渲染订单表格
+ * @param {Array} orderList 订单列表数据
+ */
+function renderOrderTable(orderList) {
+	const $tbody = $('#orderResultTableBody');
+	$tbody.empty();
+
+	if (!Array.isArray(orderList) || orderList.length === 0) {
+		$tbody.html(`
+            <tr>
+                <td colspan="23" class="text-center text-muted">未查询到订单数据</td>
+            </tr>
+        `);
+		return;
+	}
+
+	// 渲染每一行订单数据
+	orderList.forEach((order, index) => {
+		const $tr = $(`
+            <tr>
+                <td>${order.app || ''}</td>
+                <td>${order.activityId || ''}</td>
+                <td>${order.orderId || ''}</td>
+                <td>${order.productId || ''}</td>
+                <td>${order.paySuccessTime || ''}</td>
+                <td>${order.shopId || ''}</td>
+                <td>${order.shopName || ''}</td>
+                <td>${order.beizu || ''}</td>
+                <td>${order.exemptSeller || ''}</td>
+                <td>${order.doudianPrice || ''}</td>
+                <td>${order.hpfxPrice || ''}</td>
+                <td>${order.spreadUnitPrice || ''}</td>
+                <td>${order.cashCosts || ''}</td>
+                <td>${order.dfPrice || ''}</td>
+                <td>${order.guessPrice || ''}</td>
+                <td>${order.searchPrice || ''}</td>
+                <td>${order.highPrice || ''}</td>
+                <td>${order.humanPrice || ''}</td>
+                <td>${order.goldCoinCosts || ''}</td>
+                <td>${order.adPrice || ''}</td>
+                <td>${order.buyerLabelPrice || ''}</td>
+                <td>${order.genderLabelPrice || ''}</td>
+                <td>${order.ageLabelPrice || ''}</td>
+            </tr>
+        `);
+
+		$tbody.append($tr);
+	});
+}
+
+/**
+ * 复制订单表格内容
+ */
+function copyOrderTableContent() {
+	try {
+		// 创建临时文本区域
+		const $tempTextarea = $('<textarea></textarea>');
+		$('body').append($tempTextarea);
+
+		// 收集表格数据
+		let tableText = '';
+
+		// 收集表头
+		$('#orderResultTable thead tr th').each(function(index) {
+			tableText += $(this).text().trim() + '\t';
+		});
+		tableText = tableText.trim() + '\n';
+
+		// 收集行数据
+		$('#orderResultTable tbody tr').each(function() {
+			let rowText = '';
+			$(this).find('td').each(function() {
+				rowText += $(this).text().trim() + '\t';
+			});
+			if (rowText.trim()) {
+				tableText += rowText.trim() + '\n';
+			}
+		});
+
+		// 复制到剪贴板
+		$tempTextarea.val(tableText);
+		$tempTextarea.select();
+		document.execCommand('copy');
+
+		// 移除临时文本区域
+		$tempTextarea.remove();
+
+		showToast('表格内容已复制到剪贴板，可直接粘贴到Excel', 'success');
+	} catch (error) {
+		console.error('复制表格失败：', error);
+		showToast('复制失败，请手动复制', 'error');
+	}
+}
+
 // ===================== 交互函数 =====================
 /**
  * 初始化页面（核心修复：确保数据加载完成后再初始化店铺列表）
@@ -894,6 +1129,9 @@ async function initPage() {
 	initScrollSync();
 	// 初始化用户下拉菜单（包含新增功能）
 	initUserDropdown();
+
+	// ========== 新增：初始化订单查询功能 ==========
+	initOrderQueryModal();
 
 	// ========== 兜底保障：重新绑定对比按钮 ==========
 	setTimeout(() => {

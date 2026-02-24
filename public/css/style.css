@@ -1072,3 +1072,160 @@ body {
 		font-size: 13px;
 	}
 }
+
+/* 超级返平台子菜单样式 */
+.nav-menu-item.dropdown {
+	position: relative;
+}
+
+.super-return-submenu {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	background-color: var(--card-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	width: 180px;
+	display: none;
+	z-index: 1000;
+	margin-top: 4px;
+	list-style: none;
+	padding: 8px 0;
+}
+
+.nav-menu-item.dropdown:hover .super-return-submenu {
+	display: block;
+}
+
+.submenu-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--text-color);
+	padding: 10px 15px;
+	text-decoration: none;
+	font-size: 13px;
+	transition: background-color 0.2s;
+}
+
+.submenu-item:hover {
+	background-color: var(--bg-color);
+	color: var(--primary-color);
+	text-decoration: none;
+}
+
+.submenu-item i {
+	font-size: 12px;
+	width: 16px;
+	text-align: center;
+}
+
+/* 订单查询表格样式优化 */
+#orderResultTable {
+	width: 100%;
+	table-layout: fixed;
+}
+
+#orderResultTable th,
+#orderResultTable td {
+	padding: 8px 10px;
+	font-size: 12px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-align: center;
+}
+
+#orderResultTable th {
+	background-color: #f8f9fa;
+	font-weight: 600;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+#orderResultTable tbody tr:hover {
+	background-color: #f5f7fa;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+	.query-condition-wrapper .row {
+		flex-direction: column;
+	}
+
+	.query-condition-wrapper .col-md-4 {
+		width: 100%;
+		margin-bottom: 10px;
+	}
+
+	#orderResultTable th,
+	#orderResultTable td {
+		font-size: 11px;
+		padding: 4px 6px;
+	}
+}
+
+/* 订单查询模态框全屏样式 */
+#orderQueryModal .modal-dialog {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+}
+
+#orderQueryModal .modal-content {
+    height: 100% !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+#orderQueryModal .modal-header {
+    border-radius: 0 !important;
+    padding: 16px 24px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+}
+
+#orderQueryModal .modal-body {
+    padding: 20px 24px !important;
+    height: calc(100% - 120px) !important;
+    overflow: hidden !important;
+}
+
+#orderQueryModal .order-table-wrapper {
+    max-height: calc(100% - 80px) !important;
+    height: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+}
+
+#orderQueryModal .modal-footer {
+    border-radius: 0 !important;
+    padding: 12px 24px !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    background-color: #fff !important;
+    z-index: 100 !important;
+}
+
+/* 移动端适配 - 全屏模态框依然保持全屏 */
+@media (max-width: 768px) {
+    #orderQueryModal .modal-dialog {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+    }
+    
+    #orderQueryModal .modal-body {
+        height: calc(100% - 100px) !important;
+        padding: 12px 16px !important;
+    }
+    
+    #orderQueryModal .order-table-wrapper {
+        max-height: calc(100% - 60px) !important;
+    }
+}
