@@ -1009,3 +1009,66 @@ body {
 .timeline-plan-item.contextmenu-active {
 	opacity: 0.85;
 }
+
+/* 新增导航菜单样式 - 与整体风格统一 */
+.nav-menu-area {
+	display: flex;
+	align-items: center;
+	margin: 0 15px;
+}
+
+.nav-menu-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	gap: 12px;
+}
+
+.nav-menu-item {
+	display: flex;
+	align-items: center;
+}
+
+.nav-menu-link {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: #fff;
+	font-size: 14px;
+	text-decoration: none;
+	padding: 8px 12px;
+	border-radius: 6px;
+	transition: background-color 0.2s ease;
+	white-space: nowrap;
+}
+
+.nav-menu-link:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+	color: #fff;
+	text-decoration: none;
+}
+
+.nav-menu-link i {
+	font-size: 13px;
+}
+
+/* 移动端适配 - 导航菜单 */
+@media (max-width: 768px) {
+	.nav-menu-area {
+		order: 3;
+		width: 100%;
+		margin: 8px 0 0 0;
+		padding: 8px 0;
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.nav-menu-list {
+		justify-content: center;
+	}
+
+	.nav-menu-link {
+		padding: 6px 10px;
+		font-size: 13px;
+	}
+}
