@@ -43,6 +43,11 @@ function initPlanContextMenu() {
 			$planItems.removeClass('contextmenu-active');
 			$(this).addClass('contextmenu-active');
 
+			// 更新晒图状态菜单文本
+			const postPictures = currentClickPlan.PostPictures || 0;
+			const menuText = postPictures === 1 ? '未晒图' : '已晒图';
+			$('#togglePostPictureItem').text(menuText);
+
 			// 定位并显示右键菜单
 			$contextMenu.css({
 				left: `${e.clientX}px`,
@@ -71,6 +76,8 @@ function initPlanContextMenu() {
 			// newPlan.Code = Math.floor(Math.random() * 10000000000000000000).toString(); // 新Code
 			newPlan.createTime = new Date(); // 新创建时间
 			newPlan.Name = `${newPlan.Name}_副本`; // 副本标识
+			// 新增：复制晒图状态
+			newPlan.PostPictures = newPlan.PostPictures || 0;
 			// 关键修复：将ReleasePlans中的日期字符串重新转换为Date对象
 			newPlan.ReleasePlans = newPlan.ReleasePlans.map(detail => ({
 				...detail,
@@ -100,12 +107,6 @@ function initPlanContextMenu() {
 	$('#deletePlanItem').off('click').on('click', async function() {
 		if (!currentClickPlan) return;
 
-		// // 复用表格删除的确认逻辑
-		// if (!confirm('确定要删除该计划吗？此操作不可恢复！')) {
-		// 	$contextMenu.hide(); // 关闭菜单
-		// 	return;
-		// }
-
 		try {
 			// 直接调用现有删除函数，保证逻辑完全一致
 			await deletePlan(currentClickPlan.ID);
@@ -116,6 +117,31 @@ function initPlanContextMenu() {
 		} catch (error) {
 			console.error('右键删除计划失败：', error);
 			showToast('删除计划失败，请重试', 'error');
+		}
+	});
+
+	// 新增：切换晒图状态功能
+	$('#togglePostPictureItem').off('click').on('click', async function() {
+		if (!currentClickPlan) return;
+
+		try {
+			// 切换晒图状态值
+			currentClickPlan.PostPictures = currentClickPlan.PostPictures === 1 ? 0 : 1;
+			const statusText = currentClickPlan.PostPictures === 1 ? '已晒图' : '未晒图';
+
+			// 保存数据到文件
+			await saveDataToJsonFile();
+
+			// 刷新时间轴视图
+			refreshTimeline();
+
+			// 关闭菜单并提示
+			$contextMenu.hide();
+			$planItems.removeClass('contextmenu-active');
+			showToast(`计划晒图状态已更新为：${statusText}`, 'success');
+		} catch (error) {
+			console.error('切换晒图状态失败：', error);
+			showToast('切换晒图状态失败，请重试', 'error');
 		}
 	});
 }
@@ -762,11 +788,15 @@ function renderTimelineContent() {
 		const totalQuantity = plan.ReleasePlans.reduce((sum, d) => sum + (d.ReleaseQuantity || 0), 0);
 
 		// 创建计划块
+		const postPictures = plan.PostPictures || 0; // 获取晒图状态，默认0
+		const postPictureText = postPictures === 1 ? '已晒图' : '未晒图';
+		const postPictureClass = postPictures === 1 ? 'uploaded' : 'not-uploaded';
 		const $planItem = $(`
             <div class="timeline-plan-item" 
                  data-plan-id="${plan.ID}" 
                  style="left:${planLeft}px; width:${planWidth}px; top:${planTop}px; background:${planColor};">
                 <div class="plan-name">${plan.Name || '未知车型'} (总:${totalQuantity})</div>
+                <div class="post-picture-tag ${postPictureClass}">${postPictureText}</div>
             </div>
         `);
 
@@ -1633,12 +1663,6 @@ async function savePlanForm() {
 	const skuprice = $('#txtSkuPrice').val().trim();
 	const createTime = $('#txtCreateTime').val() ? new Date($('#txtCreateTime').val()) : new Date();
 
-	// // 验证必填项
-	// if (!code) {
-	// 	showToast('车型ID不能为空！', 'error');
-	// 	return;
-	// }
-
 	if (!name) {
 		showToast('车型名称不能为空！', 'error');
 		return;
@@ -1676,6 +1700,7 @@ async function savePlanForm() {
 		Name: name,
 		SkuName: skuname,
 		SkuPrice: skuprice,
+		PostPictures: "0",
 		createTime: createTime,
 		ReleasePlans: details
 	};
@@ -1829,7 +1854,7 @@ function showPlanCompareModal(compareType) {
 		if (!isNewPlan && date2Item.Quantity > 0 &&
 			date1Item.Remark.trim() && date2Item.Remark.trim() &&
 			date1Item.Remark !== date2Item.Remark) {
-			compareResult["改放单词"].push(`${date1Item.Remark} 改为 ${date2Item.Remark}`);
+			compareResult["改放单词"].push(`${date1Item.Remark} → ${date2Item.Remark}`);
 		}
 	});
 

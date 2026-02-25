@@ -345,6 +345,7 @@
     "Name": "红旗车系",
     "SkuName": "",
     "SkuPrice": "",
+	"PostPictures":"1",
     "createTime": "2026-02-23T02:54:00.000Z",
     "ReleasePlans": [
       {
@@ -370,6 +371,7 @@
     "Name": "深蓝S05",
     "SkuName": "",
     "SkuPrice": "",
+	"PostPictures":"1",
     "createTime": "2026-02-23T02:56:28.221Z",
     "ReleasePlans": [
       {
@@ -395,6 +397,7 @@
     "Name": "萤火虫",
     "SkuName": "",
     "SkuPrice": "",
+	"PostPictures":"1",
     "createTime": "2026-02-23T03:24:39.661Z",
     "ReleasePlans": [
       {
