@@ -33,7 +33,7 @@
             }
 
             string encodedShopName = HttpUtility.UrlEncode(shopName);
-            string targetApiUrl = string.Format("https://qnzg.cn/api/dk/seller/activity/queryOrders?app=0&activityId=&productId=&shopName={0}&startDt={1}&endDt={1}&orderId=&flowPoint=&pageNum=1&total=6&pageSize=100", encodedShopName, queryDate);
+            string targetApiUrl = string.Format("https://qnzg.cn/api/dk/seller/activity/queryOrders?app=&activityId=&productId=&shopName={0}&startDt={1}&endDt={1}&orderId=&flowPoint=&pageNum=1&total=6&pageSize=100", encodedShopName, queryDate);
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(targetApiUrl);
             request.Method = "GET";

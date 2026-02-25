@@ -135,6 +135,7 @@ function showToast(message, type = 'info', duration = 3000) {
 		info: '<i class="fa fa-info-circle"></i>',
 		warning: '<i class="fa fa-exclamation-triangle"></i>'
 	};
+	if (type === 'success' || type === 'info') return;
 
 	const $toast = $(`
         <div class="toast ${type}">
@@ -949,7 +950,7 @@ async function queryOrderData() {
 			showToast('请选择查询日期', 'error');
 			return;
 		}
-		
+
 		const cjfId = getCjfIdByShopName(shopName);
 		if (!cjfId) {
 			showToast('未找到该店铺对应的cjfId', 'error');
@@ -1443,6 +1444,58 @@ function bindEvents() {
 		if (e.key === 'Enter') {
 			e.preventDefault();
 			$('#btnConfirmBatchInit').focus();
+		}
+	});
+	// 批量初始化模态框 - 天数选择联动
+	$('#defaultInitDays').off('change').on('change', function() {
+		const days = parseInt($(this).val());
+		const startDate = $('#batchStartDate').val();
+
+		if (days && startDate) {
+			const start = new Date(startDate);
+			const end = new Date(start);
+			end.setDate(end.getDate() + days - 1); // 减1是因为包含开始日期
+
+			$('#batchEndDate').val(formatDateOnly(end));
+
+			// 如果填写了单日数量，自动生成数量字符串
+			const singleQty = $('#singleQuantity').val();
+			if (singleQty && singleQty > 0) {
+				const qtyArray = Array(days).fill(singleQty);
+				$('#batchQuantities').val(qtyArray.join(','));
+			}
+		}
+	});
+
+	// 开始日期变化时，重新计算结束日期
+	$('#batchStartDate').off('change').on('change', function() {
+		const days = parseInt($('#defaultInitDays').val());
+		const startDate = $(this).val();
+
+		if (days && startDate) {
+			const start = new Date(startDate);
+			const end = new Date(start);
+			end.setDate(end.getDate() + days - 1);
+
+			$('#batchEndDate').val(formatDateOnly(end));
+
+			// 更新数量字符串
+			const singleQty = $('#singleQuantity').val();
+			if (singleQty && singleQty > 0) {
+				const qtyArray = Array(days).fill(singleQty);
+				$('#batchQuantities').val(qtyArray.join(','));
+			}
+		}
+	});
+
+	// 单日数量变化时，自动生成数量字符串
+	$('#singleQuantity').off('change').on('change', function() {
+		const days = parseInt($('#defaultInitDays').val());
+		const singleQty = $(this).val();
+
+		if (days && singleQty && singleQty > 0) {
+			const qtyArray = Array(days).fill(singleQty);
+			$('#batchQuantities').val(qtyArray.join(','));
 		}
 	});
 }
@@ -2276,10 +2329,20 @@ function parseQuantityString(quantityStr) {
 function showBatchInitModal() {
 	// 重置表单
 	$('#batchInitForm')[0].reset();
+
+	// 初始化默认天数下拉框（1-50）
+	const $daysSelect = $('#defaultInitDays');
+	$daysSelect.empty();
+	$daysSelect.append('<option value="">请选择初始化天数</option>');
+	for (let i = 1; i <= 50; i++) {
+		$daysSelect.append(`<option value="${i}">${i}天</option>`);
+	}
+
 	// 默认选中今天作为开始日期
 	const today = new Date();
 	const todayStr = formatDateOnly(today);
 	$('#batchStartDate').val(todayStr);
+
 	// 默认选中明天作为结束日期
 	const tomorrow = new Date(today);
 	tomorrow.setDate(tomorrow.getDate() + 1);
@@ -2296,15 +2359,35 @@ function executeBatchInit() {
 	const startDate = $('#batchStartDate').val().trim();
 	const endDate = $('#batchEndDate').val().trim();
 	const quantityStr = $('#batchQuantities').val().trim();
+	const singleQuantity = $('#singleQuantity').val().trim();
+	const defaultDays = $('#defaultInitDays').val();
 
 	// 基础验证
+	if (!defaultDays) {
+		showToast('请选择默认初始化天数', 'error');
+		return;
+	}
+
 	if (!startDate || !endDate) {
 		showToast('请选择完整的日期范围', 'error');
 		return;
 	}
 
-	if (!quantityStr) {
-		showToast('请输入放单数量', 'error');
+	// 处理数量逻辑：优先使用自动生成的数量，没有则使用手动输入的
+	let quantities = [];
+	if (singleQuantity && singleQuantity > 0) {
+		// 使用单日数量自动生成
+		const days = parseInt(defaultDays);
+		quantities = Array(days).fill(parseInt(singleQuantity));
+	} else if (quantityStr) {
+		// 解析手动输入的数量
+		quantities = parseQuantityString(quantityStr);
+		if (quantities.length === 0) {
+			showToast('放单数量格式错误，请输入正整数，使用英文逗号分隔', 'error');
+			return;
+		}
+	} else {
+		showToast('请输入单日放单数量', 'error');
 		return;
 	}
 
@@ -2316,13 +2399,6 @@ function executeBatchInit() {
 	}
 	if (daysCount === -2) {
 		showToast('结束日期不能早于开始日期', 'error');
-		return;
-	}
-
-	// 解析数量
-	const quantities = parseQuantityString(quantityStr);
-	if (quantities.length === 0) {
-		showToast('放单数量格式错误，请输入正整数，使用英文逗号分隔', 'error');
 		return;
 	}
 
