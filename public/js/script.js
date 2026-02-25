@@ -934,12 +934,16 @@ async function loadUserData() {
 				const planObj = Array.isArray(innerItem) ? innerItem[1] : innerItem;
 				if (!planObj) return null;
 
+				const postPictures = Number(planObj.PostPictures);
+				const normalizedPostPictures = isNaN(postPictures) ? 0 : postPictures;
+
 				return {
 					ID: planObj.ID || index + 1,
 					Code: planObj.Code || '',
 					Name: planObj.Name || '',
 					SkuName: planObj.SkuName || '',
 					SkuPrice: planObj.SkuPrice || '',
+					PostPictures: normalizedPostPictures, // 使用标准化的数字值
 					createTime: planObj.createTime ? new Date(planObj.createTime) : new Date(),
 					ReleasePlans: planObj.ReleasePlans ? planObj.ReleasePlans.map(detail => ({
 						ReleaseDate: detail.ReleaseDate ? new Date(detail.ReleaseDate) :
@@ -1115,18 +1119,20 @@ function renderTimelineContent() {
 		// 计算总数量
 		const totalQuantity = plan.ReleasePlans.reduce((sum, d) => sum + (d.ReleaseQuantity || 0), 0);
 
-		// 创建计划块
-		const postPictures = plan.PostPictures || 0; // 获取晒图状态，默认0
-		const postPictureText = postPictures === 1 ? '已晒图' : '未晒图';
-		const postPictureClass = postPictures === 1 ? 'uploaded' : 'not-uploaded';
+		const postPicturesValue = Number(plan.PostPictures);
+		const isPosted = !isNaN(postPicturesValue) && postPicturesValue === 1;
+
+		const postPictureText = isPosted ? '已晒图' : '未晒图';
+		const postPictureClass = isPosted ? 'uploaded' : 'not-uploaded';
+
 		const $planItem = $(`
-    <div class="timeline-plan-item draggable-plan" 
-         data-plan-id="${plan.ID}" 
-         style="left:${planLeft}px; width:${planWidth}px; top:${planTop}px; background:${planColor}; cursor: move;">
-        <div class="plan-name">${plan.Name || '未知车型'} (总:${totalQuantity})</div>
-        <div class="post-picture-tag ${postPictureClass}">${postPictureText}</div>
-    </div>
-`);
+		    <div class="timeline-plan-item draggable-plan" 
+		         data-plan-id="${plan.ID}" 
+		         style="left:${planLeft}px; width:${planWidth}px; top:${planTop}px; background:${planColor}; cursor: move;">
+		        <div class="plan-name">${plan.Name || '未知车型'} (总:${totalQuantity})</div>
+		        <div class="post-picture-tag ${postPictureClass}">${postPictureText}</div>
+		    </div>
+		`);
 
 		// 绑定事件和提示
 		$planItem.dblclick(() => showEditPlanModal(plan.ID));
@@ -2032,7 +2038,7 @@ async function savePlanForm() {
 		Name: name,
 		SkuName: skuname,
 		SkuPrice: skuprice,
-		PostPictures: "0",
+		PostPictures: 0,
 		createTime: createTime,
 		ReleasePlans: details
 	};
