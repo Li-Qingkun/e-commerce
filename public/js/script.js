@@ -23,68 +23,145 @@ let currentClickPlan = null;
 // ===================== 新增：右键菜单初始化函数 =====================
 /**
  * 初始化计划块右键菜单
+ * 优化点：
+ * 1. 修复晒图状态字段不存在时赋值失败的问题
+ * 2. 增强代码健壮性（空值检查、类型处理）
+ * 3. 优化事件绑定和解绑逻辑，避免内存泄漏
+ * 4. 提取通用函数，提升可维护性
+ * 5. 增强用户体验（加载提示、状态校验）
  */
 function initPlanContextMenu() {
+	// 缓存DOM元素，减少重复查询
 	const $contextMenu = $('#planContextMenu');
 	const $planItems = $('.timeline-plan-item');
+	const $togglePostPictureItem = $('#togglePostPictureItem');
 
-	// 为所有计划块绑定右键事件
-	$planItems.off('contextmenu').on('contextmenu', function(e) {
-		// 阻止默认右键菜单
+	// ========== 提取通用工具函数 ==========
+	/**
+	 * 获取格式化的晒图状态（处理字段不存在的情况）
+	 * @param {Object} plan - 计划对象
+	 * @returns {number} 标准化的晒图状态值（0/1）
+	 */
+	const getNormalizedPostPictureStatus = (plan) => {
+		// 处理字段不存在、非数字、非0/1的情况，统一初始化为0
+		const status = Number(plan.PostPictures);
+		return isNaN(status) || ![0, 1].includes(status) ? 0 : status;
+	};
+
+	/**
+	 * 更新晒图状态菜单文本
+	 * @param {Object} plan - 计划对象
+	 */
+	const updatePostPictureMenuText = (plan) => {
+		const postPictures = getNormalizedPostPictureStatus(plan);
+		const menuText = postPictures === 1 ? '未晒图' : '已晒图';
+		$togglePostPictureItem.text(menuText);
+	};
+
+	/**
+	 * 关闭右键菜单并重置激活状态
+	 */
+	const closeContextMenu = () => {
+		$contextMenu.hide();
+		$planItems.removeClass('contextmenu-active');
+	};
+
+	// ========== 核心事件绑定 ==========
+	// 为所有计划块绑定右键事件（优化命名空间，避免冲突）
+	$planItems.off('contextmenu.planContextMenu').on('contextmenu.planContextMenu', function(e) {
+		// 阻止默认行为和事件冒泡
 		e.preventDefault();
 		e.stopPropagation();
 
-		// 修复：通过data-plan-id获取唯一ID，而非名称匹配
+		// 安全获取计划ID（空值校验）
 		const planId = $(this).data('plan-id');
-		currentClickPlan = orderPlans.find(plan => plan.ID == planId); // 用==兼容数字/字符串ID
+		if (!planId) {
+			console.warn('计划ID不存在，无法打开右键菜单');
+			return;
+		}
 
-		if (currentClickPlan) {
-			// 标记当前激活的计划块
-			$planItems.removeClass('contextmenu-active');
-			$(this).addClass('contextmenu-active');
+		// 查找当前计划（严格类型匹配+空值校验）
+		currentClickPlan = orderPlans.find(plan => String(plan.ID) === String(planId));
+		if (!currentClickPlan) {
+			console.warn(`未找到ID为${planId}的计划`);
+			return;
+		}
 
-			// 更新晒图状态菜单文本
-			const postPictures = currentClickPlan.PostPictures || 0;
-			const menuText = postPictures === 1 ? '未晒图' : '已晒图';
-			$('#togglePostPictureItem').text(menuText);
+		// 标记当前激活的计划块
+		$planItems.removeClass('contextmenu-active');
+		$(this).addClass('contextmenu-active');
 
-			// 定位并显示右键菜单
-			$contextMenu.css({
-				left: `${e.clientX}px`,
-				top: `${e.clientY}px`,
-				display: 'block'
-			});
+		// 更新晒图状态菜单文本（兼容字段不存在的情况）
+		updatePostPictureMenuText(currentClickPlan);
+
+		// 定位并显示右键菜单（增加边界检测，避免菜单超出视口）
+		const menuWidth = $contextMenu.outerWidth();
+		const menuHeight = $contextMenu.outerHeight();
+		const viewportWidth = $(window).width();
+		const viewportHeight = $(window).height();
+
+		let left = e.clientX;
+		let top = e.clientY;
+
+		// 右边界检测
+		if (left + menuWidth > viewportWidth) {
+			left = viewportWidth - menuWidth - 10;
+		}
+		// 下边界检测
+		if (top + menuHeight > viewportHeight) {
+			top = viewportHeight - menuHeight - 10;
+		}
+
+		$contextMenu.css({
+			left: `${left}px`,
+			top: `${top}px`,
+			display: 'block'
+		});
+	});
+
+	// 点击页面其他区域关闭右键菜单（优化命名空间）
+	$(document).off('click.planContextMenu').on('click.planContextMenu', function(e) {
+		// 排除点击菜单本身的情况
+		if (!$(e.target).closest($contextMenu).length) {
+			closeContextMenu();
 		}
 	});
 
-	// 点击页面其他区域关闭右键菜单
-	$(document).off('click.planContextMenu').on('click.planContextMenu', function() {
-		$contextMenu.hide();
-		$planItems.removeClass('contextmenu-active');
-	});
-
-	// 复制计划功能实现
-	$('#copyPlanItem').off('click').on('click', async function() {
-		if (!currentClickPlan) return;
+	// 复制计划功能实现（增强健壮性）
+	$('#copyPlanItem').off('click.planContextMenu').on('click.planContextMenu', async function() {
+		if (!currentClickPlan) {
+			showToast('未选中任何计划', 'warning');
+			return;
+		}
 
 		try {
-			// 深拷贝原计划数据
-			const newPlan = JSON.parse(JSON.stringify(currentClickPlan));
+			showToast('正在复制计划...', 'loading'); // 加载提示
 
-			// 更新需要修改的字段
-			newPlan.ID = (Date.now() + Math.floor(Math.random() * 1000)).toString(); // 新ID
-			// newPlan.Code = Math.floor(Math.random() * 10000000000000000000).toString(); // 新Code
-			newPlan.createTime = new Date(); // 新创建时间
-			newPlan.Name = `${newPlan.Name}_副本`; // 副本标识
-			// 新增：复制晒图状态
-			newPlan.PostPictures = newPlan.PostPictures || 0;
-			// 关键修复：将ReleasePlans中的日期字符串重新转换为Date对象
-			newPlan.ReleasePlans = newPlan.ReleasePlans.map(detail => ({
-				...detail,
-				ReleaseDate: new Date(detail.ReleaseDate) // 转换为Date对象
-			}));
+			// 深拷贝原计划数据（处理循环引用容错）
+			const newPlan = structuredClone(currentClickPlan); // 替代JSON.parse(JSON.stringify)，更健壮
 
-			// 将新计划添加到数据源
+			// 更新需要修改的字段（增强ID唯一性）
+			newPlan.ID = `plan_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+			newPlan.createTime = new Date();
+			newPlan.Name = `${newPlan.Name || '未命名计划'}_副本`; // 兼容无名称的情况
+
+			// 标准化晒图状态（核心：处理字段不存在）
+			newPlan.PostPictures = getNormalizedPostPictureStatus(currentClickPlan);
+
+			// 修复ReleaseDate类型（增加空值校验）
+			if (Array.isArray(newPlan.ReleasePlans)) {
+				newPlan.ReleasePlans = newPlan.ReleasePlans.map(detail => {
+					if (!detail) return {};
+					return {
+						...detail,
+						ReleaseDate: detail.ReleaseDate ? new Date(detail.ReleaseDate) : new Date()
+					};
+				});
+			} else {
+				newPlan.ReleasePlans = []; // 初始化空数组，避免后续报错
+			}
+
+			// 添加新计划到数据源
 			orderPlans.push(newPlan);
 
 			// 刷新视图
@@ -95,55 +172,91 @@ function initPlanContextMenu() {
 			await saveDataToJsonFile();
 
 			// 关闭菜单并提示
-			$contextMenu.hide();
+			closeContextMenu();
 			showToast(`成功复制计划：${newPlan.Name}`, 'success');
 		} catch (error) {
 			console.error('复制计划失败：', error);
+			closeContextMenu();
 			showToast('复制计划失败，请重试', 'error');
 		}
 	});
 
-	// ========== 新增：删除计划功能 ==========
-	$('#deletePlanItem').off('click').on('click', async function() {
-		if (!currentClickPlan) return;
+	// 删除计划功能（优化错误处理）
+	$('#deletePlanItem').off('click.planContextMenu').on('click.planContextMenu', async function() {
+		if (!currentClickPlan) {
+			showToast('未选中任何计划', 'warning');
+			return;
+		}
+
+		// 二次确认，提升用户体验
+		if (!confirm(`确定要删除计划「${currentClickPlan.Name || '未命名计划'}」吗？`)) {
+			return;
+		}
 
 		try {
-			// 直接调用现有删除函数，保证逻辑完全一致
+			showToast('正在删除计划...', 'loading');
+
+			// 调用删除函数
 			await deletePlan(currentClickPlan.ID);
 
 			// 关闭菜单
-			$contextMenu.hide();
-			$planItems.removeClass('contextmenu-active');
+			closeContextMenu();
+			showToast('计划删除成功', 'success');
 		} catch (error) {
 			console.error('右键删除计划失败：', error);
+			closeContextMenu();
 			showToast('删除计划失败，请重试', 'error');
 		}
 	});
 
-	// 新增：切换晒图状态功能
-	$('#togglePostPictureItem').off('click').on('click', async function() {
-		if (!currentClickPlan) return;
+	// 切换晒图状态功能（核心修复：字段不存在问题）
+	$('#togglePostPictureItem').off('click.planContextMenu').on('click.planContextMenu', async function() {
+		if (!currentClickPlan) {
+			showToast('未选中任何计划', 'warning');
+			return;
+		}
 
 		try {
-			// 切换晒图状态值
-			currentClickPlan.PostPictures = currentClickPlan.PostPictures === 1 ? 0 : 1;
+			// showToast('正在更新晒图状态...', 'loading');
+
+			// 核心修复：先标准化状态（处理字段不存在/非法值），再切换
+			const currentStatus = getNormalizedPostPictureStatus(currentClickPlan);
+			currentClickPlan.PostPictures = currentStatus === 1 ? 0 : 1;
+
 			const statusText = currentClickPlan.PostPictures === 1 ? '已晒图' : '未晒图';
 
 			// 保存数据到文件
 			await saveDataToJsonFile();
 
-			// 刷新时间轴视图
+			// 刷新视图（同步更新菜单文本）
 			refreshTimeline();
+			updatePostPictureMenuText(currentClickPlan);
 
 			// 关闭菜单并提示
-			$contextMenu.hide();
-			$planItems.removeClass('contextmenu-active');
+			closeContextMenu();
 			showToast(`计划晒图状态已更新为：${statusText}`, 'success');
 		} catch (error) {
 			console.error('切换晒图状态失败：', error);
+			closeContextMenu();
 			showToast('切换晒图状态失败，请重试', 'error');
 		}
 	});
+
+	// ========== 额外优化：窗口大小变化时重置菜单位置 ==========
+	$(window).off('resize.planContextMenu').on('resize.planContextMenu', function() {
+		closeContextMenu();
+	});
+
+	// ========== 清理函数（可选：用于页面销毁时） ==========
+	this.destroy = function() {
+		// 解绑所有命名空间事件，避免内存泄漏
+		$planItems.off('.planContextMenu');
+		$(document).off('.planContextMenu');
+		$(window).off('.planContextMenu');
+		$('#copyPlanItem, #deletePlanItem, #togglePostPictureItem').off('.planContextMenu');
+		closeContextMenu();
+		currentClickPlan = null;
+	};
 }
 
 // ===================== 工具函数 =====================
@@ -652,6 +765,7 @@ async function saveDataToJsonFile() {
 			SkuName: plan.SkuName,
 			SkuPrice: plan.SkuPrice,
 			createTime: plan.createTime.toISOString(),
+			PostPictures: plan.PostPictures !== undefined ? plan.PostPictures : 0,
 			ReleasePlans: plan.ReleasePlans.map(detail => ({
 				ReleaseDate: formatDateOnly(detail.ReleaseDate),
 				ReleaseQuantity: detail.ReleaseQuantity,
