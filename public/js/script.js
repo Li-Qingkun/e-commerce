@@ -3,7 +3,10 @@ const CONFIG = {
 	dateCellWidth: 80, // 时间轴单元格宽度
 	planHeight: 40, // 计划块高度
 	planMargin: 5, // 计划块间距
-	jsonFilePath: '/data/ss-data/' // JSON文件存储目录（需提前创建）
+	jsonFilePath: '/data/ss-data/', // JSON文件存储目录（需提前创建）
+	// 新增拖动相关配置
+	dragThreshold: 5, // 拖动触发阈值（像素）
+	snapOffset: 0 // 吸附偏移量
 };
 
 // ===================== 全局变量 =====================
@@ -257,6 +260,217 @@ function initPlanContextMenu() {
 		closeContextMenu();
 		currentClickPlan = null;
 	};
+}
+
+// ===================== 计划块拖动功能 =====================
+/**
+ * 初始化计划块拖动功能
+ */
+function initPlanDrag() {
+	let isDragging = false;
+	let dragStartX = 0;
+	let dragStartLeft = 0;
+	let currentDraggingPlan = null;
+	let currentDraggingElement = null;
+
+	// 获取所有日期列的位置信息
+	function getDateColumnPositions() {
+		const positions = [];
+		const $headerDates = $('#timelineHeader .timeline-date-item');
+		const dateCellWidth = $headerDates.eq(0).outerWidth() || CONFIG.dateCellWidth;
+
+		$headerDates.each(function(index) {
+			const dateText = $(this).find('.date-text').text();
+			positions.push({
+				index: index,
+				left: index * dateCellWidth,
+				width: dateCellWidth,
+				date: dateText,
+				center: index * dateCellWidth + dateCellWidth / 2
+			});
+		});
+
+		return positions;
+	}
+
+	// 找到最近的日期列（使用计划块左边界计算）
+	function findNearestDateColumn(x) {
+		const columns = getDateColumnPositions();
+		let nearest = columns[0];
+		let minDistance = Math.abs(x - nearest.left);
+
+		columns.forEach(column => {
+			const distance = Math.abs(x - column.left);
+			if (distance < minDistance) {
+				minDistance = distance;
+				nearest = column;
+			}
+		});
+
+		return nearest;
+	}
+
+	// 更新计划数据的日期（核心修复版本）
+	async function updatePlanDates(planId, startDateStr) {
+		try {
+			showToast('正在更新计划日期...', 'info');
+
+			const planIndex = orderPlans.findIndex(p => String(p.ID) === String(planId));
+			if (planIndex === -1) {
+				showToast('未找到对应的计划数据', 'error');
+				return;
+			}
+
+			const plan = orderPlans[planIndex];
+			const startDate = new Date(startDateStr);
+
+			// 验证日期有效性
+			if (isNaN(startDate.getTime())) {
+				showToast('无效的日期格式', 'error');
+				return;
+			}
+
+			// 获取原计划的时长（天数）
+			let planDuration = 1;
+			if (plan.ReleasePlans && Array.isArray(plan.ReleasePlans) && plan.ReleasePlans.length > 0) {
+				const originalStartDate = new Date(plan.ReleasePlans[0].ReleaseDate);
+				const originalEndDate = new Date(plan.ReleasePlans[plan.ReleasePlans.length - 1].ReleaseDate);
+				planDuration = Math.ceil((originalEndDate - originalStartDate) / (1000 * 60 * 60 * 24)) + 1;
+			}
+
+			// 按新的开始日期和原时长更新所有明细日期
+			plan.ReleasePlans = plan.ReleasePlans || [];
+			for (let i = 0; i < planDuration; i++) {
+				const newDate = new Date(startDate);
+				newDate.setDate(newDate.getDate() + i);
+
+				// 更新现有明细或创建新明细
+				if (i < plan.ReleasePlans.length) {
+					plan.ReleasePlans[i].ReleaseDate = newDate;
+				} else {
+					plan.ReleasePlans.push({
+						ReleaseDate: newDate,
+						ReleaseQuantity: plan.ReleasePlans[0]?.ReleaseQuantity || 1,
+						ReleaseName: ''
+					});
+				}
+			}
+
+			// 如果计划时长和明细数量不匹配，截断多余的
+			if (plan.ReleasePlans.length > planDuration) {
+				plan.ReleasePlans = plan.ReleasePlans.slice(0, planDuration);
+			}
+
+			// 关键修复：等待保存完成后再刷新视图
+			await saveDataToJsonFile();
+
+			// 刷新视图
+			refreshTimeline();
+
+			// 提示更新结果
+			const endDate = new Date(startDate);
+			endDate.setDate(endDate.getDate() + planDuration - 1);
+			showToast(`计划已更新至 ${formatDateOnly(startDate)} - ${formatDateOnly(endDate)}`, 'success');
+
+		} catch (error) {
+			console.error('更新计划日期失败：', error);
+			showToast('更新计划日期失败，请重试', 'error');
+		}
+	}
+
+	// 绑定鼠标按下事件
+	$('.timeline-plan-item').mousedown(function(e) {
+		// 右键菜单优先级更高
+		if (e.button === 2) return;
+
+		isDragging = false;
+		dragStartX = e.clientX;
+		dragStartLeft = parseInt($(this).css('left')) || 0;
+		currentDraggingPlan = $(this).data('plan-id');
+		currentDraggingElement = this;
+
+		// 添加拖动状态类
+		$(this).addClass('dragging');
+
+		// 阻止文本选择
+		e.preventDefault();
+	});
+
+	// 鼠标移动事件
+	$(document).mousemove(function(e) {
+		if (!currentDraggingElement) return;
+
+		const dx = e.clientX - dragStartX;
+
+		// 达到拖动阈值才开始拖动
+		if (!isDragging && Math.abs(dx) > CONFIG.dragThreshold) {
+			isDragging = true;
+		}
+
+		if (isDragging) {
+			// 计算新的left值
+			let newLeft = dragStartLeft + dx;
+			const $plan = $(currentDraggingElement);
+
+			// 更新计划块位置
+			$plan.css('left', newLeft + 'px');
+
+			// 吸附效果 - 实时显示吸附位置
+			const columns = getDateColumnPositions();
+			const planLeft = newLeft;
+			const nearestColumn = findNearestDateColumn(planLeft);
+
+			// 添加吸附提示
+			$plan.attr('data-snap-date', nearestColumn.date);
+		}
+	});
+
+	// 鼠标释放事件（修复版）
+	$(document).mouseup(function(e) {
+		if (!isDragging || !currentDraggingElement) {
+			// 清除拖动状态
+			if (currentDraggingElement) {
+				$(currentDraggingElement).removeClass('dragging');
+			}
+			isDragging = false;
+			currentDraggingElement = null;
+			currentDraggingPlan = null;
+			return;
+		}
+
+		// 关键修复：先保存当前拖动的计划ID到局部变量
+		const planId = currentDraggingPlan;
+		const $plan = $(currentDraggingElement);
+		const planLeft = parseInt($plan.css('left'));
+		const nearestColumn = findNearestDateColumn(planLeft);
+
+		// 动画过渡到吸附位置
+		$plan.animate({
+			left: nearestColumn.left + 'px'
+		}, 200, async function() {
+			// 使用保存的planId，而不是已经被置为null的currentDraggingPlan
+			await updatePlanDates(planId, nearestColumn.date);
+
+			// 清除拖动状态
+			$plan.removeClass('dragging');
+			$plan.removeAttr('data-snap-date');
+		});
+
+		// 重置拖动状态
+		isDragging = false;
+		currentDraggingElement = null;
+		currentDraggingPlan = null;
+	});
+
+	// 鼠标离开窗口时取消拖动
+	$(document).mouseleave(function() {
+		if (isDragging && currentDraggingElement) {
+			$(currentDraggingElement).removeClass('dragging');
+		}
+		isDragging = false;
+		currentDraggingElement = null;
+		currentDraggingPlan = null;
+	});
 }
 
 // ===================== 工具函数 =====================
@@ -906,13 +1120,13 @@ function renderTimelineContent() {
 		const postPictureText = postPictures === 1 ? '已晒图' : '未晒图';
 		const postPictureClass = postPictures === 1 ? 'uploaded' : 'not-uploaded';
 		const $planItem = $(`
-            <div class="timeline-plan-item" 
-                 data-plan-id="${plan.ID}" 
-                 style="left:${planLeft}px; width:${planWidth}px; top:${planTop}px; background:${planColor};">
-                <div class="plan-name">${plan.Name || '未知车型'} (总:${totalQuantity})</div>
-                <div class="post-picture-tag ${postPictureClass}">${postPictureText}</div>
-            </div>
-        `);
+    <div class="timeline-plan-item draggable-plan" 
+         data-plan-id="${plan.ID}" 
+         style="left:${planLeft}px; width:${planWidth}px; top:${planTop}px; background:${planColor}; cursor: move;">
+        <div class="plan-name">${plan.Name || '未知车型'} (总:${totalQuantity})</div>
+        <div class="post-picture-tag ${postPictureClass}">${postPictureText}</div>
+    </div>
+`);
 
 		// 绑定事件和提示
 		$planItem.dblclick(() => showEditPlanModal(plan.ID));
@@ -930,9 +1144,10 @@ function renderTimelineContent() {
 
 	if (todayIndex !== -1) {
 		const lineX = (todayIndex * dateCellWidth) + (dateCellWidth / 2);
+		const scrollHeight = $container[0].scrollHeight;
 		const $todayLine = $(`
             <div class="timeline-current-line" 
-                 style="left:${lineX}px; top:0; bottom:0; width:2px; background-color:var(--error-color); position:absolute; z-index:999;">
+                 style="left:${lineX}px; top:0; height:${scrollHeight}px; width:2px; background-color:var(--error-color); position:absolute; z-index:999;">
             </div>
         `);
 		$container.append($todayLine);
@@ -951,6 +1166,8 @@ function refreshTimeline() {
 	renderTimelineContent();
 	// 确保右键菜单重新初始化
 	initPlanContextMenu();
+	// 初始化拖动功能
+	initPlanDrag();
 }
 
 // 刷新计划表格（按createTime倒序排序+修复显示问题）
@@ -1680,8 +1897,9 @@ async function loadDataFromJson() {
 	await loadUserData();
 	refreshTimeline();
 	refreshOrderPlanTable();
-	// 数据加载完成后初始化右键菜单
+	// 数据加载完成后初始化右键菜单和拖动功能
 	initPlanContextMenu();
+	initPlanDrag();
 	showToast(`【${currentShopName}】数据加载完成，共${orderPlans.length}条计划`, 'success');
 }
 
