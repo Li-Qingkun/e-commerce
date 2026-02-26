@@ -1438,3 +1438,50 @@ body {
 	font-size: 12px;
 	white-space: nowrap;
 }
+
+/* 只读日期输入框样式 */
+.readonly-date {
+	background-color: #f8f9fa;
+	cursor: not-allowed;
+	opacity: 0.8;
+}
+
+/* 触控设备长按样式 */
+.timeline-plan-item.pressing {
+	opacity: 0.9;
+}
+
+.timeline-plan-item.long-press {
+	opacity: 0.8;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 优化移动端菜单触摸体验 */
+.custom-contextmenu-item {
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
+}
+
+/* 防止移动端点击延迟 */
+.timeline-plan-item {
+	touch-action: manipulation;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+/* 适配移动端拖动视觉反馈 */
+@media (max-width: 768px) {
+	.timeline-plan-item.dragging {
+		opacity: 0.95;
+		z-index: 1001;
+	}
+
+	.custom-contextmenu {
+		width: 140px;
+	}
+
+	.custom-contextmenu-item {
+		padding: 12px 15px;
+		font-size: 15px;
+	}
+}

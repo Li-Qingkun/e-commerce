@@ -431,12 +431,12 @@
     ]
   },
   {
-    "ID": 1771825560835,
+    "ID": "1771825560835",
     "Code": "3802581001264300466",
     "Name": "沃尔沃车系",
     "SkuName": "",
-    "SkuPrice": "",
-    "createTime": "2026-02-23T05:46:00.835Z",
+    "SkuPrice": "288",
+    "createTime": "2026-02-23T05:46:00.000Z",
     "PostPictures": 0,
     "ReleasePlans": [
       {
@@ -457,12 +457,12 @@
     ]
   },
   {
-    "ID": 1771825868681,
+    "ID": "1771825868681",
     "Code": "3801274575090745498",
     "Name": "极狐阿尔法车系",
     "SkuName": "",
-    "SkuPrice": "",
-    "createTime": "2026-02-23T05:51:08.681Z",
+    "SkuPrice": "288",
+    "createTime": "2026-02-23T05:51:00.000Z",
     "PostPictures": 0,
     "ReleasePlans": [
       {
@@ -483,12 +483,12 @@
     ]
   },
   {
-    "ID": 1771826210172,
+    "ID": "1771826210172",
     "Code": "3801273016118280213",
     "Name": "本田雅阁",
     "SkuName": "",
-    "SkuPrice": "",
-    "createTime": "2026-02-23T05:56:50.172Z",
+    "SkuPrice": "288",
+    "createTime": "2026-02-23T05:56:00.000Z",
     "PostPictures": 0,
     "ReleasePlans": [
       {

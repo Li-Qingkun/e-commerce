@@ -25,19 +25,25 @@ let currentClickPlan = null;
 
 // ===================== 新增：右键菜单初始化函数 =====================
 /**
- * 初始化计划块右键菜单
+ * 初始化计划块右键菜单（适配触控设备）
  * 优化点：
  * 1. 修复晒图状态字段不存在时赋值失败的问题
  * 2. 增强代码健壮性（空值检查、类型处理）
  * 3. 优化事件绑定和解绑逻辑，避免内存泄漏
  * 4. 提取通用函数，提升可维护性
  * 5. 增强用户体验（加载提示、状态校验）
+ * 6. 新增触控设备长按支持
  */
 function initPlanContextMenu() {
 	// 缓存DOM元素，减少重复查询
 	const $contextMenu = $('#planContextMenu');
 	const $planItems = $('.timeline-plan-item');
 	const $togglePostPictureItem = $('#togglePostPictureItem');
+
+	// 新增：触控设备长按相关变量
+	let touchTimer = null;
+	const TOUCH_HOLD_DURATION = 600; // 长按触发时间
+	let lastTouchTime = 0;
 
 	// ========== 提取通用工具函数 ==========
 	/**
@@ -69,6 +75,50 @@ function initPlanContextMenu() {
 		$planItems.removeClass('contextmenu-active');
 	};
 
+	/**
+	 * 打开右键菜单
+	 * @param {Object} plan - 计划对象
+	 * @param {number} x - 菜单X坐标
+	 * @param {number} y - 菜单Y坐标
+	 */
+	const openContextMenu = (plan, x, y) => {
+		if (!plan) {
+			showToast('未选中任何计划', 'warning');
+			return;
+		}
+
+		// 标记当前激活的计划块
+		$planItems.removeClass('contextmenu-active');
+		$(`.timeline-plan-item[data-plan-id="${plan.ID}"]`).addClass('contextmenu-active');
+
+		// 更新晒图状态菜单文本（兼容字段不存在的情况）
+		updatePostPictureMenuText(plan);
+
+		// 定位并显示右键菜单（增加边界检测，避免菜单超出视口）
+		const menuWidth = $contextMenu.outerWidth();
+		const menuHeight = $contextMenu.outerHeight();
+		const viewportWidth = $(window).width();
+		const viewportHeight = $(window).height();
+
+		let left = x;
+		let top = y;
+
+		// 右边界检测
+		if (left + menuWidth > viewportWidth) {
+			left = viewportWidth - menuWidth - 10;
+		}
+		// 下边界检测
+		if (top + menuHeight > viewportHeight) {
+			top = viewportHeight - menuHeight - 10;
+		}
+
+		$contextMenu.css({
+			left: `${left}px`,
+			top: `${top}px`,
+			display: 'block'
+		});
+	};
+
 	// ========== 核心事件绑定 ==========
 	// 为所有计划块绑定右键事件（优化命名空间，避免冲突）
 	$planItems.off('contextmenu.planContextMenu').on('contextmenu.planContextMenu', function(e) {
@@ -90,45 +140,54 @@ function initPlanContextMenu() {
 			return;
 		}
 
-		// 标记当前激活的计划块
-		$planItems.removeClass('contextmenu-active');
-		$(this).addClass('contextmenu-active');
-
-		// 更新晒图状态菜单文本（兼容字段不存在的情况）
-		updatePostPictureMenuText(currentClickPlan);
-
-		// 定位并显示右键菜单（增加边界检测，避免菜单超出视口）
-		const menuWidth = $contextMenu.outerWidth();
-		const menuHeight = $contextMenu.outerHeight();
-		const viewportWidth = $(window).width();
-		const viewportHeight = $(window).height();
-
-		let left = e.clientX;
-		let top = e.clientY;
-
-		// 右边界检测
-		if (left + menuWidth > viewportWidth) {
-			left = viewportWidth - menuWidth - 10;
-		}
-		// 下边界检测
-		if (top + menuHeight > viewportHeight) {
-			top = viewportHeight - menuHeight - 10;
-		}
-
-		$contextMenu.css({
-			left: `${left}px`,
-			top: `${top}px`,
-			display: 'block'
-		});
+		openContextMenu(currentClickPlan, e.clientX, e.clientY);
 	});
+
+	// ========== 新增：触控设备长按事件 ==========
+	$planItems.off('touchstart.planContextMenu').on('touchstart.planContextMenu', function(e) {
+		e.preventDefault();
+
+		const now = new Date().getTime();
+		const touch = e.touches[0];
+		const $this = $(this);
+		const planId = $this.data('plan-id');
+
+		// 双击检测（300ms内再次点击）
+		if (now - lastTouchTime < 300) {
+			clearTimeout(touchTimer);
+			lastTouchTime = 0;
+			// 触发双击事件（编辑计划）
+			showEditPlanModal(planId);
+			return;
+		}
+		lastTouchTime = now;
+
+		// 设置长按定时器
+		touchTimer = setTimeout(() => {
+			// 查找当前计划
+			currentClickPlan = orderPlans.find(plan => String(plan.ID) === String(planId));
+			if (currentClickPlan) {
+				openContextMenu(currentClickPlan, touch.clientX, touch.clientY);
+			}
+		}, TOUCH_HOLD_DURATION);
+	});
+
+	// 触摸结束/取消时清除定时器
+	$planItems.off('touchend.planContextMenu touchcancel.planContextMenu').on(
+		'touchend.planContextMenu touchcancel.planContextMenu',
+		function() {
+			clearTimeout(touchTimer);
+		});
 
 	// 点击页面其他区域关闭右键菜单（优化命名空间）
-	$(document).off('click.planContextMenu').on('click.planContextMenu', function(e) {
-		// 排除点击菜单本身的情况
-		if (!$(e.target).closest($contextMenu).length) {
-			closeContextMenu();
-		}
-	});
+	$(document).off('click.planContextMenu touchstart.planContextMenu').on(
+		'click.planContextMenu touchstart.planContextMenu',
+		function(e) {
+			// 排除点击菜单本身的情况
+			if (!$(e.target).closest($contextMenu).length) {
+				closeContextMenu();
+			}
+		});
 
 	// 复制计划功能实现（增强健壮性）
 	$('#copyPlanItem').off('click.planContextMenu').on('click.planContextMenu', async function() {
@@ -264,7 +323,7 @@ function initPlanContextMenu() {
 
 // ===================== 计划块拖动功能 =====================
 /**
- * 初始化计划块拖动功能
+ * 初始化计划块拖动功能（适配触控设备）
  */
 function initPlanDrag() {
 	let isDragging = false;
@@ -272,6 +331,10 @@ function initPlanDrag() {
 	let dragStartLeft = 0;
 	let currentDraggingPlan = null;
 	let currentDraggingElement = null;
+	// 新增：长按检测相关变量
+	let longPressTimer = null;
+	let isLongPress = false;
+	const LONG_PRESS_DURATION = 500; // 长按触发时间（毫秒）
 
 	// 获取所有日期列的位置信息
 	function getDateColumnPositions() {
@@ -378,7 +441,17 @@ function initPlanDrag() {
 		}
 	}
 
-	// 绑定鼠标按下事件
+	// 重置长按状态
+	function resetLongPressState() {
+		clearTimeout(longPressTimer);
+		longPressTimer = null;
+		isLongPress = false;
+		if (currentDraggingElement) {
+			$(currentDraggingElement).removeClass('long-press');
+		}
+	}
+
+	// ========== 鼠标事件（原有） ==========
 	$('.timeline-plan-item').mousedown(function(e) {
 		// 右键菜单优先级更高
 		if (e.button === 2) return;
@@ -396,7 +469,89 @@ function initPlanDrag() {
 		e.preventDefault();
 	});
 
-	// 鼠标移动事件
+	// ========== 触控事件（新增） ==========
+	$('.timeline-plan-item').on('touchstart', function(e) {
+		e.preventDefault(); // 阻止默认行为（如滚动）
+
+		// 记录初始位置
+		const touch = e.touches[0];
+		dragStartX = touch.clientX;
+		dragStartLeft = parseInt($(this).css('left')) || 0;
+		currentDraggingPlan = $(this).data('plan-id');
+		currentDraggingElement = this;
+
+		// 开始检测长按
+		$(this).addClass('pressing');
+		longPressTimer = setTimeout(() => {
+			isLongPress = true;
+			$(currentDraggingElement).addClass('long-press dragging');
+			showToast('长按开始，可拖动计划', 'info');
+		}, LONG_PRESS_DURATION);
+	});
+
+	// 触控移动事件
+	$(document).on('touchmove', function(e) {
+		if (!currentDraggingElement || !isLongPress) return;
+
+		const touch = e.touches[0];
+		const dx = touch.clientX - dragStartX;
+
+		// 计算新的left值
+		let newLeft = dragStartLeft + dx;
+		const $plan = $(currentDraggingElement);
+
+		// 更新计划块位置
+		$plan.css('left', newLeft + 'px');
+
+		// 吸附效果 - 实时显示吸附位置
+		const columns = getDateColumnPositions();
+		const planLeft = newLeft;
+		const nearestColumn = findNearestDateColumn(planLeft);
+
+		// 添加吸附提示
+		$plan.attr('data-snap-date', nearestColumn.date);
+	});
+
+	// 触控结束事件
+	$(document).on('touchend touchcancel', function(e) {
+		resetLongPressState();
+
+		if (!isLongPress || !currentDraggingElement) {
+			// 清除拖动状态
+			if (currentDraggingElement) {
+				$(currentDraggingElement).removeClass('dragging pressing');
+			}
+			isDragging = false;
+			currentDraggingElement = null;
+			currentDraggingPlan = null;
+			return;
+		}
+
+		// 关键修复：先保存当前拖动的计划ID到局部变量
+		const planId = currentDraggingPlan;
+		const $plan = $(currentDraggingElement);
+		const planLeft = parseInt($plan.css('left'));
+		const nearestColumn = findNearestDateColumn(planLeft);
+
+		// 动画过渡到吸附位置
+		$plan.animate({
+			left: nearestColumn.left + 'px'
+		}, 200, async function() {
+			// 使用保存的planId，而不是已经被置为null的currentDraggingPlan
+			await updatePlanDates(planId, nearestColumn.date);
+
+			// 清除拖动状态
+			$plan.removeClass('dragging pressing');
+			$plan.removeAttr('data-snap-date');
+		});
+
+		// 重置拖动状态
+		isDragging = false;
+		currentDraggingElement = null;
+		currentDraggingPlan = null;
+	});
+
+	// 鼠标移动事件（原有）
 	$(document).mousemove(function(e) {
 		if (!currentDraggingElement) return;
 
@@ -464,6 +619,7 @@ function initPlanDrag() {
 
 	// 鼠标离开窗口时取消拖动
 	$(document).mouseleave(function() {
+		resetLongPressState();
 		if (isDragging && currentDraggingElement) {
 			$(currentDraggingElement).removeClass('dragging');
 		}
@@ -1956,6 +2112,15 @@ function showEditPlanModal(planId) {
 		addDetailRow();
 	}
 
+	// 关键：编辑模式下也要更新删除按钮状态和日期只读状态
+	updateDetailRowDeleteStatus();
+	updateDateInputReadonlyStatus();
+
+	// 给第一行日期输入框绑定change事件
+	$('#detailTableBody tr:first').find('.detail-date').off('change').on('change', function() {
+		updateSubsequentDates($(this).val());
+	});
+
 	$('#editModal').modal('show');
 }
 
@@ -1966,25 +2131,155 @@ function showEditPlanModal(planId) {
 function addDetailRow(detail = null) {
 	const $tbody = $('#detailTableBody');
 	const rowIndex = $tbody.find('tr').length;
+	let releaseDate = '';
 
-	const releaseDate = detail ? formatDateOnly(detail.ReleaseDate) : '';
+	// 1. 处理日期逻辑
+	if (detail) {
+		// 编辑模式：使用传入的日期
+		releaseDate = formatDateOnly(detail.ReleaseDate);
+	} else {
+		if (rowIndex === 0) {
+			// 新增第一条：默认今日
+			const today = new Date();
+			releaseDate = formatDateOnly(today);
+		} else {
+			// 新增后续行：取上一行的日期 + 1天
+			const lastRowDate = $tbody.find('tr:last').find('.detail-date').val();
+			if (lastRowDate) {
+				const lastDate = new Date(lastRowDate);
+				lastDate.setDate(lastDate.getDate() + 1);
+				releaseDate = formatDateOnly(lastDate);
+			} else {
+				// 兜底：使用今日
+				const today = new Date();
+				releaseDate = formatDateOnly(today);
+			}
+		}
+	}
+
 	const quantity = detail ? detail.ReleaseQuantity : '';
 	const remark = detail ? detail.ReleaseName : '';
 
+	// 2. 处理删除按钮权限：仅第一条和最后一条可删除，中间行禁用
+	let deleteBtnHtml = '';
+	const totalRows = $tbody.find('tr').length + 1; // 加上当前要新增的行
+	if (totalRows === 1) {
+		// 第一条：可删除
+		deleteBtnHtml = '<button type="button" class="btn btn-sm btn-danger btn-remove-detail">删除</button>';
+	} else {
+		// 非第一条：需要判断最终位置（新增后是否是最后一条）
+		// 先添加行，再统一更新删除按钮状态
+		deleteBtnHtml = '<button type="button" class="btn btn-sm btn-danger btn-remove-detail" disabled>删除</button>';
+	}
+
+	// 关键修改：添加readonly属性控制，只有第一行可编辑日期
+	const dateInputReadonly = rowIndex === 0 ? '' : 'readonly';
+	const dateInputClass = rowIndex === 0 ? 'form-control detail-date' : 'form-control detail-date readonly-date';
+
 	const $tr = $(`
         <tr data-index="${rowIndex}">
-            <td><input type="date" class="form-control detail-date" value="${releaseDate}" required></td>
+            <td><input type="date" class="${dateInputClass}" value="${releaseDate}" ${dateInputReadonly} required></td>
             <td><input type="number" class="form-control detail-count" value="${quantity}" min="1" required></td>
             <td><input type="text" class="form-control detail-remark" value="${remark}"></td>
-            <td><button type="button" class="btn btn-sm btn-danger btn-remove-detail">删除</button></td>
+            <td>${deleteBtnHtml}</td>
         </tr>
     `);
 
 	$tbody.append($tr);
 
-	// 绑定删除事件
-	$('.btn-remove-detail').off('click').click(function() {
-		$(this).closest('tr').remove();
+	// 3. 绑定删除事件
+	$('.btn-remove-detail').off('click').on('click', function() {
+		const $thisTr = $(this).closest('tr');
+		$thisTr.remove();
+		// 删除后更新所有行的删除按钮状态
+		updateDetailRowDeleteStatus();
+		// 删除后重新更新日期输入框的只读状态
+		updateDateInputReadonlyStatus();
+	});
+
+	// 4. 绑定第一条日期输入框的change事件，自动更新后续日期
+	if (rowIndex === 0) {
+		$tr.find('.detail-date').off('change').on('change', function() {
+			updateSubsequentDates($(this).val());
+		});
+	}
+
+	// 5. 更新所有行的删除按钮状态（关键：确保只有首尾行可删除）
+	updateDetailRowDeleteStatus();
+	// 6. 更新日期输入框的只读状态
+	updateDateInputReadonlyStatus();
+}
+
+/**
+ * 更新明细行删除按钮状态
+ * 规则：仅第一条和最后一条可删除，中间行禁用
+ */
+function updateDetailRowDeleteStatus() {
+	const $tbody = $('#detailTableBody');
+	const $rows = $tbody.find('tr');
+	const totalRows = $rows.length;
+
+	if (totalRows <= 1) {
+		// 只有一行：允许删除
+		$rows.find('.btn-remove-detail').prop('disabled', false);
+	} else {
+		// 多行：首行和末行允许删除，中间行禁用
+		$rows.each(function(index) {
+			const $btn = $(this).find('.btn-remove-detail');
+			if (index === 0 || index === totalRows - 1) {
+				$btn.prop('disabled', false);
+			} else {
+				$btn.prop('disabled', true);
+			}
+		});
+	}
+}
+
+/**
+ * 更新日期输入框的只读状态
+ * 规则：只有第一行的日期输入框可编辑，其他行只读
+ */
+function updateDateInputReadonlyStatus() {
+	const $tbody = $('#detailTableBody');
+	const $rows = $tbody.find('tr');
+
+	$rows.each(function(index) {
+		const $dateInput = $(this).find('.detail-date');
+		if (index === 0) {
+			// 第一行：可编辑
+			$dateInput.removeAttr('readonly');
+			$dateInput.removeClass('readonly-date');
+			// 重新绑定change事件
+			$dateInput.off('change').on('change', function() {
+				updateSubsequentDates($(this).val());
+			});
+		} else {
+			// 其他行：只读
+			$dateInput.attr('readonly', true);
+			$dateInput.addClass('readonly-date');
+		}
+	});
+}
+
+/**
+ * 更新后续所有行的日期
+ * @param {string} firstDate 第一行的新日期（YYYY-MM-DD）
+ */
+function updateSubsequentDates(firstDate) {
+	if (!firstDate) return;
+
+	const $tbody = $('#detailTableBody');
+	const $rows = $tbody.find('tr');
+	const startDate = new Date(firstDate);
+
+	// 从第二行开始更新
+	$rows.each(function(index) {
+		if (index === 0) return; // 跳过第一行
+
+		const currentDate = new Date(startDate);
+		currentDate.setDate(currentDate.getDate() + index); // 第n行就是开始日期 + n天
+
+		$(this).find('.detail-date').val(formatDateOnly(currentDate));
 	});
 }
 
@@ -2017,6 +2312,18 @@ async function savePlanForm() {
 		const remark = $tr.find('.detail-remark').val().trim();
 
 		if (date && quantity) {
+			// 校验日期连续性
+			const currentDate = new Date(date);
+			if (prevDate) {
+				const expectedDate = new Date(prevDate);
+				expectedDate.setDate(expectedDate.getDate() + 1);
+				if (currentDate.getTime() !== expectedDate.getTime()) {
+					showToast(
+						`日期不连续：上一行日期是${formatDateOnly(prevDate)}，当前行应为${formatDateOnly(expectedDate)}`,
+						'error');
+					return false; // 中断each循环
+				}
+			}
 			details.push({
 				ReleaseDate: new Date(date),
 				ReleaseQuantity: parseInt(quantity),
@@ -2787,6 +3094,16 @@ function executeBatchInit() {
 		// 日期加1天
 		currentDate.setDate(currentDate.getDate() + 1);
 	}
+
+	// 关键：批量生成后更新删除按钮状态和日期只读状态
+	updateDetailRowDeleteStatus();
+	updateDateInputReadonlyStatus();
+
+	// 给第一行日期输入框绑定change事件
+	$('#detailTableBody tr:first').find('.detail-date').off('change').on('change', function() {
+		updateSubsequentDates($(this).val());
+	});
+
 
 	// 关闭模态框并提示
 	$('#batchInitModal').modal('hide');
