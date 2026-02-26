@@ -303,9 +303,11 @@ function handleRegister() {
 
 			// 构建新用户数据
 			const newUser = {
+				id: generateSecureUUID(),
 				userName: username,
 				password: password, // 不限制长度
 				role: userRole, // 默认普通用户
+				memberExpireTime: "",
 				shopList: shopList,
 				createTime: new Date().toISOString(),
 				updateTime: new Date().toISOString()
@@ -364,5 +366,27 @@ function checkLoginStatus() {
 		if (window.location.pathname.indexOf(targetPage) === -1) {
 			window.location.href = targetPage;
 		}
+	}
+}
+
+/**
+ * 使用原生 crypto API 生成安全的 UUID v4
+ * 兼容性：Chrome 92+、Firefox 90+、Node.js 14.17+
+ */
+function generateSecureUUID() {
+	// 浏览器环境
+	if (typeof window !== 'undefined' && window.crypto) {
+		return window.crypto.randomUUID();
+	}
+	// Node.js 环境
+	else if (typeof require !== 'undefined') {
+		const {
+			randomUUID
+		} = require('crypto');
+		return randomUUID();
+	}
+	// 降级方案（兼容旧环境）
+	else {
+		return generateUUID(); // 复用方法1的轻量级实现
 	}
 }
