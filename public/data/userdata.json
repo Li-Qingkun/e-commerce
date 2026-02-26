@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
     "userName": "张云翔",
@@ -37,15 +37,15 @@
     "shopList": [
       {
         "shopName": "得力沐璞汽车用品专卖店",
-		"cjfId":"1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed"
+        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed"
       },
       {
-        "shopName": "迈库雷汽车用品",
-		"cjfId":"1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4bed"
+        "shopName": "迈库雷汽车用品专卖店",
+        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4bed"
       }
     ],
     "createTime": "2026-02-12T09:43:02.396Z",
-    "updateTime": "2026-02-24T08:19:28.386Z"
+    "updateTime": "2026-02-24T03:32:54.337Z"
   },
   {
     "id": "8e4e09c0-c01e-4c9c-9c0c-0c9c0c9c0c9c",
@@ -76,6 +76,7 @@
     "updateTime": "2026-02-23T09:02:30.579Z"
   },
   {
+    "id": "7b7c8d8c-9999-4999-8999-999999999998",
     "userName": "835135131",
     "password": "qq835135131",
     "role": "vip",
@@ -89,13 +90,14 @@
       },
       {
         "shopName": "米其林海瑶专卖店",
-		"cjfId":"1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed"
+        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed"
       }
     ],
     "createTime": "2026-02-23T07:51:50.583Z",
     "updateTime": "2026-02-23T08:16:34.420Z"
   },
   {
+    "id": "7b7c8d8c-9999-4999-8999-999999999997",
     "userName": "zem",
     "password": "yunying001",
     "role": "normal",
@@ -106,5 +108,33 @@
     ],
     "createTime": "2026-02-23T10:04:07.202Z",
     "updateTime": "2026-02-23T10:04:07.202Z"
+  },
+  {
+    "id": "7b7c8d8c-9999-4999-8999-999999999996",
+    "userName": "驹伽旺旗舰店",
+    "password": "123456",
+    "role": "vip",
+    "shopList": [
+      {
+        "shopName": "驹伽旺旗舰店"
+      }
+    ],
+    "createTime": "2026-02-26T02:36:27.498Z",
+    "updateTime": "2026-02-26T02:53:22.655Z",
+    "memberExpireTime": "2026-04-26"
+  },
+  {
+    "id": "user_mm397zsg_ofwmcr7a68k_xi3tmof8lgp",
+    "userName": "张恩铭",
+    "password": "1",
+    "role": "normal",
+    "memberExpireTime": "",
+    "shopList": [
+      {
+        "shopName": "得力堪卢专卖店"
+      }
+    ],
+    "createTime": "2026-02-26T09:21:49.552Z",
+    "updateTime": "2026-02-26T09:21:49.552Z"
   }
 ]

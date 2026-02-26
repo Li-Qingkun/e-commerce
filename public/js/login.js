@@ -258,7 +258,82 @@ function handleLogin() {
 }
 
 /**
- * 处理注册逻辑（默认普通用户身份）
+ * 辅助函数：保存JSON文件（和admin_index.js保持一致）
+ */
+function saveJsonFile(fullFilePath, data) {
+	// 拆分完整路径为【目录路径】和【文件名】
+	const pathParts = fullFilePath.trimStart('/').split('/');
+	const fileName = pathParts.pop();
+	const filePath = pathParts.join('/');
+
+	// 转换数据为JSON字符串
+	const jsonData = JSON.stringify(data, null, 2);
+
+	// 拼接参数
+	const bodyParams =
+		`fileName=${encodeURIComponent(fileName)}&filePath=${encodeURIComponent(filePath)}&data=${encodeURIComponent(jsonData)}`;
+
+	return fetch(`/aspx/SaveJsonFile.aspx`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+		},
+		body: bodyParams
+	}).then(res => {
+		if (!res.ok) throw new Error(`HTTP请求失败：${res.status} ${res.statusText}`);
+		return res.json();
+	}).then(result => {
+		if (!result.success) throw new Error(result.msg || '保存失败');
+		return result;
+	});
+}
+
+/**
+ * 为新注册用户分配非VIP菜单权限
+ */
+function assignMenuPermissionForNewUser(newUserId, newUserName) {
+	// 1. 加载菜单数据和现有权限数据
+	Promise.all([
+		fetch(`/data/menus.json?_=${new Date().getTime()}`, {
+			cache: 'no-cache'
+		}).then(res => res.ok ? res.json() : []),
+		fetch(`/data/user_menu_permissions.json?_=${new Date().getTime()}`, {
+			cache: 'no-cache'
+		}).then(res => res.ok ? res.json() : [])
+	]).then(([menus, userPermissions]) => {
+		// 2. 筛选所有非VIP菜单ID
+		const nonVipMenuIds = menus.filter(menu => !menu.isVip && menu.status === 'enable').map(menu => menu
+			.id);
+
+		if (nonVipMenuIds.length === 0) {
+			// showToast('暂无非VIP菜单可分配', 'info');
+			return;
+		}
+
+		// 3. 构建新用户权限记录
+		const newPermission = {
+			userId: newUserId,
+			userName: newUserName,
+			menuIds: nonVipMenuIds,
+			createTime: new Date().toISOString(),
+			updateTime: new Date().toISOString()
+		};
+
+		// 4. 添加到权限列表
+		userPermissions.push(newPermission);
+
+		// 5. 保存权限数据
+		return saveJsonFile('/data/user_menu_permissions.json', userPermissions);
+	}).then(() => {
+		// showToast('已为新用户分配所有非VIP菜单权限', 'success');
+	}).catch(err => {
+		// showToast(`权限分配失败：${err.message}`, 'error');
+		console.error('分配菜单权限失败：', err);
+	});
+}
+
+/**
+ * 处理注册逻辑（默认普通用户身份 + 自动分配菜单权限）
  */
 function handleRegister() {
 	if (!validateRegisterForm()) {
@@ -322,29 +397,30 @@ function handleRegister() {
 					'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
 				},
 				body: `data=${encodeURIComponent(JSON.stringify(newUserData, null, 2))}`
+			}).then(response => {
+				if (!response.ok) throw new Error('注册请求失败');
+				return response.text();
+			}).then(result => {
+				let success = false;
+				try {
+					const res = JSON.parse(result);
+					success = res.success;
+				} catch (e) {
+					success = result.includes('success') || result.includes('成功');
+				}
+
+				if (!success) throw new Error('注册失败，请重试');
+
+				// 核心新增逻辑：注册成功后为新用户分配非VIP菜单权限
+				assignMenuPermissionForNewUser(newUser.id, newUser.userName);
+
+				showToast('注册成功！即将跳转到登录页面', 'success');
+				setTimeout(() => {
+					switchToLogin();
+					$('#username').val(username);
+					$('#password').focus();
+				}, 1500);
 			});
-		})
-		.then(response => {
-			if (!response.ok) throw new Error('注册请求失败');
-			return response.text();
-		})
-		.then(result => {
-			let success = false;
-			try {
-				const res = JSON.parse(result);
-				success = res.success;
-			} catch (e) {
-				success = result.includes('success') || result.includes('成功');
-			}
-
-			if (!success) throw new Error('注册失败，请重试');
-
-			showToast('注册成功！即将跳转到登录页面', 'success');
-			setTimeout(() => {
-				switchToLogin();
-				$('#username').val(username);
-				$('#password').focus();
-			}, 1500);
 		})
 		.catch(err => {
 			showToast(err.message, 'error');
@@ -370,23 +446,13 @@ function checkLoginStatus() {
 }
 
 /**
- * 使用原生 crypto API 生成安全的 UUID v4
- * 兼容性：Chrome 92+、Firefox 90+、Node.js 14.17+
+ * 生成兼容所有环境的安全 UUID（替换原有函数，解决兼容性问题）
  */
 function generateSecureUUID() {
-	// 浏览器环境
-	if (typeof window !== 'undefined' && window.crypto) {
-		return window.crypto.randomUUID();
-	}
-	// Node.js 环境
-	else if (typeof require !== 'undefined') {
-		const {
-			randomUUID
-		} = require('crypto');
-		return randomUUID();
-	}
-	// 降级方案（兼容旧环境）
-	else {
-		return generateUUID(); // 复用方法1的轻量级实现
-	}
+	// 直接使用时间戳+随机数生成唯一ID，兼容所有浏览器和本地环境
+	const timestamp = Date.now().toString(36);
+	const randomStr = Math.random().toString(36).substr(2, 15);
+	const suffix = Math.random().toString(36).substr(2, 15);
+	// 拼接成类似 UUID 的唯一标识，确保用户ID不重复
+	return `user_${timestamp}_${randomStr}_${suffix}`;
 }

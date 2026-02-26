@@ -203,6 +203,72 @@
 		$('#rechargeModal').removeClass('show');
 	}
 
+	/**
+	 * 为VIP用户分配所有VIP菜单权限
+	 * @param {string} userId 用户ID
+	 * @param {string} userName 用户名
+	 */
+	function assignVipMenuPermission(userId, userName) {
+		// 1. 加载菜单数据和现有权限数据
+		Promise.all([
+			fetch(`/data/menus.json?_=${new Date().getTime()}`, {
+				cache: 'no-cache'
+			}).then(res => res.ok ? res.json() : []),
+			fetch(`/data/user_menu_permissions.json?_=${new Date().getTime()}`, {
+				cache: 'no-cache'
+			}).then(res => res.ok ? res.json() : [])
+		]).then(([menus, userPermissions]) => {
+			// 2. 筛选所有VIP且启用状态的菜单ID
+			const vipMenuIds = menus.filter(menu => menu.isVip && menu.status === 'enable').map(menu => menu.id);
+
+			if (vipMenuIds.length === 0) {
+				window.showToast('暂无VIP菜单可分配', 'info');
+				return;
+			}
+
+			// 3. 查找该用户现有权限记录
+			const userPermissionIndex = userPermissions.findIndex(item => item.userId === userId);
+
+			if (userPermissionIndex !== -1) {
+				// 已有权限记录：添加VIP菜单ID（去重）
+				const existingMenuIds = userPermissions[userPermissionIndex].menuIds;
+				const newMenuIds = [...new Set([...existingMenuIds, ...vipMenuIds])]; // 去重
+				userPermissions[userPermissionIndex].menuIds = newMenuIds;
+				userPermissions[userPermissionIndex].updateTime = new Date().toISOString();
+			} else {
+				// 无权限记录：创建新记录
+				userPermissions.push({
+					userId: userId,
+					userName: userName,
+					menuIds: vipMenuIds,
+					createTime: new Date().toISOString(),
+					updateTime: new Date().toISOString()
+				});
+			}
+
+			// 4. 保存更新后的权限数据
+			return fetch('/aspx/SaveJsonFile.aspx', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+				},
+				body: `fileName=user_menu_permissions.json&filePath=data&data=${encodeURIComponent(JSON.stringify(userPermissions, null, 2))}`
+			});
+		}).then(response => {
+			if (!response.ok) throw new Error('保存VIP菜单权限失败');
+			return response.json();
+		}).then(res => {
+			if (res.success) {
+				window.showToast('已为用户分配所有VIP菜单权限！', 'success');
+			} else {
+				throw new Error(res.msg || '分配VIP菜单权限失败');
+			}
+		}).catch(err => {
+			window.showToast(`VIP菜单权限分配失败：${err.message}`, 'error');
+			console.error('分配VIP菜单权限失败：', err);
+		});
+	}
+
 	// 保存充值记录（校验逻辑不变，仅计算逻辑已修复）
 	function saveRechargeRecord() {
 		const userName = $('#rechargeUserName').val().trim();
@@ -331,6 +397,7 @@
 			.then(res => {
 				if (res.success) {
 					window.showToast('充值记录添加成功，用户已升级为VIP！', 'success');
+					assignVipMenuPermission(userId, userName);
 				} else {
 					const errMsg = res.msg === "No data received" ? "未接收到用户数据" : res.msg;
 					throw new Error(errMsg || '更新用户信息失败');

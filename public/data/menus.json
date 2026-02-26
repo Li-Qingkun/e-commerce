@@ -1,0 +1,62 @@
+﻿[
+  {
+    "id": "menu_1001",
+    "name": "超级返平台",
+    "icon": "fa fa-bars",
+    "page": "qnzg",
+    "parentId": "",
+    "sort": 1,
+    "isVip": false,
+    "status": "enable"
+  },
+  {
+    "id": "menu_1002",
+    "name": "平台主页",
+    "icon": "fa fa-cogs",
+    "page": "qnzgMain",
+    "parentId": "menu_1001",
+    "sort": 2,
+    "isVip": false,
+    "status": "enable"
+  },
+  {
+    "id": "menu_1003",
+    "name": "查询订单信息",
+    "icon": "fa fa-database",
+    "page": "qnzgOrder",
+    "parentId": "menu_1001",
+    "sort": 1,
+    "isVip": true,
+    "status": "enable"
+  },
+  {
+    "name": "测试主菜单",
+    "icon": "fa fa-list",
+    "page": "",
+    "parentId": "",
+    "sort": 1,
+    "isVip": true,
+    "status": "enable",
+    "id": "menu_1772090072419"
+  },
+  {
+    "name": "测试子菜单",
+    "icon": "fa fa-table",
+    "page": "ceshizi",
+    "parentId": "menu_1772090072419",
+    "sort": 1,
+    "isVip": true,
+    "status": "enable",
+    "id": "menu_1772090413914"
+  },
+  {
+    "name": "测试子菜单2",
+    "icon": "fa fa-database",
+    "page": "ceshizi2",
+    "parentId": "menu_1772090072419",
+    "sort": 1,
+    "isVip": true,
+    "status": "enable",
+    "id": "menu_1772097234976"
+  }
+]

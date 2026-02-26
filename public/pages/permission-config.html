@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>权限配置</title>
+		<style>
+			.permission-container {
+				display: flex;
+				gap: 20px;
+				height: calc(100% - 40px);
+			}
+
+			.user-list {
+				width: 250px;
+				border: 1px solid var(--border-color);
+				border-radius: 8px;
+				background-color: var(--card-bg);
+				overflow: hidden;
+			}
+
+			.user-item {
+				padding: 12px 15px;
+				border-bottom: 1px solid var(--border-color);
+				cursor: pointer;
+				transition: background-color 0.2s;
+			}
+
+			.user-item:hover {
+				background-color: rgba(22, 119, 255, 0.1);
+			}
+
+			.user-item.active {
+				background-color: rgba(22, 119, 255, 0.2);
+				font-weight: bold;
+			}
+
+			.user-role {
+				font-size: 12px;
+				color: #999;
+				margin-top: 4px;
+			}
+
+			.permission-content {
+				flex: 1;
+				border: 1px solid var(--border-color);
+				border-radius: 8px;
+				background-color: var(--card-bg);
+				padding: 20px;
+				overflow-y: auto;
+			}
+
+			.menu-permission-item {
+				margin-bottom: 10px;
+			}
+
+			.menu-permission-label {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				font-weight: 500;
+			}
+
+			.menu-permission-children {
+				margin-left: 20px;
+				margin-top: 8px;
+			}
+
+			.vip-tip {
+				font-size: 12px;
+				color: #fa8c16;
+				margin-left: 10px;
+			}
+
+			.auto-assign-vip {
+				margin: 20px 0;
+				padding: 10px;
+				background-color: #fff7e6;
+				border-radius: 4px;
+				border-left: 4px solid #fa8c16;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="page-header">
+			<h2 class="page-title">用户菜单权限配置</h2>
+			<button class="btn-add-user" id="btnSavePermission">
+				<i class="fa fa-save"></i> 保存权限配置
+			</button>
+		</div>
+
+		<div class="card">
+			<div class="permission-container">
+				<!-- 用户列表 -->
+				<div class="user-list" id="userListContainer"></div>
+
+				<!-- 权限配置区域 -->
+				<div class="permission-content" id="permissionContent">
+					<div class="empty-tip">
+						<i class="fa fa-user-o"></i>
+						<p>请从左侧选择要配置权限的用户</p>
+					</div>
+
+					<!-- VIP自动分配提示 -->
+					<div class="auto-assign-vip" style="display: none;" id="vipAutoTip">
+						<i class="fa fa-lightbulb-o"></i>
+						<span>VIP用户：勾选"自动分配VIP菜单"将自动赋予所有标记为VIP的菜单权限</span>
+						<div style="margin-top: 10px;">
+							<label>
+								<input type="checkbox" id="autoAssignVipMenu"> 自动分配VIP菜单权限
+							</label>
+						</div>
+					</div>
+
+					<!-- 菜单权限列表 -->
+					<div id="menuPermissionContainer" style="display: none;"></div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			function initPermissionConfig() {
+				// 所有变量移到函数内部，避免全局污染
+				let users = [];
+				let menus = [];
+				let userPermissions = [];
+				let currentUserId = '';
+				let currentUserRole = '';
+				let userMenuIds = [];
+
+				// 加载基础数据（保证异步加载顺序）
+				function loadAllData() {
+					// 使用Promise.all保证所有数据加载完成后再渲染
+					Promise.all([
+						readJsonFile('/data/userdata.json'),
+						readJsonFile('/data/menus.json'),
+						readJsonFile('/data/user_menu_permissions.json')
+					]).then(([userData, menuData, permissionData]) => {
+						users = userData;
+						menus = menuData;
+						userPermissions = permissionData;
+						// 所有数据加载完成后再渲染用户列表
+						renderUserList();
+					}).catch(err => {
+						console.error('加载基础数据失败：', err);
+						showToast('数据加载失败，请刷新页面重试', 'error');
+					});
+				}
+
+				// 渲染用户列表（仅展示）
+				function renderUserList() {
+					const container = document.getElementById('userListContainer');
+					let html = '';
+
+					// 过滤掉 role 为 admin 的用户
+					users.filter(user => user.role !== 'admin').forEach(user => {
+						html += `
+	                <div class="user-item" data-user-id="${user.id}" data-user-role="${user.role}">
+	                    <div>${user.userName}</div>
+	                    <div class="user-role">
+	                        <span class="role-tag ${user.role}">${user.role === 'admin' ? '管理员' : user.role === 'vip' ? 'VIP会员' : '普通用户'}</span>
+	                        ${user.memberExpireTime ? `有效期：${user.memberExpireTime}` : ''}
+	                    </div>
+	                </div>
+	                `;
+					});
+
+					container.innerHTML = html;
+
+					// 绑定用户选择事件
+					document.querySelectorAll('.user-item').forEach(item => {
+						item.addEventListener('click', function() {
+							document.querySelectorAll('.user-item').forEach(i => i.classList.remove('active'));
+							this.classList.add('active');
+
+							currentUserId = this.dataset.userId;
+							currentUserRole = this.dataset.userRole;
+							loadUserPermission();
+						});
+					});
+				}
+
+				// 加载用户权限配置（仅页面内展示）
+				function loadUserPermission() {
+					const content = document.getElementById('permissionContent');
+					const emptyTip = content.querySelector('.empty-tip');
+					const vipTip = document.getElementById('vipAutoTip');
+					const menuContainer = document.getElementById('menuPermissionContainer');
+
+					emptyTip.style.display = 'none';
+					menuContainer.style.display = 'block';
+
+					// VIP提示仅展示
+					if (currentUserRole === 'vip') {
+						vipTip.style.display = 'block';
+					} else {
+						vipTip.style.display = 'none';
+						document.getElementById('autoAssignVipMenu').checked = false;
+					}
+
+					// 获取用户已配置的权限
+					const userPermission = userPermissions.find(item => item.userId === currentUserId);
+					userMenuIds = userPermission ? userPermission.menuIds : [];
+
+					// 确保菜单数据已加载完成
+					if (menus.length === 0) {
+						showToast('菜单数据未加载完成，请稍候', 'warning');
+						return;
+					}
+					renderMenuPermissionList();
+				}
+
+				// 渲染菜单权限列表（仅配置）
+				function renderMenuPermissionList() {
+					const container = document.getElementById('menuPermissionContainer');
+					const topMenus = menus.filter(menu => !menu.parentId && menu.status === 'enable');
+
+					let html = '';
+					topMenus.forEach(menu => {
+						html += renderMenuPermissionItem(menu);
+					});
+
+					container.innerHTML = html;
+					bindMenuPermissionEvents();
+				}
+
+				function renderMenuPermissionItem(menu) {
+					const children = menus.filter(item => item.parentId === menu.id && item.status === 'enable');
+					const hasChildren = children.length > 0;
+					const isChecked = userMenuIds.includes(menu.id);
+
+					let html = `
+	            <div class="menu-permission-item" data-menu-id="${menu.id}">
+	                <label class="menu-permission-label">
+	                    <input type="checkbox" class="menu-checkbox" value="${menu.id}" ${isChecked ? 'checked' : ''} ${menu.page ? '' : 'disabled'}>
+	                    <i class="${menu.icon}"></i>
+	                    <span>${menu.name}</span>
+	                    ${menu.isVip ? '<span class="vip-tip">[VIP专属]</span>' : ''}
+	                </label>
+	            `;
+
+					if (hasChildren) {
+						html += '<div class="menu-permission-children">';
+						children.forEach(child => html += renderMenuPermissionItem(child));
+						html += '</div>';
+					}
+
+					html += '</div>';
+					return html;
+				}
+
+				// 绑定权限配置事件（仅页面内操作）
+				function bindMenuPermissionEvents() {
+					// 菜单勾选事件
+					document.querySelectorAll('.menu-checkbox').forEach(checkbox => {
+						checkbox.addEventListener('change', function() {
+							const menuId = this.value;
+
+							if (this.checked) {
+								if (!userMenuIds.includes(menuId)) userMenuIds.push(menuId);
+							} else {
+								userMenuIds = userMenuIds.filter(id => id !== menuId);
+							}
+
+							// VIP自动分配仅页面内处理
+							if (currentUserRole === 'vip' && document.getElementById('autoAssignVipMenu')
+								.checked) {
+								const vipMenuIds = menus.filter(menu => menu.isVip).map(menu => menu.id);
+								vipMenuIds.forEach(vipMenuId => {
+									if (!userMenuIds.includes(vipMenuId)) userMenuIds.push(vipMenuId);
+									const vipCheckbox = document.querySelector(
+										`.menu-checkbox[value="${vipMenuId}"]`);
+									if (vipCheckbox) vipCheckbox.checked = true;
+								});
+							}
+						});
+					});
+
+					// VIP自动分配勾选事件
+					document.getElementById('autoAssignVipMenu').addEventListener('change', function() {
+						if (this.checked) {
+							const vipMenuIds = menus.filter(menu => menu.isVip).map(menu => menu.id);
+							userMenuIds = [...new Set([...userMenuIds, ...vipMenuIds])];
+
+							vipMenuIds.forEach(menuId => {
+								const checkbox = document.querySelector(`.menu-checkbox[value="${menuId}"]`);
+								if (checkbox) checkbox.checked = true;
+							});
+						}
+					});
+				}
+
+				// 绑定保存事件
+				function bindEvents() {
+					document.getElementById('btnSavePermission').addEventListener('click', saveUserPermission);
+				}
+
+				// 保存用户权限配置
+				function saveUserPermission() {
+					if (!currentUserId) {
+						showToast('请先选择要配置权限的用户！', 'error');
+						return;
+					}
+
+					userMenuIds = [...new Set(userMenuIds)].sort();
+					const permissionIndex = userPermissions.findIndex(item => item.userId === currentUserId);
+					const userName = users.find(u => u.id === currentUserId)?.userName || '';
+
+					if (permissionIndex !== -1) {
+						userPermissions[permissionIndex] = {
+							...userPermissions[permissionIndex],
+							menuIds: userMenuIds,
+							updateTime: new Date().toISOString()
+						};
+					} else {
+						userPermissions.push({
+							userId: currentUserId,
+							userName: userName,
+							menuIds: userMenuIds,
+							createTime: new Date().toISOString(),
+							updateTime: new Date().toISOString()
+						});
+					}
+
+					// 调用适配后的saveJsonFile函数
+					saveJsonFile('/data/user_menu_permissions.json', userPermissions).then(() => {
+						showToast('权限配置保存成功！', 'success');
+						recordOperationLog('权限配置', `为用户【${userName}】配置菜单权限，共${userMenuIds.length}个菜单`, 'success');
+					}).catch(err => {
+						showToast(`保存失败：${err.message}`, 'error');
+						console.error('权限保存失败：', err);
+					});
+				}
+
+				// 初始化执行
+				loadAllData();
+				bindEvents();
+			}
+
+			window.initPermissionConfig = initPermissionConfig;
+		</script>
+	</body>
+</html>

@@ -1,5 +1,215 @@
 ﻿[
   {
+    "logId": "log_1772097278277_vaj9wbdm3",
+    "operationType": "菜单管理",
+    "operationDesc": "删除菜单ID：menu_1772097268767及子菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T09:14:38.277Z",
+    "operationTimeStr": "2026/2/26 17:14:38",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772097268778_gi6mnshet",
+    "operationType": "菜单管理",
+    "operationDesc": "新增菜单：测试菜单无会员",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T09:14:28.778Z",
+    "operationTimeStr": "2026/2/26 17:14:28",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772097236170_mkjrw247e",
+    "operationType": "菜单管理",
+    "operationDesc": "新增菜单：测试子菜单2",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T09:13:56.170Z",
+    "operationTimeStr": "2026/2/26 17:13:56",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772091615063_tnh9lf19f",
+    "operationType": "权限配置",
+    "operationDesc": "为用户【zem】配置菜单权限，共2个菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:40:15.063Z",
+    "operationTimeStr": "2026/2/26 15:40:15",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772091581295_8odqphrkm",
+    "operationType": "权限配置",
+    "operationDesc": "为用户【驹伽旺旗舰店】配置菜单权限，共5个菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:39:41.295Z",
+    "operationTimeStr": "2026/2/26 15:39:41",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772091574060_digdxbhwf",
+    "operationType": "权限配置",
+    "operationDesc": "为用户【835135131】配置菜单权限，共5个菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:39:34.060Z",
+    "operationTimeStr": "2026/2/26 15:39:34",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772091570227_5veqvosc5",
+    "operationType": "权限配置",
+    "operationDesc": "为用户【王浩丞】配置菜单权限，共5个菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:39:30.227Z",
+    "operationTimeStr": "2026/2/26 15:39:30",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772091566014_0ofnjrbjy",
+    "operationType": "权限配置",
+    "operationDesc": "为用户【李庆坤】配置菜单权限，共5个菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:39:26.014Z",
+    "operationTimeStr": "2026/2/26 15:39:26",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772091556912_eb17gwg43",
+    "operationType": "权限配置",
+    "operationDesc": "为用户【张云翔】配置菜单权限，共5个菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:39:16.912Z",
+    "operationTimeStr": "2026/2/26 15:39:16",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772091167110_oc2balpp8",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：测试子菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:32:47.110Z",
+    "operationTimeStr": "2026/2/26 15:32:47",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772090413923_0iv1pcdnt",
+    "operationType": "菜单管理",
+    "operationDesc": "新增菜单：测试子菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:20:13.923Z",
+    "operationTimeStr": "2026/2/26 15:20:13",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772090384149_h4kjah95o",
+    "operationType": "菜单管理",
+    "operationDesc": "删除菜单ID：menu_1772090107117及子菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:19:44.149Z",
+    "operationTimeStr": "2026/2/26 15:19:44",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772090107128_vuyoz55uc",
+    "operationType": "菜单管理",
+    "operationDesc": "新增菜单：测试子菜单1",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:15:07.128Z",
+    "operationTimeStr": "2026/2/26 15:15:07",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772090072437_dwx9sw9tr",
+    "operationType": "菜单管理",
+    "operationDesc": "新增菜单：测试主菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:14:32.437Z",
+    "operationTimeStr": "2026/2/26 15:14:32",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772090002247_fyp7oyiai",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：超级返平台",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:13:22.247Z",
+    "operationTimeStr": "2026/2/26 15:13:22",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772089778485_qhiyiw3ks",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：平台主页",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:09:38.485Z",
+    "operationTimeStr": "2026/2/26 15:09:38",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772089772284_triyiuq26",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：平台主页1",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:09:32.284Z",
+    "operationTimeStr": "2026/2/26 15:09:32",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772089264061_eejm1t86w",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：平台主页111",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:01:04.062Z",
+    "operationTimeStr": "2026/2/26 15:01:04",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772089239695_k3e4e5kn6",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：查询订单信息",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T07:00:39.695Z",
+    "operationTimeStr": "2026/2/26 15:00:39",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772089186825_vdh78rxmk",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：平台主页1",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T06:59:46.825Z",
+    "operationTimeStr": "2026/2/26 14:59:46",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772085541476_3zc0iva6x",
+    "operationType": "菜单管理",
+    "operationDesc": "新增菜单：测试菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-26T05:59:01.476Z",
+    "operationTimeStr": "2026/2/26 13:59:01",
+    "ip": "127.0.0.1"
+  },
+  {
     "logId": "log_1771921168433_lnxu7o5fc",
     "operationType": "编辑用户",
     "operationDesc": "编辑用户【李庆坤】成功，身份：VIP会员，店铺：得力沐璞汽车用品专卖店,迈库雷汽车用品，到期时间：2026-03-16",

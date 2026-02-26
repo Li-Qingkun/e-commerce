@@ -6,11 +6,11 @@ const PAGE_MAP = {
 	'user-management': {
 		path: '仪表盘 / 用户管理'
 	},
-	'data-backup': {
-		path: '仪表盘 / 系统管理 / 数据备份'
+	'menu-management': {
+		path: '仪表盘 / 菜单管理'
 	},
-	'system-settings': {
-		path: '仪表盘 / 系统管理 / 系统设置'
+	'permission-config': {
+		path: '仪表盘 / 菜单权限配置'
 	},
 	'data-analysis': {
 		path: '仪表盘 / 数据分析'
@@ -180,6 +180,10 @@ function loadPage(pageName, pagePath) {
 				window.initOperationLog();
 			} else if (pageName === 'recharge-records' && window.initRechargeRecords) {
 				window.initRechargeRecords();
+			} else if (pageName === 'menu-management' && window.initMenuManagement) {
+				window.initMenuManagement();
+			} else if (pageName === 'permission-config' && window.initPermissionConfig) {
+				window.initPermissionConfig();
 			}
 		} else {
 			$('#contentContainer').html(`
@@ -192,6 +196,59 @@ function loadPage(pageName, pagePath) {
 		}
 	});
 }
+
+// 保留通用的JSON读写函数（用于页面数据存储）
+function readJsonFile(filePath) {
+	return fetch(`${filePath}?_=${new Date().getTime()}`, {
+		method: 'GET',
+		cache: 'no-cache'
+	}).then(res => {
+		if (res.ok) return res.json();
+		throw new Error(`读取文件失败: ${res.status}`);
+	}).catch(err => {
+		console.error('读取JSON文件错误:', err);
+		return [];
+	});
+}
+
+/**
+ * 保存数据到JSON文件（适配后端接口参数）
+ * @param {string} fullFilePath 完整文件路径（如：/data/menus.json）
+ * @param {any} data 要保存的数据
+ * @returns {Promise} 保存结果Promise
+ */
+function saveJsonFile(fullFilePath, data) {
+    // 1. 拆分完整路径为【目录路径】和【文件名】
+    // 示例：/data/menus.json → 目录路径：data，文件名：menus.json
+    const pathParts = fullFilePath.trimStart('/').split('/');
+    const fileName = pathParts.pop(); // 弹出最后一个元素作为文件名
+    const filePath = pathParts.join('/'); // 剩余部分作为目录路径
+
+    // 2. 转换数据为JSON字符串（无需额外编码，后端直接接收）
+    const jsonData = JSON.stringify(data, null, 2);
+
+    // 3. 拼接符合后端要求的参数
+    const bodyParams = `fileName=${encodeURIComponent(fileName)}&filePath=${encodeURIComponent(filePath)}&data=${encodeURIComponent(jsonData)}`;
+
+    return fetch(`/aspx/SaveJsonFile.aspx`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+        },
+        body: bodyParams
+    }).then(res => {
+        if (!res.ok) throw new Error(`HTTP请求失败：${res.status} ${res.statusText}`);
+        // 解析后端JSON响应
+        return res.json();
+    }).then(result => {
+        // 校验后端返回的success状态
+        if (!result.success) throw new Error(result.msg || '保存失败');
+        return result;
+    });
+}
+
+window.readJsonFile = readJsonFile;
+window.saveJsonFile = saveJsonFile;
 
 /**
  * 通用操作日志记录函数

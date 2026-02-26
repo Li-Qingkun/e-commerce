@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>菜单管理</title>
+		<style>
+			.menu-tree-item {
+				padding: 8px 0;
+				border-bottom: 1px solid var(--border-color);
+			}
+
+			.menu-info {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				cursor: pointer;
+			}
+
+			.menu-children {
+				margin-left: 20px;
+				margin-top: 8px;
+			}
+
+			.menu-actions {
+				margin-left: auto;
+				display: flex;
+				gap: 10px;
+			}
+
+			.menu-actions button {
+				padding: 4px 8px;
+				font-size: 12px;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+			}
+
+			.btn-edit {
+				background-color: #1677ff;
+				color: white;
+			}
+
+			.btn-delete {
+				background-color: #ff4d4f;
+				color: white;
+			}
+
+			.vip-tag {
+				background-color: #fa8c16;
+				color: white;
+				padding: 2px 6px;
+				border-radius: 4px;
+				font-size: 12px;
+			}
+
+			#menuIcon {
+				cursor: pointer;
+			}
+
+			.icon-item {
+				text-align: center;
+				padding: 10px;
+				border: 1px solid var(--border-color);
+				border-radius: 4px;
+				cursor: pointer;
+				transition: all 0.2s;
+			}
+
+			.icon-item:hover {
+				background-color: rgba(22, 119, 255, 0.1);
+				border-color: var(--primary-color);
+			}
+
+			.icon-item i {
+				font-size: 24px;
+				margin-bottom: 5px;
+				color: var(--text-color);
+			}
+
+			.icon-item .icon-name {
+				font-size: 12px;
+				color: #666;
+			}
+
+			/* VIP复选框禁用状态样式 */
+			#isVipMenu:disabled {
+				cursor: not-allowed;
+			}
+
+			#isVipMenu:disabled+label {
+				color: #999;
+			}
+
+			/* 上级菜单下拉框VIP标识样式 */
+			#parentMenu option:contains("【VIP】") {
+				color: #fa8c16;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="page-header">
+			<h2 class="page-title">菜单管理</h2>
+			<button class="btn-add-user" id="btnAddMenu">
+				<i class="fa fa-plus"></i> 新增菜单
+			</button>
+		</div>
+
+		<div class="card">
+			<div id="menuTreeContainer"></div>
+		</div>
+
+		<!-- 新增/编辑菜单弹窗 -->
+		<div class="modal" id="menuModal">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3 class="modal-title" id="menuModalTitle">新增菜单</h3>
+					<button class="modal-close" id="closeMenuModal">&times;</button>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="menuName">菜单名称</label>
+						<input type="text" id="menuName" placeholder="请输入菜单名称" required>
+					</div>
+					<div class="form-group">
+						<label for="menuIcon">图标类名</label>
+						<input type="text" id="menuIcon" placeholder="例如：fa fa-user-circle">
+					</div>
+					<div class="form-group">
+						<label for="menuPage">页面标识</label>
+						<input type="text" id="menuPage" placeholder="例如：user-management（无子菜单则为空）">
+					</div>
+					<div class="form-group">
+						<label for="parentMenu">上级菜单</label>
+						<select id="parentMenu">
+							<option value="">无（作为顶级菜单）</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="menuSort">排序值</label>
+						<input type="number" id="menuSort" placeholder="数字越小越靠前" value="1">
+					</div>
+					<div class="form-group">
+						<label>
+							<input type="checkbox" id="isVipMenu"> 仅VIP可见
+						</label>
+					</div>
+					<div class="form-group">
+						<label>
+							<input type="checkbox" id="menuStatus" checked> 启用状态
+						</label>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn-cancel" id="cancelMenu">取消</button>
+					<button class="btn-save" id="saveMenu">保存</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- 图标选择弹窗 -->
+		<div class="modal" id="iconSelectModal">
+			<div class="modal-content" style="width: 80%; max-width: 1000px; max-height: 80vh; overflow-y: auto;">
+				<div class="modal-header">
+					<h3 class="modal-title">选择菜单图标</h3>
+					<button class="modal-close" id="closeIconModal">&times;</button>
+				</div>
+				<div class="modal-body">
+					<!-- 搜索框 -->
+					<div class="form-group" style="margin-bottom: 20px;">
+						<input type="text" id="iconSearchInput" placeholder="搜索图标（如：user、menu、setting）"
+							style="width: 100%; padding: 8px 10px;">
+					</div>
+					<!-- 图标列表 -->
+					<div id="iconListContainer"
+						style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px;">
+						<!-- 动态加载图标 -->
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			let currentEditMenuId = '';
+
+			function initMenuManagement() {
+				// 移到函数内部，作为局部变量
+				let menus = [];
+				loadMenus(menus); // 传递menus引用
+				bindEvents(menus); // 传递menus引用
+				initIconSelector();
+			}
+
+			// 1. 定义常用的Font Awesome 4.7.0图标（按功能分类，覆盖后台管理场景）
+			const commonIcons = [
+				// 基础功能
+				{
+					name: "fa fa-home",
+					label: "首页"
+				},
+				{
+					name: "fa fa-user",
+					label: "用户"
+				},
+				{
+					name: "fa fa-user-circle",
+					label: "用户头像"
+				},
+				{
+					name: "fa fa-users",
+					label: "用户列表"
+				},
+				// 菜单/权限
+				{
+					name: "fa fa-list",
+					label: "列表"
+				},
+				{
+					name: "fa fa-list-ul",
+					label: "菜单列表"
+				},
+				{
+					name: "fa fa-bars",
+					label: "菜单"
+				},
+				{
+					name: "fa fa-key",
+					label: "权限/密钥"
+				},
+				{
+					name: "fa fa-shield",
+					label: "安全/权限"
+				},
+				// 系统管理
+				{
+					name: "fa fa-cogs",
+					label: "系统设置"
+				},
+				{
+					name: "fa fa-cog",
+					label: "设置"
+				},
+				{
+					name: "fa fa-sliders",
+					label: "滑块设置"
+				},
+				{
+					name: "fa fa-database",
+					label: "数据库/备份"
+				},
+				{
+					name: "fa fa-file-text",
+					label: "日志/文件"
+				},
+				{
+					name: "fa fa-file-text-o",
+					label: "日志（旧版）"
+				},
+				// 数据/统计
+				{
+					name: "fa fa-line-chart",
+					label: "折线图/分析"
+				},
+				{
+					name: "fa fa-bar-chart",
+					label: "柱状图"
+				},
+				{
+					name: "fa fa-pie-chart",
+					label: "饼图"
+				},
+				{
+					name: "fa fa-table",
+					label: "表格"
+				},
+				// 交易/会员
+				{
+					name: "fa fa-credit-card",
+					label: "充值/支付"
+				},
+				{
+					name: "fa fa-diamond",
+					label: "VIP/会员"
+				},
+				{
+					name: "fa fa-gift",
+					label: "礼品/福利"
+				},
+				// 操作类
+				{
+					name: "fa fa-plus",
+					label: "新增"
+				},
+				{
+					name: "fa fa-edit",
+					label: "编辑"
+				},
+				{
+					name: "fa fa-trash",
+					label: "删除"
+				},
+				{
+					name: "fa fa-search",
+					label: "搜索"
+				},
+				{
+					name: "fa fa-save",
+					label: "保存"
+				},
+				{
+					name: "fa fa-refresh",
+					label: "刷新"
+				},
+				// 提示类
+				{
+					name: "fa fa-bell",
+					label: "通知"
+				},
+				{
+					name: "fa fa-exclamation-circle",
+					label: "警告"
+				},
+				{
+					name: "fa fa-check-circle",
+					label: "成功"
+				},
+				{
+					name: "fa fa-info-circle",
+					label: "信息"
+				}
+			];
+
+			// 2. 初始化图标选择器
+			function initIconSelector() {
+				// 渲染所有常用图标
+				renderIconList(commonIcons);
+
+				// 点击图标输入框，打开选择弹窗
+				document.getElementById('menuIcon').addEventListener('click', function(e) {
+					e.preventDefault();
+					document.getElementById('iconSelectModal').classList.add('show');
+					// 清空搜索框
+					document.getElementById('iconSearchInput').value = '';
+				});
+
+				// 关闭图标选择弹窗
+				document.getElementById('closeIconModal').addEventListener('click', function() {
+					document.getElementById('iconSelectModal').classList.remove('show');
+				});
+
+				// 图标搜索功能
+				document.getElementById('iconSearchInput').addEventListener('input', function() {
+					const keyword = this.value.trim().toLowerCase();
+					if (!keyword) {
+						renderIconList(commonIcons);
+						return;
+					}
+					// 按标签或类名搜索
+					const filteredIcons = commonIcons.filter(icon =>
+						icon.label.toLowerCase().includes(keyword) || icon.name.toLowerCase().includes(keyword)
+					);
+					renderIconList(filteredIcons);
+				});
+			}
+
+			// 3. 渲染图标列表
+			function renderIconList(iconList) {
+				const container = document.getElementById('iconListContainer');
+				let html = '';
+				iconList.forEach(icon => {
+					html += `
+			        <div class="icon-item" data-icon="${icon.name}">
+			            <i class="${icon.name}"></i>
+			            <div class="icon-name">${icon.name}<br/>${icon.label}</div>
+			        </div>
+			        `;
+				});
+				container.innerHTML = html;
+
+				// 绑定图标选择事件
+				document.querySelectorAll('.icon-item').forEach(item => {
+					item.addEventListener('click', function() {
+						const iconName = this.dataset.icon;
+						// 填充到图标输入框
+						document.getElementById('menuIcon').value = iconName;
+						// 关闭弹窗
+						document.getElementById('iconSelectModal').classList.remove('show');
+					});
+				});
+			}
+
+			// 仅加载菜单数据，不关联系统侧边栏
+			function loadMenus(menus) {
+				readJsonFile('/data/menus.json').then(data => {
+					// 赋值到函数作用域的menus
+					Array.prototype.splice.apply(menus, [0, menus.length, ...data]);
+					renderMenuTree(menus);
+					renderParentMenuSelect(menus);
+				});
+			}
+
+			// 渲染菜单树（仅展示，无系统联动）
+			function renderMenuTree(menus) {
+				const container = document.getElementById('menuTreeContainer');
+				const topMenus = menus.filter(menu => !menu.parentId);
+
+				let html = '';
+				topMenus.forEach(menu => {
+					html += renderMenuItem(menu, menus); // 传递menus到子函数
+				});
+				container.innerHTML = html;
+			}
+
+			function renderMenuItem(menu, menus) {
+				const children = menus.filter(item => item.parentId === menu.id);
+				const hasChildren = children.length > 0;
+
+				let html = `
+            <div class="menu-tree-item" data-id="${menu.id}">
+                <div class="menu-info">
+                    <i class="fa ${hasChildren ? 'fa-caret-down' : 'fa-angle-right'}"></i>
+                    <i class="${menu.icon}"></i>
+                    <span>${menu.name}</span>
+                    ${menu.isVip ? '<span class="vip-tag">VIP</span>' : ''}
+                    <div class="menu-actions">
+                        <button class="btn-edit" onclick="editMenu('${menu.id}')">编辑</button>
+                        <button class="btn-delete" onclick="deleteMenu('${menu.id}')">删除</button>
+                    </div>
+                </div>
+            `;
+
+				if (hasChildren) {
+					html += '<div class="menu-children">';
+					children.forEach(child => html += renderMenuItem(child, menus));
+					html += '</div>';
+				}
+				html += '</div>';
+				return html;
+			}
+
+			// 渲染上级菜单下拉框
+			function renderParentMenuSelect(menus) {
+				const select = document.getElementById('parentMenu');
+				select.innerHTML = '<option value="">无（作为顶级菜单）</option>';
+
+				function generateOptions(menuList, level = 0) {
+					menuList.forEach(menu => {
+						const prefix = '└' + '─'.repeat(level);
+						// 给VIP菜单添加【VIP】标识
+						const vipTag = menu.isVip ? ' 【VIP】' : '';
+						select.innerHTML += `<option value="${menu.id}">${prefix} ${menu.name}${vipTag}</option>`;
+						const children = menus.filter(item => item.parentId === menu.id);
+						if (children.length) generateOptions(children, level + 1);
+					});
+				}
+
+				generateOptions(menus.filter(menu => !menu.parentId));
+			}
+
+			// 绑定事件（仅页面内操作）
+			function bindEvents(menus) {
+				// 新增菜单
+				document.getElementById('btnAddMenu').addEventListener('click', () => {
+					currentEditMenuId = '';
+					document.getElementById('menuModalTitle').textContent = '新增菜单';
+					// 清空表单
+					document.getElementById('menuName').value = '';
+					document.getElementById('menuIcon').value = '';
+					document.getElementById('menuPage').value = '';
+					document.getElementById('parentMenu').value = '';
+					document.getElementById('menuSort').value = 1;
+					document.getElementById('isVipMenu').checked = false;
+					document.getElementById('menuStatus').checked = true;
+					document.getElementById('menuModal').classList.add('show');
+
+					// 新增菜单时绑定VIP联动逻辑
+					setTimeout(() => {
+						bindParentMenuVipLogic(menus);
+					}, 100);
+				});
+
+				// 关闭弹窗
+				document.getElementById('closeMenuModal').addEventListener('click', () => {
+					document.getElementById('menuModal').classList.remove('show');
+				});
+				document.getElementById('cancelMenu').addEventListener('click', () => {
+					document.getElementById('menuModal').classList.remove('show');
+				});
+
+				// 保存菜单
+				document.getElementById('saveMenu').addEventListener('click', () => saveMenuData(menus));
+			}
+
+			// 新增：监听上级菜单选择变化，联动控制VIP复选框
+			function bindParentMenuVipLogic(menus) {
+				const parentMenuSelect = document.getElementById('parentMenu');
+				const isVipMenuCheckbox = document.getElementById('isVipMenu');
+
+				// 定义联动逻辑函数
+				function updateVipCheckboxState() {
+					const selectedParentId = parentMenuSelect.value;
+					// 如果选择了上级菜单
+					if (selectedParentId) {
+						// 查找上级菜单是否为VIP菜单
+						const parentMenu = menus.find(menu => menu.id === selectedParentId);
+						if (parentMenu && parentMenu.isVip) {
+							// 上级是VIP菜单：强制勾选且禁用复选框
+							isVipMenuCheckbox.checked = true;
+							isVipMenuCheckbox.disabled = true;
+							// 提示用户（可选）
+							showToast('上级菜单为VIP专属，子菜单自动设为VIP且不可取消！', 'info');
+						} else {
+							// 上级非VIP菜单：恢复复选框可操作
+							isVipMenuCheckbox.disabled = false;
+						}
+					} else {
+						// 无上级菜单（顶级菜单）：恢复复选框可操作
+						isVipMenuCheckbox.disabled = false;
+					}
+				}
+
+				// 1. 初始化时执行一次（编辑菜单场景）
+				updateVipCheckboxState();
+
+				// 2. 监听上级菜单选择变化
+				parentMenuSelect.addEventListener('change', updateVipCheckboxState);
+			}
+
+			// 编辑菜单
+			function editMenu(menuId) {
+				// 重新获取最新的menus数据（避免作用域问题）
+				readJsonFile('/data/menus.json').then(menus => {
+					const menu = menus.find(item => item.id === menuId);
+					if (!menu) return;
+
+					currentEditMenuId = menuId;
+					document.getElementById('menuModalTitle').textContent = '编辑菜单';
+
+					// 填充表单
+					document.getElementById('menuName').value = menu.name;
+					document.getElementById('menuIcon').value = menu.icon;
+					document.getElementById('menuPage').value = menu.page || '';
+					document.getElementById('parentMenu').value = menu.parentId || '';
+					document.getElementById('menuSort').value = menu.sort || 1;
+					document.getElementById('isVipMenu').checked = menu.isVip || false;
+					document.getElementById('menuStatus').checked = menu.status === 'enable';
+
+					// 关键：编辑时也要触发VIP联动逻辑
+					setTimeout(() => {
+						bindParentMenuVipLogic(menus);
+					}, 100); // 延迟确保DOM已渲染
+
+					document.getElementById('menuModal').classList.add('show');
+				});
+			}
+
+			// 删除菜单
+			function deleteMenu(menuId) {
+				if (!confirm('确定要删除该菜单吗？删除后将同时删除其子菜单！')) return;
+
+				readJsonFile('/data/menus.json').then(menus => {
+					// 递归获取所有子菜单ID
+					function getAllChildMenuIds(parentId) {
+						const childIds = [];
+						const children = menus.filter(item => item.parentId === parentId);
+						children.forEach(child => {
+							childIds.push(child.id);
+							childIds.push(...getAllChildMenuIds(child.id));
+						});
+						return childIds;
+					}
+
+					const deleteIds = [menuId, ...getAllChildMenuIds(menuId)];
+					const newMenus = menus.filter(menu => !deleteIds.includes(menu.id));
+
+					saveJsonFile('/data/menus.json', newMenus).then(() => {
+						showToast('菜单删除成功！', 'success');
+						// 重新加载数据
+						initMenuManagement();
+						recordOperationLog('菜单管理', `删除菜单ID：${menuId}及子菜单`, 'success');
+					}).catch(err => {
+						showToast('菜单删除失败！', 'error');
+						console.error(err);
+					});
+				});
+			}
+
+			// 新增：自动给用户分配菜单权限
+			function autoAssignMenuPermission(newMenuId, isVipMenu) {
+				// 1. 加载用户数据和现有权限数据
+				Promise.all([
+					readJsonFile('/data/userdata.json'),
+					readJsonFile('/data/user_menu_permissions.json')
+				]).then(([users, userPermissions]) => {
+					// 2. 筛选需要分配权限的用户
+					let targetUsers = [];
+					if (isVipMenu) {
+						// VIP菜单：仅筛选VIP用户
+						targetUsers = users.filter(user => user.role === 'vip');
+					} else {
+						// 非VIP菜单：筛选所有非admin用户（admin默认拥有所有权限）
+						targetUsers = users.filter(user => user.role !== 'admin');
+					}
+
+					// 3. 为目标用户分配权限
+					targetUsers.forEach(user => {
+						const userId = user.id;
+						// 查找该用户现有权限记录
+						const userPermissionIndex = userPermissions.findIndex(item => item.userId === userId);
+
+						if (userPermissionIndex !== -1) {
+							// 已有权限记录：添加新菜单ID（去重）
+							const existingMenuIds = userPermissions[userPermissionIndex].menuIds;
+							if (!existingMenuIds.includes(newMenuId)) {
+								userPermissions[userPermissionIndex].menuIds = [...existingMenuIds, newMenuId];
+								userPermissions[userPermissionIndex].updateTime = new Date().toISOString();
+							}
+						} else {
+							// 无权限记录：创建新记录
+							userPermissions.push({
+								userId: userId,
+								userName: user.userName,
+								menuIds: [newMenuId],
+								createTime: new Date().toISOString(),
+								updateTime: new Date().toISOString()
+							});
+						}
+					});
+
+					// 4. 保存更新后的权限数据
+					saveJsonFile('/data/user_menu_permissions.json', userPermissions).then(() => {
+						const userType = isVipMenu ? 'VIP' : '所有';
+						showToast(`已为${userType}用户自动分配该菜单权限！`, 'success');
+					}).catch(err => {
+						showToast(`自动分配权限失败：${err.message}`, 'error');
+						console.error('自动分配权限失败：', err);
+					});
+				}).catch(err => {
+					showToast('加载用户数据失败，无法自动分配权限', 'error');
+					console.error('加载用户数据失败：', err);
+				});
+			}
+
+			// 保存菜单数据（优化错误提示+新增自动分配权限）
+			function saveMenuData(menus) {
+				const menuName = document.getElementById('menuName').value.trim();
+				if (!menuName) {
+					showToast('请输入菜单名称！', 'error');
+					return;
+				}
+
+				const parentMenuId = document.getElementById('parentMenu').value;
+				const isVipMenu = document.getElementById('isVipMenu').checked;
+				let finalIsVip = isVipMenu;
+
+				// 二次校验：如果上级是VIP菜单，强制设为VIP
+				if (parentMenuId) {
+					const parentMenu = menus.find(menu => menu.id === parentMenuId);
+					if (parentMenu && parentMenu.isVip) {
+						finalIsVip = true;
+					}
+				}
+
+				const menuData = {
+					name: menuName,
+					icon: document.getElementById('menuIcon').value.trim(),
+					page: document.getElementById('menuPage').value.trim(),
+					parentId: document.getElementById('parentMenu').value,
+					sort: parseInt(document.getElementById('menuSort').value) || 1,
+					isVip: finalIsVip, // 使用校验后的VIP状态
+					status: document.getElementById('menuStatus').checked ? 'enable' : 'disable'
+				};
+
+				let newMenus = [...menus];
+				if (currentEditMenuId) {
+					// 编辑模式
+					const index = newMenus.findIndex(item => item.id === currentEditMenuId);
+					if (index !== -1) {
+						menuData.id = currentEditMenuId;
+						newMenus[index] = {
+							...newMenus[index],
+							...menuData
+						};
+
+						saveJsonFile('/data/menus.json', newMenus).then(() => {
+							showToast('菜单编辑成功！', 'success');
+							document.getElementById('menuModal').classList.remove('show');
+							initMenuManagement(); // 重新加载最新数据
+							recordOperationLog('菜单管理', `编辑菜单：${menuName}`, 'success');
+						}).catch(err => {
+							// 显示后端返回的具体错误
+							showToast(`编辑失败：${err.message}`, 'error');
+							console.error('保存失败：', err);
+						});
+					}
+				} else {
+					// 新增模式
+					menuData.id = 'menu_' + Date.now();
+					const newMenuId = menuData.id; // 保存新菜单ID
+					newMenus.push(menuData);
+
+					saveJsonFile('/data/menus.json', newMenus).then(() => {
+						showToast('菜单新增成功！', 'success');
+						document.getElementById('menuModal').classList.remove('show');
+						initMenuManagement(); // 重新加载最新数据
+						renderParentMenuSelect(menus);
+						recordOperationLog('菜单管理', `新增菜单：${menuName}`, 'success');
+
+						// 新增核心逻辑：自动分配菜单权限
+						autoAssignMenuPermission(newMenuId, finalIsVip);
+
+					}).catch(err => {
+						showToast(`新增失败：${err.message}`, 'error');
+						console.error('保存失败：', err);
+					});
+				}
+			}
+
+			window.initMenuManagement = initMenuManagement;
+			window.editMenu = editMenu;
+			window.deleteMenu = deleteMenu;
+		</script>
+	</body>
+</html>
