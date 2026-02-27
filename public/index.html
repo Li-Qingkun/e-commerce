@@ -35,34 +35,10 @@
 					</div>
 				</div>
 
-				<!-- 新增：导航菜单区域 -->
-				<div class="nav-menu-area">
-					<ul class="nav-menu-list">
-						<li class="nav-menu-item dropdown">
-							<a href="javascript:;" class="nav-menu-link dropdown-toggle" id="superReturnMenu">
-								<i class="fa fa-external-link"></i> 超级返平台
-							</a>
-							<!-- 新增：超级返平台子菜单 -->
-							<ul class="dropdown-menu super-return-submenu" id="superReturnSubmenu">
-								<li>
-									<a href="https://qnzg.cn/douke/index.html#/task/history" target="_blank"
-										class="submenu-item">
-										<i class="fa fa-history"></i> 平台主页
-									</a>
-								</li>
-								<li>
-									<a href="javascript:;" class="submenu-item" id="btnQueryOrderInfo">
-										<i class="fa fa-search"></i> 查询订单信息
-									</a>
-								</li>
-							</ul>
-						</li>
-						<!-- 可以添加更多菜单项 -->
-						<!-- <li class="nav-menu-item">
-							<a href="report.html" class="nav-menu-link">
-								<i class="fa fa-bar-chart"></i> 数据报表
-							</a>
-						</li> -->
+				<!-- 动态菜单容器（替换原有写死的菜单） -->
+				<div class="nav-menu-area" id="dynamicMenuContainer">
+					<ul class="nav-menu-list" id="mainMenuList">
+						<!-- 菜单会通过JS动态生成 -->
 					</ul>
 				</div>
 
@@ -402,7 +378,7 @@
 		</div>
 
 		<!-- 新增：订单查询模态框 -->
-		<div class="modal fade" id="orderQueryModal" tabindex="-1" role="dialog">
+		<div class="modal fade" id="qnzgOrderModal" tabindex="-1" role="dialog">
 			<div class="modal-dialog modal-xl" role="document">
 				<div class="modal-content">
 					<div class="modal-header">

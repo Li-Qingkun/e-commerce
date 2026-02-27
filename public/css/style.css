@@ -1017,6 +1017,24 @@ body {
 }
 
 /* 新增导航菜单样式 - 与整体风格统一 */
+/* 动态菜单样式优化 - 适配移动端 */
+#dynamicMenuContainer {
+	display: flex;
+	align-items: center;
+	margin: 0 15px;
+	justify-content: center;
+}
+
+#mainMenuList {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	gap: 8px;
+	flex-wrap: nowrap;
+	justify-content: flex-start;
+}
+
 .nav-menu-area {
 	display: flex;
 	align-items: center;
@@ -1032,6 +1050,7 @@ body {
 }
 
 .nav-menu-item {
+	position: relative;
 	display: flex;
 	align-items: center;
 }
@@ -1041,10 +1060,8 @@ body {
 	align-items: center;
 	gap: 6px;
 	color: #fff !important;
-	/* 强制覆盖Bootstrap默认色 */
 	font-size: 14px;
 	text-decoration: none !important;
-	/* 强制移除下划线 */
 	padding: 8px 12px;
 	border-radius: 6px;
 	transition: background-color 0.2s ease;
@@ -1052,15 +1069,36 @@ body {
 }
 
 .nav-menu-link:hover,
-.nav-menu-link:focus,
-.nav-menu-link:active {
+.nav-menu-link:focus {
 	background-color: rgba(255, 255, 255, 0.1);
 	color: #fff !important;
-	text-decoration: none !important;
 }
 
 .nav-menu-link i {
 	font-size: 13px;
+}
+
+/* 子菜单样式优化 */
+.submenu-container {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	background-color: var(--card-bg);
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	min-width: 180px;
+	display: none;
+	z-index: 1000;
+	margin-top: 0;
+	list-style: none;
+	padding: 8px 0;
+	border-top: 8px solid transparent;
+}
+
+.nav-menu-item:hover .submenu-container {
+	display: block;
+	animation: fadeIn 0.2s ease;
 }
 
 /* 移动端适配 - 导航菜单 */
@@ -1081,6 +1119,62 @@ body {
 		padding: 6px 10px;
 		font-size: 13px;
 	}
+}
+
+
+/* 移动端菜单适配 */
+@media (max-width: 768px) {
+	#dynamicMenuContainer {
+		order: 3;
+		width: 100%;
+		margin: 8px 0 0 0;
+		padding: 8px 0;
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	#mainMenuList {
+		justify-content: flex-start;
+		overflow-x: auto;
+		padding-bottom: 4px;
+		flex-wrap: nowrap;
+	}
+
+	#mainMenuList::-webkit-scrollbar {
+		display: none;
+	}
+
+	.nav-menu-link {
+		padding: 6px 10px;
+		font-size: 13px;
+	}
+
+	/* 移动端子菜单适配 */
+	.submenu-container {
+		position: fixed;
+		top: auto;
+		left: 50%;
+		bottom: 20px;
+		transform: translateX(-50%);
+		max-height: 70vh;
+		overflow-y: auto;
+		min-width: 90%;
+		z-index: 9999;
+	}
+}
+
+/* 菜单加载中样式 */
+.menu-loading {
+	color: #fff;
+	font-size: 14px;
+	padding: 8px 12px;
+}
+
+/* 无菜单提示样式 */
+.no-menu-tip {
+	color: #fff;
+	font-size: 14px;
+	padding: 8px 12px;
+	opacity: 0.8;
 }
 
 /* 超级返平台子菜单样式 - 修复hover丢失问题 */
@@ -1140,6 +1234,7 @@ body {
 	text-decoration: none;
 	font-size: 13px;
 	transition: background-color 0.2s;
+	cursor: pointer;
 }
 
 .submenu-item:hover {
@@ -1152,6 +1247,40 @@ body {
 	font-size: 12px;
 	width: 16px;
 	text-align: center;
+}
+
+/* 无权限菜单样式优化 */
+.submenu-item.no-permission {
+	color: #999;
+	cursor: not-allowed;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	white-space: nowrap;
+	/* 强制不换行 */
+	overflow: hidden;
+}
+
+.submenu-item.no-permission .menu-name {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.submenu-item.no-permission .vip-badge {
+	font-size: 11px;
+	color: #ff9800;
+	background-color: rgba(255, 152, 0, 0.1);
+	padding: 2px 6px;
+	border-radius: 4px;
+	margin-left: 8px;
+	white-space: nowrap;
+}
+
+.submenu-item.no-permission:hover {
+	background-color: transparent;
+	color: #999;
 }
 
 /* 订单查询表格样式优化 */
@@ -1201,7 +1330,7 @@ body {
 }
 
 /* 订单查询模态框全屏样式 */
-#orderQueryModal .modal-dialog {
+#qnzgOrderModal .modal-dialog {
 	width: 95% !important;
 	/* 宽度占视口95%，左右留2.5%空白 */
 	max-width: 1400px !important;
@@ -1215,7 +1344,7 @@ body {
 	padding: 0 !important;
 }
 
-#orderQueryModal .modal-content {
+#qnzgOrderModal .modal-content {
 	height: 100% !important;
 	/* 内容高度跟随dialog */
 	border-radius: 12px !important;
@@ -1227,7 +1356,7 @@ body {
 	flex-direction: column;
 }
 
-#orderQueryModal .modal-header {
+#qnzgOrderModal .modal-header {
 	border-radius: 12px 12px 0 0 !important;
 	padding: 16px 24px !important;
 	position: sticky !important;
@@ -1235,7 +1364,7 @@ body {
 	z-index: 100 !important;
 }
 
-#orderQueryModal .modal-body {
+#qnzgOrderModal .modal-body {
 	padding: 20px 24px !important;
 	flex: 1;
 	/* 自动填充剩余高度 */
@@ -1243,7 +1372,7 @@ body {
 	/* 内容超出时滚动 */
 }
 
-#orderQueryModal .order-table-wrapper {
+#qnzgOrderModal .order-table-wrapper {
 	max-height: none !important;
 	/* 取消固定最大高度 */
 	height: 100% !important;
@@ -1251,7 +1380,7 @@ body {
 	overflow-y: auto !important;
 }
 
-#orderQueryModal .modal-footer {
+#qnzgOrderModal .modal-footer {
 	border-radius: 0 0 12px 12px !important;
 	padding: 12px 24px !important;
 	position: sticky !important;
@@ -1262,7 +1391,7 @@ body {
 
 /* 移动端适配 - 非全屏模态框 */
 @media (max-width: 768px) {
-	#orderQueryModal .modal-dialog {
+	#qnzgOrderModal .modal-dialog {
 		width: 90% !important;
 		/* 移动端宽度90%，留更多空白 */
 		max-height: 85vh !important;
@@ -1270,7 +1399,7 @@ body {
 		margin: 15px auto !important;
 	}
 
-	#orderQueryModal .modal-body {
+	#qnzgOrderModal .modal-body {
 		padding: 12px 16px !important;
 	}
 }

@@ -15,7 +15,7 @@
     "icon": "fa fa-cogs",
     "page": "qnzgMain",
     "parentId": "menu_1001",
-    "sort": 2,
+    "sort": 1,
     "isVip": false,
     "status": "enable"
   },
@@ -25,7 +25,7 @@
     "icon": "fa fa-database",
     "page": "qnzgOrder",
     "parentId": "menu_1001",
-    "sort": 1,
+    "sort": 2,
     "isVip": true,
     "status": "enable"
   },
@@ -34,7 +34,7 @@
     "icon": "fa fa-list",
     "page": "",
     "parentId": "",
-    "sort": 1,
+    "sort": 2,
     "isVip": true,
     "status": "enable",
     "id": "menu_1772090072419"
@@ -54,7 +54,7 @@
     "icon": "fa fa-database",
     "page": "ceshizi2",
     "parentId": "menu_1772090072419",
-    "sort": 1,
+    "sort": 2,
     "isVip": true,
     "status": "enable",
     "id": "menu_1772097234976"

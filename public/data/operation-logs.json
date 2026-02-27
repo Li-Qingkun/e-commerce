@@ -1,5 +1,85 @@
 ﻿[
   {
+    "logId": "log_1772169640988_bzx7ln3qc",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：测试子菜单2",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-27T05:20:40.988Z",
+    "operationTimeStr": "2026/2/27 13:20:40",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772169636584_kn7umqe7n",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：测试子菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-27T05:20:36.584Z",
+    "operationTimeStr": "2026/2/27 13:20:36",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772169633984_8mtl4so0h",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：超级返平台",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-27T05:20:33.984Z",
+    "operationTimeStr": "2026/2/27 13:20:33",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772169631525_21urby2yp",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：测试主菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-27T05:20:31.525Z",
+    "operationTimeStr": "2026/2/27 13:20:31",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772169571282_ml9jwjf48",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：查询订单信息",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-27T05:19:31.282Z",
+    "operationTimeStr": "2026/2/27 13:19:31",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772169562505_ankk32ga4",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：平台主页",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-27T05:19:22.505Z",
+    "operationTimeStr": "2026/2/27 13:19:22",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772169546194_1ankq5dto",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：查询订单信息",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-27T05:19:06.194Z",
+    "operationTimeStr": "2026/2/27 13:19:06",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772169543435_a516yuf4t",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：平台主页",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-27T05:19:03.435Z",
+    "operationTimeStr": "2026/2/27 13:19:03",
+    "ip": "127.0.0.1"
+  },
+  {
     "logId": "log_1772097278277_vaj9wbdm3",
     "operationType": "菜单管理",
     "operationDesc": "删除菜单ID：menu_1772097268767及子菜单",

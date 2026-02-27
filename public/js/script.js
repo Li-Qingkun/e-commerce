@@ -22,6 +22,10 @@ let currentUserInfo = null;
 let rechargeRecords = [];
 // 全局变量 - 存储当前右键点击的计划数据
 let currentClickPlan = null;
+// 菜单相关全局变量
+let allMenus = []; // 所有菜单数据
+let userMenuPermissions = []; // 用户菜单权限数据
+let currentUserMenuIds = []; // 当前用户拥有的菜单ID
 
 // ===================== 新增：右键菜单初始化函数 =====================
 /**
@@ -319,6 +323,225 @@ function initPlanContextMenu() {
 		closeContextMenu();
 		currentClickPlan = null;
 	};
+}
+
+/**
+ * 加载菜单配置文件
+ */
+async function loadMenuConfig() {
+	try {
+		// 加载菜单数据
+		const menuResponse = await fetch('/data/menus.json', {
+			cache: 'no-cache'
+		});
+		if (!menuResponse.ok) throw new Error('菜单文件加载失败');
+		allMenus = await menuResponse.json();
+
+		// 加载用户菜单权限数据
+		const permissionResponse = await fetch('/data/user_menu_permissions.json', {
+			cache: 'no-cache'
+		});
+		if (!permissionResponse.ok) throw new Error('用户菜单权限文件加载失败');
+		userMenuPermissions = await permissionResponse.json();
+
+		console.log('✅ 菜单配置加载完成');
+		return true;
+	} catch (error) {
+		console.error('加载菜单配置失败：', error);
+		showToast('菜单配置加载失败', 'error');
+		return false;
+	}
+}
+
+/**
+ * 获取当前用户的菜单权限
+ */
+function getCurrentUserMenuPermissions() {
+	// 查找当前用户的权限配置
+	const userPermission = userMenuPermissions.find(item => item.userName === currentUserName);
+	if (userPermission && Array.isArray(userPermission.menuIds)) {
+		currentUserMenuIds = userPermission.menuIds;
+	} else {
+		currentUserMenuIds = [];
+	}
+	console.log(`✅ 当前用户【${currentUserName}】的菜单权限：`, currentUserMenuIds);
+}
+
+/**
+ * 构建菜单树结构
+ */
+function buildMenuTree() {
+	// 过滤启用的菜单
+	const enabledMenus = allMenus.filter(menu => menu.status === 'enable');
+
+	// 构建菜单树
+	const menuTree = {};
+
+	// 先找顶级菜单（parentId为空）
+	const rootMenus = enabledMenus.filter(menu => !menu.parentId || menu.parentId === '');
+
+	// 为每个顶级菜单找子菜单
+	rootMenus.forEach(rootMenu => {
+		menuTree[rootMenu.id] = {
+			...rootMenu,
+			children: enabledMenus.filter(menu => menu.parentId === rootMenu.id)
+				.sort((a, b) => (a.sort || 0) - (b.sort || 0))
+		};
+	});
+
+	// 按sort排序顶级菜单
+	const sortedRootMenus = Object.values(menuTree).sort((a, b) => (a.sort || 0) - (b.sort || 0));
+	return sortedRootMenus;
+}
+
+/**
+ * 渲染动态菜单
+ */
+function renderDynamicMenu() {
+	const $menuList = $('#mainMenuList');
+	$menuList.empty();
+
+	// 显示加载中
+	$menuList.html('<li class="menu-loading"><i class="fa fa-spinner fa-spin"></i> 菜单加载中...</li>');
+
+	// 获取菜单树
+	const menuTree = buildMenuTree();
+
+	if (menuTree.length === 0) {
+		$menuList.html('<li class="no-menu-tip">暂无可用菜单</li>');
+		return;
+	}
+
+	// 清空加载状态
+	$menuList.empty();
+
+	// 渲染每个顶级菜单
+	menuTree.forEach(rootMenu => {
+		// 检查顶级菜单是否有权限（如果顶级菜单需要权限控制）
+		const hasRootPermission = currentUserMenuIds.includes(rootMenu.id);
+
+		// 只渲染有权限的顶级菜单
+		if (!hasRootPermission) return;
+
+		const $menuItem = $(`
+            <li class="nav-menu-item dropdown" data-menu-id="${rootMenu.id}">
+                <a href="javascript:;" class="nav-menu-link dropdown-toggle">
+                    <i class="${rootMenu.icon || 'fa fa-bars'}"></i> ${rootMenu.name}
+                </a>
+                <ul class="submenu-container" id="submenu_${rootMenu.id}">
+                    <!-- 子菜单会动态生成 -->
+                </ul>
+            </li>
+        `);
+
+		$menuList.append($menuItem);
+
+		// 渲染子菜单
+		const $submenuContainer = $(`#submenu_${rootMenu.id}`);
+		if (rootMenu.children && rootMenu.children.length > 0) {
+			rootMenu.children.forEach(subMenu => {
+				const hasPermission = currentUserMenuIds.includes(subMenu.id);
+				const isVipMenu = subMenu.isVip === true;
+				const isUserValid = isUserValidMember();
+
+				// 菜单状态：有权限且（非VIP菜单 或 用户是有效会员）
+				const menuEnabled = hasPermission && (!isVipMenu || isUserValid);
+
+				let submenuHtml = '';
+				if (menuEnabled) {
+					// 有权限的菜单
+					submenuHtml = `
+                        <li class="submenu-item" data-menu-id="${subMenu.id}" data-page="${subMenu.page}">
+                            <i class="${subMenu.icon || 'fa fa-angle-right'}"></i> ${subMenu.name}
+                        </li>
+                    `;
+				} else {
+					// 无权限的菜单
+					submenuHtml = `
+                        <li class="submenu-item no-permission" data-menu-id="${subMenu.id}">
+                            <i class="${subMenu.icon || 'fa fa-angle-right'}"></i>
+                            <span class="menu-name">${subMenu.name}</span>
+                            <span class="vip-badge">无会员权限</span>
+                        </li>
+                    `;
+				}
+
+				$submenuContainer.append(submenuHtml);
+			});
+		} else {
+			// 无子菜单
+			$submenuContainer.html(`
+                <li class="submenu-item">
+                    <i class="fa fa-info-circle"></i> 暂无子菜单
+                </li>
+            `);
+		}
+	});
+
+	// 绑定菜单点击事件
+	bindMenuClickEvents();
+}
+
+/**
+ * 绑定菜单点击事件
+ */
+function bindMenuClickEvents() {
+	// 子菜单点击事件
+	$('.submenu-item').off('click').on('click', function() {
+		const $this = $(this);
+		const menuId = $this.data('menu-id');
+		const page = $this.data('page');
+		const hasPermission = !$this.hasClass('no-permission');
+
+		if (!hasPermission) {
+			showToast('您暂无该菜单的访问权限，请联系管理员开通会员', 'error', 3000);
+			return;
+		}
+
+		// 根据不同的page执行不同操作
+		switch (page) {
+			case 'qnzgMain':
+				// 超级返平台主页
+				window.open('https://qnzg.cn/douke/index.html#/task/history', '_blank');
+				break;
+			case 'qnzgOrder':
+				// 每次打开弹窗时重新初始化店铺下拉框
+				initOrderQueryShopSelect();
+				// 显示弹窗
+				$('#qnzgOrderModal').modal('show');
+				break;
+			case 'ceshizi':
+			case 'ceshizi2':
+				// 测试菜单
+				showToast(`点击了${$this.text().trim()}菜单`, 'info');
+				break;
+			default:
+				// 其他菜单（如有需要扩展）
+				showToast(`菜单【${$this.text().trim()}】暂未配置功能`, 'warning');
+				break;
+		}
+	});
+}
+
+/**
+ * 初始化动态菜单
+ */
+async function initDynamicMenu() {
+	// 显示加载状态
+	$('#mainMenuList').html('<li class="menu-loading"><i class="fa fa-spinner fa-spin"></i> 加载菜单中...</li>');
+
+	// 加载菜单配置
+	const loadSuccess = await loadMenuConfig();
+	if (!loadSuccess) {
+		$('#mainMenuList').html('<li class="no-menu-tip">菜单加载失败</li>');
+		return;
+	}
+
+	// 获取当前用户菜单权限
+	getCurrentUserMenuPermissions();
+
+	// 渲染菜单
+	renderDynamicMenu();
 }
 
 // ===================== 计划块拖动功能 =====================
@@ -1409,14 +1632,6 @@ function initOrderQueryModal() {
 
 	// 绑定复制表格按钮事件
 	$('#btnCopyOrderTable').off('click').on('click', copyOrderTableContent);
-
-	// 绑定打开订单查询弹窗事件
-	$('#btnQueryOrderInfo').off('click').on('click', function() {
-		// 每次打开弹窗时重新初始化店铺下拉框
-		initOrderQueryShopSelect();
-		// 显示弹窗
-		$('#orderQueryModal').modal('show');
-	});
 }
 
 /**
@@ -1790,6 +2005,9 @@ async function initPage() {
 	// 初始化店铺切换按钮（基于最新的店铺列表）
 	initShopSwitcher();
 
+	// 初始化动态菜单（新增）
+	await initDynamicMenu();
+
 	// 绑定事件
 	bindEvents();
 
@@ -1805,10 +2023,10 @@ async function initPage() {
 	// 初始化用户下拉菜单（包含新增功能）
 	initUserDropdown();
 
-	// ========== 新增：初始化订单查询功能 ==========
+	// 初始化订单查询功能
 	initOrderQueryModal();
 
-	// ========== 兜底保障：重新绑定对比按钮 ==========
+	// 兜底保障：重新绑定对比按钮
 	setTimeout(() => {
 		// 今日/明日对比按钮
 		$('#btnCompareTodayTomorrow').off('click').on('click', function() {
