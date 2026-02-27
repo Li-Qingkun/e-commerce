@@ -1,5 +1,25 @@
 ﻿[
   {
+    "logId": "log_1772176640063_kcw6zoolr",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：售价信息记录",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-27T07:17:20.063Z",
+    "operationTimeStr": "2026/2/27 15:17:20",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772175059646_qaubohcdj",
+    "operationType": "菜单管理",
+    "operationDesc": "新增菜单：售价信息记录",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-02-27T06:50:59.646Z",
+    "operationTimeStr": "2026/2/27 14:50:59",
+    "ip": "127.0.0.1"
+  },
+  {
     "logId": "log_1772169640988_bzx7ln3qc",
     "operationType": "菜单管理",
     "operationDesc": "编辑菜单：测试子菜单2",

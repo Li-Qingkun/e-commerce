@@ -27,6 +27,10 @@ let allMenus = []; // 所有菜单数据
 let userMenuPermissions = []; // 用户菜单权限数据
 let currentUserMenuIds = []; // 当前用户拥有的菜单ID
 
+// 售价记录相关全局变量
+let priceRecords = []; // 所有店铺的售价记录数据（单文件存储）
+let currentCoupons = []; // 当前优惠券配置
+
 // ===================== 新增：右键菜单初始化函数 =====================
 /**
  * 初始化计划块右键菜单（适配触控设备）
@@ -422,59 +426,75 @@ function renderDynamicMenu() {
 
 		// 只渲染有权限的顶级菜单
 		if (!hasRootPermission) return;
+		// 判断是否有子菜单
+		const hasChildren = rootMenu.children && rootMenu.children.length > 0;
 
+		// 生成顶级菜单HTML（无子菜单时移除dropdown类）
+		const menuClass = hasChildren ? "nav-menu-item dropdown" : "nav-menu-item";
 		const $menuItem = $(`
-            <li class="nav-menu-item dropdown" data-menu-id="${rootMenu.id}">
-                <a href="javascript:;" class="nav-menu-link dropdown-toggle">
+            <li class="${menuClass}" data-menu-id="${rootMenu.id}">
+                <a href="javascript:;" class="nav-menu-link">
                     <i class="${rootMenu.icon || 'fa fa-bars'}"></i> ${rootMenu.name}
                 </a>
-                <ul class="submenu-container" id="submenu_${rootMenu.id}">
-                    <!-- 子菜单会动态生成 -->
-                </ul>
+                ${hasChildren ? `<ul class="submenu-container" id="submenu_${rootMenu.id}"></ul>` : ''}
             </li>
         `);
 
 		$menuList.append($menuItem);
 
-		// 渲染子菜单
-		const $submenuContainer = $(`#submenu_${rootMenu.id}`);
-		if (rootMenu.children && rootMenu.children.length > 0) {
-			rootMenu.children.forEach(subMenu => {
-				const hasPermission = currentUserMenuIds.includes(subMenu.id);
-				const isVipMenu = subMenu.isVip === true;
-				const isUserValid = isUserValidMember();
+		// 只有有子菜单时才渲染子菜单
+		if (hasChildren) {
+			// 渲染子菜单
+			const $submenuContainer = $(`#submenu_${rootMenu.id}`);
+			if (rootMenu.children && rootMenu.children.length > 0) {
+				rootMenu.children.forEach(subMenu => {
+					const hasPermission = currentUserMenuIds.includes(subMenu.id);
+					const isVipMenu = subMenu.isVip === true;
+					const isUserValid = isUserValidMember();
 
-				// 菜单状态：有权限且（非VIP菜单 或 用户是有效会员）
-				const menuEnabled = hasPermission && (!isVipMenu || isUserValid);
+					// 菜单状态：有权限且（非VIP菜单 或 用户是有效会员）
+					const menuEnabled = hasPermission && (!isVipMenu || isUserValid);
 
-				let submenuHtml = '';
-				if (menuEnabled) {
-					// 有权限的菜单
-					submenuHtml = `
+					let submenuHtml = '';
+					if (menuEnabled) {
+						// 有权限的菜单
+						submenuHtml = `
                         <li class="submenu-item" data-menu-id="${subMenu.id}" data-page="${subMenu.page}">
-                            <i class="${subMenu.icon || 'fa fa-angle-right'}"></i> ${subMenu.name}
+                            <i class="${subMenu.icon || 'fa fa-angle-right'}"></i>
+                            <span class="menu-name">${subMenu.name}</span>
                         </li>
                     `;
-				} else {
-					// 无权限的菜单
-					submenuHtml = `
+					} else {
+						// 无权限的菜单
+						submenuHtml = `
                         <li class="submenu-item no-permission" data-menu-id="${subMenu.id}">
                             <i class="${subMenu.icon || 'fa fa-angle-right'}"></i>
                             <span class="menu-name">${subMenu.name}</span>
                             <span class="vip-badge">无会员权限</span>
                         </li>
                     `;
-				}
+					}
 
-				$submenuContainer.append(submenuHtml);
-			});
-		} else {
-			// 无子菜单
-			$submenuContainer.html(`
+					$submenuContainer.append(submenuHtml);
+				});
+			} else {
+				// 无子菜单
+				$submenuContainer.html(`
                 <li class="submenu-item">
-                    <i class="fa fa-info-circle"></i> 暂无子菜单
+                    <i class="fa fa-info-circle"></i>
+                    <span class="menu-name">暂无子菜单</span>
                 </li>
             `);
+			}
+		} else {
+			// 无子菜单的顶级菜单点击事件
+			$menuItem.off('click').on('click', function() {
+				const page = rootMenu.page;
+				// 触发对应功能
+				if (page === 'priceRecord') {
+					openPriceRecordModal();
+				}
+			});
 		}
 	});
 
@@ -521,6 +541,522 @@ function bindMenuClickEvents() {
 				break;
 		}
 	});
+}
+
+/**
+ * 打开售价信息记录（查看模式）
+ */
+function openPriceRecordModal() {
+	// 更新查看模态框标题
+	$('#currentShopViewTitle').text(currentShopName);
+	$('#viewTableTitle').text(`${currentShopName}售价`);
+	// 加载并渲染表格数据
+	loadAndRenderViewTable();
+	// 显示查看模态框
+	$('#priceRecordViewModal').modal('show');
+}
+
+/**
+ * 加载并渲染查看模式的表格
+ */
+async function loadAndRenderViewTable() {
+	try {
+		// 从单文件加载所有店铺数据
+		const fileName = 'all_shop_price_records.json';
+		const response = await fetch(`${CONFIG.jsonFilePath}${fileName}`, {
+			cache: 'no-cache'
+		});
+
+		if (response.status === 404) {
+			$('#priceRecordViewBody').html(`
+                <tr>
+                    <td colspan="5" class="text-center text-muted">暂无售价记录</td>
+                </tr>
+            `);
+			return;
+		}
+		if (!response.ok) throw new Error('加载售价记录失败');
+
+		const allRecords = await response.json();
+		const currentShopData = allRecords.find(item => item.shopName === currentShopName);
+
+		if (!currentShopData || !currentShopData.skuDetails || currentShopData.skuDetails.length === 0) {
+			$('#priceRecordViewBody').html(`
+                <tr>
+                    <td colspan="5" class="text-center text-muted">暂无售价记录</td>
+                </tr>
+            `);
+			return;
+		}
+
+		// 渲染表格
+		const $tbody = $('#priceRecordViewBody');
+		$tbody.empty();
+		currentShopData.skuDetails.forEach(sku => {
+			const $row = $(`
+                <tr>
+                    <td>${sku.skuName || '-'}</td>
+                    <td style="background-color: #c8e6c9;">${(sku.price || 0).toFixed(2)}</td>
+                    <td style="background-color: #ffe0b2;">${(sku.coupon || 0).toFixed(2)}</td>
+                    <td style="background-color: #ffcdd2;">${(sku.reduceValue || 0).toFixed(2)}</td>
+                    <td style="background-color: #c8e6c9;">${(sku.finalPrice || 0).toFixed(2)}</td>
+                </tr>
+            `);
+			$tbody.append($row);
+		});
+	} catch (error) {
+		console.error('加载查看表格失败：', error);
+		showToast('加载售价记录失败', 'error');
+		$('#priceRecordViewBody').html(`
+            <tr>
+                <td colspan="5" class="text-center text-danger">加载失败，请重试</td>
+            </tr>
+        `);
+	}
+}
+
+/**
+ * 初始化优惠券配置
+ */
+function initCoupons() {
+	currentCoupons = [];
+	// 读取页面上的所有优惠券配置
+	$('.coupon-item').each(function() {
+		const threshold = parseInt($(this).find('.coupon-threshold').val()) || 0;
+		const value = parseInt($(this).find('.coupon-value').val()) || 0;
+		if (threshold > 0 && value > 0) {
+			currentCoupons.push({
+				threshold,
+				value
+			});
+		}
+	});
+	// 按门槛从高到低排序（优先匹配高门槛券）
+	currentCoupons.sort((a, b) => b.threshold - a.threshold);
+	console.log('当前优惠券（排序后）：', currentCoupons); // 调试用
+}
+
+/**
+ * 绑定优惠券事件
+ */
+function bindCouponEvents() {
+	// 添加优惠券档位
+	$('#btnAddCoupon').off('click').on('click', function() {
+		const $couponItem = $(`
+            <div class="coupon-item row" style="margin-bottom: 10px; align-items: center;">
+                <div class="col-md-5">
+                    <input type="number" class="form-control coupon-threshold" placeholder="满X元" min="1">
+                </div>
+                <div class="col-md-5">
+                    <input type="number" class="form-control coupon-value" placeholder="减X元" min="1">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-sm btn-remove-coupon">删除</button>
+                </div>
+            </div>
+        `);
+		$('#couponList').append($couponItem);
+		// 绑定删除事件
+		$couponItem.find('.btn-remove-coupon').off('click').on('click', function() {
+			$(this).closest('.coupon-item').remove();
+			initCoupons(); // 重新初始化优惠券
+		});
+	});
+
+	// 删除优惠券档位
+	$('.btn-remove-coupon').off('click').on('click', function() {
+		// 至少保留1个优惠券档位
+		if ($('.coupon-item').length <= 1) {
+			showToast('至少保留一个优惠券档位', 'warning');
+			return;
+		}
+		$(this).closest('.coupon-item').remove();
+		initCoupons(); // 重新初始化优惠券
+	});
+
+	// 优惠券输入变化时重新初始化
+	$('.coupon-threshold, .coupon-value').off('input').on('input', function() {
+		initCoupons();
+	});
+}
+
+/**
+ * 绑定售价表格事件
+ */
+function bindPriceTableEvents() {
+	// 添加SKU行
+	$('#btnAddPriceRow').off('click').on('click', function() {
+		const $newRow = $(`
+            <tr class="price-row">
+                <td><input type="text" class="form-control sku-name" placeholder="如：单五脚垫"></td>
+                <td><input type="number" class="form-control price" step="0.01" placeholder="自动计算/手动输入" readonly></td>
+                <td><input type="number" class="form-control coupon" step="0.01" readonly placeholder="自动匹配"></td>
+                <td><input type="number" class="form-control reduce-value" step="0.01" placeholder="直降金额/折扣数"></td>
+                <td><input type="number" class="form-control final-price" step="0.01" placeholder="自动反推/手动输入"></td>
+                <td><button type="button" class="btn btn-danger btn-sm btn-remove-row">删除</button></td>
+            </tr>
+        `);
+		$('#priceTableBody').append($newRow);
+		// 绑定行事件（包括删除）
+		bindRowEvents($newRow);
+		// 绑定删除按钮
+		$newRow.find('.btn-remove-row').off('click').on('click', function() {
+			if ($('.price-row').length <= 1) {
+				showToast('至少保留一行SKU数据', 'warning');
+				return;
+			}
+			$(this).closest('.price-row').remove();
+		});
+	});
+
+	// 绑定现有行的删除按钮
+	$('.btn-remove-row').off('click').on('click', function() {
+		if ($('.price-row').length <= 1) {
+			showToast('至少保留一行SKU数据', 'warning');
+			return;
+		}
+		$(this).closest('.price-row').remove();
+	});
+
+	// 绑定现有行的输入事件
+	$('.price-row').each(function() {
+		bindRowEvents($(this));
+	});
+}
+
+/**
+ * 绑定单行输入事件（核心计算逻辑）
+ * @param {jQuery} $row 表格行对象
+ */
+function bindRowEvents($row) {
+	const $price = $row.find('.price');
+	const $coupon = $row.find('.coupon');
+	const $reduceValue = $row.find('.reduce-value');
+	const $finalPrice = $row.find('.final-price');
+
+	// 直降值变化时：锁定售价输入框，禁止反推
+	$reduceValue.off('input').on('input', function() {
+		const reduceVal = parseFloat($(this).val()) || 0;
+		if (reduceVal > 0) {
+			$price.prop('readonly', true); // 锁定售价
+			$price.attr('placeholder', '自动计算');
+		} else {
+			$price.prop('readonly', false); // 解锁售价
+			$price.attr('placeholder', '自动计算/手动输入');
+		}
+		calcHandler();
+	});
+
+	// 计算逻辑
+	const calcHandler = function() {
+		const priceVal = parseFloat($price.val()) || 0;
+		const reduceVal = parseFloat($reduceValue.val()) || 0;
+		const finalPriceVal = parseFloat($finalPrice.val()) || 0;
+		const reduceType = $('#priceReduceType').val();
+
+		// 判断是“计算售价”还是“反推一口价”
+		if (finalPriceVal > 0 && reduceVal > 0) {
+			// 有一口价和直降值 → 计算售价 + 匹配优惠券
+			calcPrice($row, finalPriceVal, reduceVal, reduceType);
+		} else if (priceVal > 0 && reduceVal > 0) {
+			// 有售价和直降值 → 反推一口价
+			reverseCalcFinalPrice($row, priceVal, reduceVal, reduceType);
+		}
+	};
+
+	// 绑定其他输入事件
+	$price.off('input').on('input', calcHandler);
+	$finalPrice.off('input').on('input', calcHandler);
+	// 直降类型切换时重新计算
+	$('#priceReduceType').off('change').on('change', function() {
+		$('.price-row').each(function() {
+			bindRowEvents($(this));
+		});
+	});
+}
+
+/**
+ * 正向计算：根据一口价计算售价和优惠券
+ * @param {jQuery} $row 表格行
+ * @param {number} finalPrice 一口价
+ * @param {number} reduceVal 直降值
+ * @param {string} reduceType 直降类型
+ */
+function calcPrice($row, finalPrice, reduceVal, reduceType) {
+	let tempPrice = 0;
+	// 第一步：计算直降后价格
+	if (reduceType === 'direct') {
+		// 直降：一口价 - 直降值
+		tempPrice = finalPrice - reduceVal;
+	} else {
+		// 打折：一口价 * 直降值 / 10
+		tempPrice = finalPrice * reduceVal / 10;
+	}
+	tempPrice = Math.max(tempPrice, 0); // 最低为0
+
+	// 第二步：匹配最优优惠券（取最大满足条件的券值）
+	let couponVal = 0;
+	for (const coupon of currentCoupons) {
+		if (tempPrice >= coupon.threshold && coupon.value > couponVal) {
+			couponVal = coupon.value;
+		}
+	}
+
+	// 第三步：计算最终售价
+	const finalPriceCalc = tempPrice - couponVal;
+	const finalPriceFixed = Math.max(finalPriceCalc, 0).toFixed(2);
+
+	// 赋值到输入框
+	$row.find('.coupon').val(couponVal.toFixed(2));
+	$row.find('.price').val(finalPriceFixed);
+}
+
+/**
+ * 反向计算：根据售价反推一口价
+ * @param {jQuery} $row 表格行
+ * @param {number} price 售价
+ * @param {number} reduceVal 直降值
+ * @param {string} reduceType 直降类型
+ */
+function reverseCalcFinalPrice($row, price, reduceVal, reduceType) {
+	// 第一步：获取已匹配的优惠券（无则重新匹配）
+	let couponVal = parseFloat($row.find('.coupon').val()) || 0;
+	if (couponVal === 0) {
+		// 先假设直降后价格 = 售价 + 优惠券（初始为0），再匹配
+		let tempPrice = price;
+		for (const coupon of currentCoupons) {
+			if (tempPrice >= coupon.threshold) {
+				couponVal = coupon.value;
+				break;
+			}
+		}
+		$row.find('.coupon').val(couponVal.toFixed(2));
+	}
+
+	// 第二步：反推直降后价格
+	const tempPrice = price + couponVal;
+	// 第三步：反推一口价
+	let finalPrice = 0;
+	if (reduceType === 'direct') {
+		// 直降：一口价 = 直降后价格 + 直降值
+		finalPrice = tempPrice + reduceVal;
+	} else {
+		// 打折：一口价 = 直降后价格 * 10 / 直降值
+		if (reduceVal === 0) {
+			finalPrice = 0;
+		} else {
+			finalPrice = (tempPrice * 10) / reduceVal;
+		}
+	}
+	finalPrice = Math.max(finalPrice, 0).toFixed(2);
+
+	// 赋值到输入框
+	$row.find('.final-price').val(finalPrice);
+}
+
+/**
+ * 加载所有店铺的售价记录（单文件）
+ */
+async function loadPriceRecords() {
+	try {
+		const fileName = 'all_shop_price_records.json';
+		const response = await fetch(`${CONFIG.jsonFilePath}${fileName}`, {
+			cache: 'no-cache'
+		});
+
+		if (response.status === 404) {
+			priceRecords = [];
+			// 无数据时，渲染默认优惠券并初始化
+			renderCoupons([{
+				threshold: 100,
+				value: 30
+			}]);
+			renderSKUTable([]);
+			$('#priceReduceType').val('direct');
+			initCoupons(); // 初始化默认优惠券
+			return;
+		}
+		if (!response.ok) throw new Error('加载售价记录失败');
+
+		priceRecords = await response.json();
+		// 找到当前店铺的数据
+		const currentShopData = priceRecords.find(item => item.shopName === currentShopName);
+		if (currentShopData) {
+			// 渲染优惠券配置
+			renderCoupons(currentShopData.coupons || []);
+			// 渲染SKU明细
+			renderSKUTable(currentShopData.skuDetails || []);
+			// 设置直降类型
+			$('#priceReduceType').val(currentShopData.reduceType || 'direct');
+			// 关键修复：渲染完成后立即初始化优惠券
+			initCoupons();
+		} else {
+			// 无当前店铺数据，重置
+			renderCoupons([{
+				threshold: 100,
+				value: 30
+			}]);
+			renderSKUTable([]);
+			$('#priceReduceType').val('direct');
+			// 关键修复：渲染完成后立即初始化优惠券
+			initCoupons();
+		}
+	} catch (error) {
+		console.error('加载售价记录失败：', error);
+		showToast('加载售价记录失败', 'error');
+		priceRecords = [];
+	}
+}
+
+/**
+ * 渲染优惠券配置
+ * @param {Array} coupons 优惠券数组
+ */
+function renderCoupons(coupons) {
+	const $couponList = $('#couponList');
+	$couponList.empty();
+	coupons.forEach(coupon => {
+		const $item = $(`
+            <div class="coupon-item row" style="margin-bottom: 10px; align-items: center;">
+                <div class="col-md-5">
+                    <input type="number" class="form-control coupon-threshold" placeholder="满X元" min="1" value="${coupon.threshold}">
+                </div>
+                <div class="col-md-5">
+                    <input type="number" class="form-control coupon-value" placeholder="减X元" min="1" value="${coupon.value}">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-sm btn-remove-coupon">删除</button>
+                </div>
+            </div>
+        `);
+		$couponList.append($item);
+	});
+	bindCouponEvents();
+}
+
+/**
+ * 渲染SKU表格
+ * @param {Array} skuList SKU数组
+ */
+function renderSKUTable(skuList) {
+	const $tableBody = $('#priceTableBody');
+	$tableBody.empty();
+	if (skuList.length === 0) {
+		// 至少保留一行空行
+		const $emptyRow = $(`
+            <tr class="price-row">
+                <td><input type="text" class="form-control sku-name" placeholder="如：单五脚垫"></td>
+                <td><input type="number" class="form-control price" step="0.01" placeholder="自动计算/手动输入" readonly></td>
+                <td><input type="number" class="form-control coupon" step="0.01" readonly placeholder="自动匹配"></td>
+                <td><input type="number" class="form-control reduce-value" step="0.01" placeholder="直降金额/折扣数"></td>
+                <td><input type="number" class="form-control final-price" step="0.01" placeholder="自动反推/手动输入"></td>
+                <td><button type="button" class="btn btn-danger btn-sm btn-remove-row">删除</button></td>
+            </tr>
+        `);
+		$tableBody.append($emptyRow);
+	} else {
+		skuList.forEach(sku => {
+			const $row = $(`
+                <tr class="price-row">
+                    <td><input type="text" class="form-control sku-name" value="${sku.skuName || ''}"></td>
+                    <td><input type="number" class="form-control price" step="0.01" value="${sku.price || 0}" readonly></td>
+                    <td><input type="number" class="form-control coupon" step="0.01" readonly value="${sku.coupon || 0}"></td>
+                    <td><input type="number" class="form-control reduce-value" step="0.01" value="${sku.reduceValue || 0}"></td>
+                    <td><input type="number" class="form-control final-price" step="0.01" value="${sku.finalPrice || 0}"></td>
+                    <td><button type="button" class="btn btn-danger btn-sm btn-remove-row">删除</button></td>
+                </tr>
+            `);
+			$tableBody.append($row);
+		});
+	}
+	bindPriceTableEvents();
+}
+
+/**
+ * 保存当前店铺的售价记录到单文件
+ */
+async function savePriceRecords() {
+	try {
+		// 1. 收集当前店铺的优惠券配置
+		const coupons = [];
+		$('.coupon-item').each(function() {
+			const threshold = parseInt($(this).find('.coupon-threshold').val()) || 0;
+			const value = parseInt($(this).find('.coupon-value').val()) || 0;
+			if (threshold > 0 && value > 0) {
+				coupons.push({
+					threshold,
+					value
+				});
+			}
+		});
+
+		// 2. 收集当前店铺的SKU明细
+		const skuDetails = [];
+		$('.price-row').each(function() {
+			const skuName = $(this).find('.sku-name').val().trim();
+			const price = parseFloat($(this).find('.price').val()) || 0;
+			const coupon = parseFloat($(this).find('.coupon').val()) || 0;
+			const reduceValue = parseFloat($(this).find('.reduce-value').val()) || 0;
+			const finalPrice = parseFloat($(this).find('.final-price').val()) || 0;
+			if (skuName) {
+				skuDetails.push({
+					skuName,
+					price,
+					coupon,
+					reduceValue,
+					finalPrice
+				});
+			}
+		});
+
+		if (skuDetails.length === 0) {
+			showToast('暂无有效SKU数据可保存', 'warning');
+			return;
+		}
+
+		// 3. 构建当前店铺的数据结构
+		const currentShopData = {
+			shopName: currentShopName,
+			coupons: coupons,
+			reduceType: $('#priceReduceType').val(),
+			skuDetails: skuDetails,
+			updateTime: new Date().toISOString()
+		};
+
+		// 4. 更新全局数组（单文件存储）
+		const existingIndex = priceRecords.findIndex(item => item.shopName === currentShopName);
+		if (existingIndex >= 0) {
+			priceRecords[existingIndex] = currentShopData;
+		} else {
+			priceRecords.push(currentShopData);
+		}
+
+		// 5. 保存到单文件
+		const fileName = 'all_shop_price_records.json';
+		const response = await fetch('/aspx/SaveJsonFile.aspx', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+			},
+			body: `fileName=${encodeURIComponent(fileName)}&filePath=${encodeURIComponent(CONFIG.jsonFilePath)}&data=${encodeURIComponent(JSON.stringify(priceRecords, null, 2))}`
+		});
+
+		if (!response.ok) throw new Error('保存请求失败');
+		const result = await response.json();
+		if (result.success) {
+			showToast('售价记录保存成功', 'success');
+			// 关闭编辑模态框
+			$('#priceRecordModal').modal('hide');
+			// 刷新查看表格
+			setTimeout(() => {
+				loadAndRenderViewTable();
+				$('#priceRecordViewModal').modal('show');
+			}, 300);
+		}
+	} catch (error) {
+		console.error('保存售价记录失败：', error);
+		showToast(`保存失败：${error.message}`, 'error');
+	}
 }
 
 /**
@@ -2239,6 +2775,31 @@ function bindEvents() {
 			$('#batchQuantities').val(qtyArray.join(','));
 		}
 	});
+
+	// 绑定保存按钮事件
+	$('#btnSavePriceRecord').off('click').on('click', savePriceRecords); // 绑定“修改信息”按钮事件
+	$('#btnEditPriceRecord').off('click').on('click', function() {
+		// 关闭查看模态框
+		$('#priceRecordViewModal').modal('hide');
+		// 延迟打开编辑模态框，避免动画冲突
+		setTimeout(() => {
+			openEditPriceRecordModal();
+		}, 300);
+	});
+
+	/**
+	 * 打开售价信息记录（编辑模式）
+	 */
+	function openEditPriceRecordModal() {
+		// 更新编辑模态框标题
+		$('#currentShopTitle').text(currentShopName);
+		// 加载当前店铺的编辑数据
+		loadPriceRecords();
+		// 关键修复：立即初始化优惠券配置，确保计算可用
+		initCoupons();
+		// 显示编辑模态框
+		$('#priceRecordModal').modal('show');
+	}
 }
 
 /**

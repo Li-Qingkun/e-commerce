@@ -64,21 +64,38 @@ body {
 
 /* 适配小屏幕：导航栏容器允许换行 */
 @media (max-width: 768px) {
+
+	/* 修复导航栏塌陷 */
 	.navbar-custom .container-fluid {
 		flex-wrap: wrap;
 		padding: 0 12px;
 		align-items: flex-start;
+		/* 确保导航栏高度自适应，不被内容撑开 */
+		height: auto;
 	}
 }
 
+/* 修复导航栏 logo + 系统名称错位 */
 .navbar-custom .navbar-brand {
-	color: #fff;
-	font-size: 18px;
-	font-weight: 600;
-	height: 60px;
-	line-height: 60px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	padding: 0;
 	margin: 0;
+	height: 56px;
+	/* 与导航栏高度保持一致 */
+}
+
+.navbar-custom .navbar-brand img {
+	height: 32px;
+	width: auto;
+	object-fit: contain;
+}
+
+.navbar-custom .navbar-brand .system-name {
+	font-size: 16px;
+	font-weight: 600;
+	color: #fff;
 	white-space: nowrap;
 }
 
@@ -547,12 +564,23 @@ body {
 		flex-direction: column;
 		gap: 12px;
 		align-items: stretch;
+		/* 按钮组高度固定，防止塌陷 */
+		padding: 0 12px;
 	}
 
 	.left-btn-group,
 	.right-btn-group {
 		justify-content: center;
 		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.btn {
+		/* 按钮高度固定，防止塌陷 */
+		height: 44px;
+		line-height: 28px;
+		font-size: 14px;
+		padding: 8px 16px;
 	}
 
 	.main-container {
@@ -674,6 +702,19 @@ body {
 		padding: 2px 8px;
 		font-size: 12px;
 		margin: 0;
+	}
+
+	.navbar-custom .navbar-brand {
+		height: 48px;
+		margin-bottom: 8px;
+	}
+
+	.navbar-custom .navbar-brand img {
+		height: 28px;
+	}
+
+	.navbar-custom .navbar-brand .system-name {
+		font-size: 14px;
 	}
 }
 
@@ -1016,11 +1057,11 @@ body {
 	opacity: 0.85;
 }
 
-/* 新增导航菜单样式 - 与整体风格统一 */
-/* 动态菜单样式优化 - 适配移动端 */
+/* 动态菜单容器 - 统一垂直对齐 */
 #dynamicMenuContainer {
 	display: flex;
 	align-items: center;
+	/* 强制垂直居中，消除偏移基础 */
 	margin: 0 15px;
 	justify-content: center;
 }
@@ -1041,18 +1082,38 @@ body {
 	margin: 0 15px;
 }
 
+/* 主菜单列表 - 保持布局稳定 */
 .nav-menu-list {
 	list-style: none;
 	padding: 0;
 	margin: 0;
 	display: flex;
 	gap: 12px;
+	/* 统一菜单间距 */
+	align-items: center;
+	/* 子项垂直居中，关键修复 */
 }
 
+/* 菜单父项 - 移除导致偏移的内边距 */
 .nav-menu-item {
 	position: relative;
 	display: flex;
 	align-items: center;
+}
+
+/* 关键：用伪元素创建一个透明的“热区”，覆盖缝隙，不影响视觉 */
+.nav-menu-item::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	height: 12px;
+	/* 覆盖缝隙的高度 */
+	background: transparent;
+	pointer-events: auto;
+	/* 让这个区域可以被hover到 */
+	z-index: 1;
 }
 
 .nav-menu-link {
@@ -1066,6 +1127,9 @@ body {
 	border-radius: 6px;
 	transition: background-color 0.2s ease;
 	white-space: nowrap;
+	/* 关键：链接相对定位，盖住父项的内边距，保证视觉对齐 */
+	position: relative;
+	z-index: 1;
 }
 
 .nav-menu-link:hover,
@@ -1078,7 +1142,7 @@ body {
 	font-size: 13px;
 }
 
-/* 子菜单样式优化 */
+/* 子菜单容器 - 消除物理缝隙 */
 .submenu-container {
 	position: absolute;
 	top: 100%;
@@ -1091,9 +1155,9 @@ body {
 	display: none;
 	z-index: 1000;
 	margin-top: 0;
+	/* 消除缝隙 */
 	list-style: none;
 	padding: 8px 0;
-	border-top: 8px solid transparent;
 }
 
 .nav-menu-item:hover .submenu-container {
@@ -1119,17 +1183,16 @@ body {
 		padding: 6px 10px;
 		font-size: 13px;
 	}
-}
 
-
-/* 移动端菜单适配 */
-@media (max-width: 768px) {
 	#dynamicMenuContainer {
 		order: 3;
 		width: 100%;
 		margin: 8px 0 0 0;
 		padding: 8px 0;
 		border-top: 1px solid rgba(255, 255, 255, 0.1);
+		/* 防止菜单区域过高 */
+		max-height: 60px;
+		overflow: hidden;
 	}
 
 	#mainMenuList {
@@ -1137,6 +1200,9 @@ body {
 		overflow-x: auto;
 		padding-bottom: 4px;
 		flex-wrap: nowrap;
+		/* 菜单高度固定，防止塌陷 */
+		height: 44px;
+		align-items: center;
 	}
 
 	#mainMenuList::-webkit-scrollbar {
@@ -1146,19 +1212,26 @@ body {
 	.nav-menu-link {
 		padding: 6px 10px;
 		font-size: 13px;
+		/* 菜单按钮高度固定 */
+		height: 36px;
+		line-height: 24px;
 	}
 
-	/* 移动端子菜单适配 */
+	/* 子菜单从上方弹出 */
 	.submenu-container {
-		position: fixed;
-		top: auto;
-		left: 50%;
-		bottom: 20px;
-		transform: translateX(-50%);
-		max-height: 70vh;
+		position: fixed !important;
+		top: 120px !important;
+		/* 调整到导航栏下方 */
+		left: 50% !important;
+		bottom: auto !important;
+		transform: translateX(-50%) !important;
+		max-height: 60vh;
 		overflow-y: auto;
 		min-width: 90%;
 		z-index: 9999;
+		border-radius: 12px;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+		background: #fff;
 	}
 }
 
@@ -1180,8 +1253,6 @@ body {
 /* 超级返平台子菜单样式 - 修复hover丢失问题 */
 .nav-menu-item.dropdown {
 	position: relative;
-	/* 关键：给父元素添加padding-bottom，填补鼠标移动的空白区域 */
-	padding-bottom: 8px;
 }
 
 .super-return-submenu {
@@ -1195,13 +1266,10 @@ body {
 	width: 180px;
 	display: none;
 	z-index: 1000;
-	/* 关键修改：把margin-top从4px改为0，消除空白间隙 */
 	margin-top: 0;
+	/* 消除缝隙 */
 	list-style: none;
 	padding: 8px 0;
-	/* 新增：添加微小的透明边框，扩大可hover区域 */
-	border-top: 8px solid transparent;
-	/* 防止子菜单被遮挡 */
 	pointer-events: auto;
 }
 
@@ -1613,4 +1681,19 @@ body {
 		padding: 12px 15px;
 		font-size: 15px;
 	}
+}
+
+/* 售价记录模态框优化 */
+#priceRecordModal .coupon-config-wrapper {
+	border: 1px solid var(--border-color);
+}
+
+#priceRecordModal .price-row input {
+	padding: 6px 8px;
+	font-size: 13px;
+}
+
+#priceRecordModal .modal-body {
+	max-height: 70vh;
+	overflow-y: auto;
 }

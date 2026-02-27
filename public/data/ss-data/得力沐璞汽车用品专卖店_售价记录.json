@@ -1,0 +1,32 @@
+﻿[
+  {
+    "skuName": "aaa",
+    "price": 78,
+    "coupon": 10,
+    "reduceValue": 200,
+    "finalPrice": 288,
+    "reduceType": "direct",
+    "createTime": "2026-02-27T07:28:52.887Z",
+    "shopName": "得力沐璞汽车用品专卖店"
+  },
+  {
+    "skuName": "bbb",
+    "price": 9,
+    "coupon": 0,
+    "reduceValue": 200,
+    "finalPrice": 209,
+    "reduceType": "direct",
+    "createTime": "2026-02-27T07:28:52.887Z",
+    "shopName": "得力沐璞汽车用品专卖店"
+  },
+  {
+    "skuName": "ccc",
+    "price": 0,
+    "coupon": 0,
+    "reduceValue": 100,
+    "finalPrice": 70,
+    "reduceType": "direct",
+    "createTime": "2026-02-27T07:28:52.887Z",
+    "shopName": "得力沐璞汽车用品专卖店"
+  }
+]

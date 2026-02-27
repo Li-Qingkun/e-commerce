@@ -1,0 +1,107 @@
+﻿[
+  {
+    "shopName": "得力沐璞汽车用品专卖店",
+    "coupons": [
+      {
+        "threshold": 100,
+        "value": 30
+      },
+      {
+        "threshold": 200,
+        "value": 50
+      },
+      {
+        "threshold": 300,
+        "value": 100
+      }
+    ],
+    "reduceType": "direct",
+    "skuDetails": [
+      {
+        "skuName": "单五脚垫",
+        "price": 288,
+        "coupon": 100,
+        "reduceValue": 300,
+        "finalPrice": 688
+      },
+      {
+        "skuName": "单五+后备箱",
+        "price": 438,
+        "coupon": 100,
+        "reduceValue": 300,
+        "finalPrice": 838
+      },
+      {
+        "skuName": "单五+后备箱+靠背",
+        "price": 538,
+        "coupon": 100,
+        "reduceValue": 300,
+        "finalPrice": 938
+      },
+      {
+        "skuName": "双五脚垫星河毯",
+        "price": 388,
+        "coupon": 100,
+        "reduceValue": 300,
+        "finalPrice": 788
+      },
+      {
+        "skuName": "双五脚垫仿羊绒",
+        "price": 396,
+        "coupon": 100,
+        "reduceValue": 300,
+        "finalPrice": 796
+      },
+      {
+        "skuName": "双五脚垫提沃斯",
+        "price": 418,
+        "coupon": 100,
+        "reduceValue": 300,
+        "finalPrice": 818
+      },
+      {
+        "skuName": "双五脚垫星河毯+后备箱",
+        "price": 538,
+        "coupon": 100,
+        "reduceValue": 300,
+        "finalPrice": 938
+      },
+      {
+        "skuName": "双五脚垫仿羊绒+后备箱",
+        "price": 546,
+        "coupon": 100,
+        "reduceValue": 300,
+        "finalPrice": 946
+      },
+      {
+        "skuName": "双五脚垫提沃斯+后备箱",
+        "price": 568,
+        "coupon": 100,
+        "reduceValue": 300,
+        "finalPrice": 968
+      },
+      {
+        "skuName": "双五脚垫星河毯+后备箱+靠背",
+        "price": 638,
+        "coupon": 100,
+        "reduceValue": 300,
+        "finalPrice": 1038
+      },
+      {
+        "skuName": "双五脚垫仿羊绒+后备箱+靠背",
+        "price": 646,
+        "coupon": 100,
+        "reduceValue": 300,
+        "finalPrice": 1046
+      },
+      {
+        "skuName": "双五脚垫提沃斯+后备箱+靠背",
+        "price": 668,
+        "coupon": 100,
+        "reduceValue": 300,
+        "finalPrice": 1068
+      }
+    ],
+    "updateTime": "2026-02-27T08:22:44.434Z"
+  }
+]

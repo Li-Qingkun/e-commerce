@@ -58,5 +58,15 @@
     "isVip": true,
     "status": "enable",
     "id": "menu_1772097234976"
+  },
+  {
+    "name": "售价信息记录",
+    "icon": "fa fa-table",
+    "page": "priceRecord",
+    "parentId": "",
+    "sort": 1,
+    "isVip": false,
+    "status": "enable",
+    "id": "menu_1772175059635"
   }
 ]
