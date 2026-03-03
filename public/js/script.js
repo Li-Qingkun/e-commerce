@@ -32,6 +32,57 @@ let priceRecords = []; // 所有店铺的售价记录数据（单文件存储）
 let currentCoupons = []; // 当前优惠券配置
 // 晒图提醒相关
 let postPictureReminderList = []; // 需要提醒的计划列表
+let factoryPatternList = []; //工厂版型表管理
+
+// ===================== 模态框自动加载 =====================
+async function loadAllModals() {
+	const modalFiles = [
+		"editModal.html",
+		"compareModal.html",
+		"changePwdModal.html",
+		"addShopModal.html",
+		"rechargeRecordModal.html",
+		"batchInitModal.html",
+		"qnzgOrderModal.html",
+		"priceRecordViewModal.html",
+		"priceRecordModal.html",
+		"systemSettingModal.html",
+		"postPictureDateModal.html",
+		"postPictureReminderModal.html",
+		"planContextMenu.html",
+		"factoryPatternModal.html"
+	];
+
+	const $container = $("#modalContainer");
+	for (let file of modalFiles) {
+		try {
+			const html = await fetch(`ss_model/${file}`).then(res => res.text());
+			$container.append(html);
+		} catch (e) {
+			console.error("加载模态框失败：", file, e);
+		}
+	}
+}
+
+// ===================== 页面入口（核心修复） =====================
+$(document).ready(async function() {
+	await loadAllModals(); // 先加载所有弹窗HTML
+	// 验证登录状态
+	currentUserName = localStorage.getItem('currentUserName');
+	if (!currentUserName || currentUserName.trim() === '') {
+		showToast('请先登录系统', 'warning');
+		setTimeout(() => {
+			window.location.href = 'login.html';
+		}, 1500);
+		return;
+	}
+
+	currentUserName = currentUserName.trim();
+	$('#userNameDisplay').text(`登录用户：${currentUserName}`);
+
+	// 核心修复：确保页面初始化是异步的，等待数据加载完成
+	await initPage();
+});
 
 // ===================== 新增：右键菜单初始化函数 =====================
 /**
@@ -318,7 +369,6 @@ function initPlanContextMenu() {
 					// 保存 + 刷新
 					await saveDataToJsonFile();
 					refreshTimeline();
-					debugger;
 					updatePostPictureMenuText(currentClickPlan);
 					closeContextMenu();
 					$('#postPictureDateModal').modal('hide');
@@ -526,6 +576,8 @@ function renderDynamicMenu() {
 				// 触发对应功能
 				if (page === 'priceRecord') {
 					openPriceRecordModal();
+				} else if (page === 'FactoryPattern') {
+					openFactoryPatternModal();
 				}
 			});
 		}
@@ -596,7 +648,6 @@ async function loadAndRenderViewTable() {
 		const response = await fetch(`${CONFIG.jsonFilePath}${fileName}`, {
 			cache: 'no-cache'
 		});
-
 		if (response.status === 404) {
 			$('#priceRecordViewBody').html(`
                 <tr>
@@ -2137,11 +2188,11 @@ function refreshTimeline() {
 
 // 刷新计划表格（按createTime倒序排序+修复显示问题）
 function refreshOrderPlanTable() {
-	console.log(`【刷新计划表格】开始执行，当前店铺：${currentShopName}，orderPlans长度：`, orderPlans.length);
+	// console.log(`【刷新计划表格】开始执行，当前店铺：${currentShopName}，orderPlans长度：`, orderPlans.length);
 	const $tbody = $('#planTableBody'); // 你的表格tbody ID
 	$tbody.empty();
 	if (orderPlans.length === 0) {
-		console.log(`【刷新计划表格】${currentShopName}无数据，显示空提示`);
+		// console.log(`【刷新计划表格】${currentShopName}无数据，显示空提示`);
 		$tbody.append(`<tr><td colspan="6" class="text-center">【${currentShopName}】暂无计划数据</td></tr>`);
 		return;
 	}
@@ -2153,7 +2204,7 @@ function refreshOrderPlanTable() {
 	});
 
 	sortedPlans.forEach((plan, index) => {
-		console.log(`【刷新计划表格】渲染表格行${index}：${plan.Name || '未知车型'}`);
+		// console.log(`【刷新计划表格】渲染表格行${index}：${plan.Name || '未知车型'}`);
 		// 拼接放单日期+数量（保留你原有显示规则）
 		const releaseInfo = plan.ReleasePlans && Array.isArray(plan.ReleasePlans) ?
 			plan.ReleasePlans.map(d => `${formatDateOnly(d.ReleaseDate)}(${d.ReleaseQuantity}单)`).join('<br>') :
@@ -2177,7 +2228,7 @@ function refreshOrderPlanTable() {
 	});
 
 	// 绑定编辑/删除事件（保留你原有逻辑）
-	console.log('【刷新计划表格】绑定编辑/删除按钮事件');
+	// console.log('【刷新计划表格】绑定编辑/删除按钮事件');
 	$('.btn-edit').off('click').click(function() {
 		const planId = $(this).data('id');
 		console.log(`【按钮点击】编辑按钮被点击，计划ID：${planId}`);
@@ -2188,7 +2239,7 @@ function refreshOrderPlanTable() {
 		console.log(`【按钮点击】删除按钮被点击，计划ID：${planId}`);
 		deletePlan(planId);
 	});
-	console.log('【刷新计划表格】执行完成，已按createTime倒序排序');
+	// console.log('【刷新计划表格】执行完成，已按createTime倒序排序');
 }
 
 // ===================== 订单查询功能 =====================
@@ -2820,6 +2871,10 @@ function bindEvents() {
 		// 显示编辑模态框
 		$('#priceRecordModal').modal('show');
 	}
+	// 保存
+	$('#btnSaveFactoryPattern').off('click').on('click', saveFactoryPattern);
+	// 刷新
+	$('#btnRefreshFactoryPattern').off('click').on('click', loadFactoryPatternData);
 
 	// 晒图提醒确认按钮
 	$('#btnConfirmReminder').off('click').on('click', confirmPostPictureReminder);
@@ -3557,25 +3612,6 @@ function logout() {
 	}
 }
 
-// ===================== 页面入口（核心修复） =====================
-$(document).ready(async function() {
-	// 验证登录状态
-	currentUserName = localStorage.getItem('currentUserName');
-	if (!currentUserName || currentUserName.trim() === '') {
-		showToast('请先登录系统', 'warning');
-		setTimeout(() => {
-			window.location.href = 'login.html';
-		}, 1500);
-		return;
-	}
-
-	currentUserName = currentUserName.trim();
-	$('#userNameDisplay').text(`登录用户：${currentUserName}`);
-
-	// 核心修复：确保页面初始化是异步的，等待数据加载完成
-	await initPage();
-});
-
 /**
  * 最终版：加载当前用户的充值记录
  * 加载失败时显示空数据，不展示mock示例
@@ -4124,4 +4160,109 @@ async function saveSystemSettings() {
 function bindSystemSettingEvents() {
 	$('#btnSystemSettings').off('click').on('click', openSystemSettingModal);
 	$('#btnSaveSystemSettings').off('click').on('click', saveSystemSettings);
+}
+
+/**
+ * 打开工厂版型表模态框
+ */
+function openFactoryPatternModal() {
+	loadFactoryPatternData();
+	$('#factoryPatternModal').modal('show');
+}
+
+/**
+ * 加载工厂版型数据 /data/factory_patterns.json
+ */
+async function loadFactoryPatternData() {
+	try {
+		const res = await fetch('/data/factory_patterns.json', {
+			cache: 'no-cache'
+		});
+		if (res.status === 404) {
+			factoryPatternList = [];
+			renderFactoryPatternTable();
+			return;
+		}
+		factoryPatternList = await res.json() || [];
+		renderFactoryPatternTable();
+	} catch (e) {
+		console.error(e);
+		showToast('加载工厂版型表失败', 'error');
+	}
+}
+
+/**
+ * 渲染表格
+ */
+function renderFactoryPatternTable() {
+	const $tbody = $('#factoryPatternTableBody');
+	$tbody.empty();
+
+	if (!factoryPatternList.length) {
+		$tbody.html('<tr><td colspan="2" class="text-center text-muted">暂无数据</td></tr>');
+		return;
+	}
+
+	factoryPatternList.forEach(item => {
+		const tr = $(`
+		<tr>
+			<td>${item.factoryName || '-'}</td>
+			<td>
+				<a href="${item.patternUrl}" target="_blank" style="color:#0066cc;">
+					${item.patternUrl || '-'}
+				</a>
+			</td>
+		</tr>`);
+		$tbody.append(tr);
+	});
+}
+
+/**
+ * 保存新增工厂版型
+ */
+async function saveFactoryPattern() {
+	const factoryName = $('#factoryName').val().trim();
+	const patternUrl = $('#patternUrl').val().trim();
+
+	if (!factoryName || !patternUrl) {
+		showToast('请填写完整信息', 'warning');
+		return;
+	}
+
+	// 生成新记录
+	const newItem = {
+		id: Date.now(), // 时间戳作为唯一ID
+		factoryName: factoryName,
+		patternUrl: patternUrl,
+		createTime: new Date().toLocaleString(),
+		createUserId: currentUserName || 'unknown'
+	};
+	// 加入数组
+	factoryPatternList.unshift(newItem);
+
+	// 保存到JSON
+	try {
+		const fileName = 'factory_patterns.json';
+		const filePath = '/data/';
+
+		const response = await fetch('/aspx/SaveJsonFile.aspx', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+			},
+			body: `fileName=${encodeURIComponent(fileName)}&filePath=${encodeURIComponent(filePath)}&data=${encodeURIComponent(JSON.stringify(factoryPatternList, null, 2))}`
+		});
+
+		const result = await response.json();
+		if (result.success) {
+			showToast('保存成功', 'success');
+			$('#factoryPatternForm')[0].reset();
+			renderFactoryPatternTable();
+		} else {
+			showToast('保存失败：' + result.msg, 'error');
+		}
+	} catch (err) {
+		console.error(err);
+		showToast('保存失败，请检查接口', 'error');
+	}
 }

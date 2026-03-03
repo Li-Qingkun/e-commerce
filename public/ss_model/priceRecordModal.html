@@ -1,0 +1,90 @@
+<div class="modal fade" id="priceRecordModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="priceRecordTitle">
+					<i class="fa fa-calculator"></i> 售价信息记录（<span id="currentShopTitle">默认店铺</span>）
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="coupon-config-wrapper"
+					style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+					<h5><i class="fa fa-ticket"></i> 优惠券档位配置</h5>
+					<div class="coupon-list" id="couponList">
+						<div class="coupon-item row" style="margin-bottom: 10px; align-items: center;">
+							<div class="col-md-5">
+								<input type="number" class="form-control coupon-threshold" placeholder="满X元" min="1"
+									value="50">
+							</div>
+							<div class="col-md-5">
+								<input type="number" class="form-control coupon-value" placeholder="减X元" min="1"
+									value="10">
+							</div>
+							<div class="col-md-2">
+								<button type="button" class="btn btn-danger btn-sm btn-remove-coupon">删除</button>
+							</div>
+						</div>
+						<div class="coupon-item row" style="margin-bottom: 10px; align-items: center;">
+							<div class="col-md-5">
+								<input type="number" class="form-control coupon-threshold" placeholder="满X元" min="1"
+									value="100">
+							</div>
+							<div class="col-md-5">
+								<input type="number" class="form-control coupon-value" placeholder="减X元" min="1"
+									value="30">
+							</div>
+							<div class="col-md-2">
+								<button type="button" class="btn btn-danger btn-sm btn-remove-coupon">删除</button>
+							</div>
+						</div>
+					</div>
+					<button type="button" class="btn btn-sm btn-success" id="btnAddCoupon">
+						<i class="fa fa-plus"></i> 添加优惠券档位
+					</button>
+				</div>
+				<div class="form-group">
+					<label>直降类型 <span class="required">*</span></label>
+					<select class="form-control" id="priceReduceType">
+						<option value="direct">直降（减固定金额）</option>
+						<option value="discount">打折（乘以折扣/10）</option>
+					</select>
+				</div>
+				<table class="table table-bordered" id="priceCalcTable">
+					<thead>
+						<tr>
+							<th>SKU名称</th>
+							<th>售价（自动计算）</th>
+							<th>优惠券（自动匹配）</th>
+							<th>直降值</th>
+							<th>一口价</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody id="priceTableBody">
+						<tr class="price-row">
+							<td><input type="text" class="form-control sku-name" placeholder="如：单五脚垫"></td>
+							<td><input type="number" class="form-control price" step="0.01" placeholder="自动计算"></td>
+							<td><input type="number" class="form-control coupon" step="0.01" readonly
+									placeholder="自动匹配"></td>
+							<td><input type="number" class="form-control reduce-value" step="0.01"
+									placeholder="直降金额/折扣数"></td>
+							<td><input type="number" class="form-control final-price" step="0.01" placeholder="手动输入">
+							</td>
+							<td><button type="button" class="btn btn-danger btn-sm btn-remove-row">删除</button></td>
+						</tr>
+					</tbody>
+				</table>
+				<button type="button" class="btn btn-sm btn-success" id="btnAddPriceRow">
+					<i class="fa fa-plus"></i> 添加SKU行
+				</button>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn btn-primary" id="btnSavePriceRecord">保存记录</button>
+			</div>
+		</div>
+	</div>
+</div>

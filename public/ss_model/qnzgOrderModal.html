@@ -1,0 +1,73 @@
+<div class="modal fade" id="qnzgOrderModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">
+					<i class="fa fa-search"></i> 查询订单信息
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="query-condition-wrapper"
+					style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+					<div class="row">
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="queryShopName">店铺名称</label>
+								<select class="form-control" id="queryShopName"></select>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group">
+								<label for="queryDate">查询日期</label>
+								<input type="date" class="form-control" id="queryDate">
+							</div>
+						</div>
+						<div class="col-md-4" style="display: flex; align-items: flex-end;">
+							<button type="button" class="btn btn-primary" id="btnQueryOrder">
+								<i class="fa fa-search"></i> 查询
+							</button>
+							<button type="button" class="btn btn-default" id="btnResetQuery" style="margin-left: 10px;">
+								<i class="fa fa-refresh"></i> 重置
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="order-table-wrapper" style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
+					<table class="table table-bordered table-hover" id="orderResultTable">
+						<thead>
+							<tr>
+								<th>商品ID</th>
+								<th>日期</th>
+								<th>店铺</th>
+								<th>内部单号</th>
+								<th>线上订单号</th>
+								<th>飞鸽账号</th>
+								<th>本金</th>
+								<th>佣金</th>
+								<th>金币</th>
+								<th>评价花费</th>
+								<th>合计</th>
+								<th>备注</th>
+								<th>佣金合计</th>
+							</tr>
+						</thead>
+						<tbody id="orderResultTableBody">
+							<tr>
+								<td colspan="13" class="text-center text-muted">请点击查询按钮获取订单数据</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn btn-info" id="btnCopyOrderTable">
+					<i class="fa fa-copy"></i> 复制表格内容
+				</button>
+			</div>
+		</div>
+	</div>
+</div>

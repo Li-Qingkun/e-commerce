@@ -1,5 +1,65 @@
 ﻿[
   {
+    "logId": "log_1772527020499_avbfqpbgx",
+    "operationType": "菜单管理",
+    "operationDesc": "新增菜单：工厂版型表",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-03T08:37:00.499Z",
+    "operationTimeStr": "2026/3/3 16:37:00",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772527020474_yt3v014tr",
+    "operationType": "菜单管理",
+    "operationDesc": "新增菜单：工厂版型表",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-03T08:37:00.475Z",
+    "operationTimeStr": "2026/3/3 16:37:00",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772527005505_28vfbfglv",
+    "operationType": "菜单管理",
+    "operationDesc": "删除菜单ID：menu_1772090072419及子菜单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-03T08:36:45.505Z",
+    "operationTimeStr": "2026/3/3 16:36:45",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772526667710_52mginv1d",
+    "operationType": "菜单管理",
+    "operationDesc": "新增菜单：创建推广订单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-03T08:31:07.710Z",
+    "operationTimeStr": "2026/3/3 16:31:07",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772526633227_u1qmgftah",
+    "operationType": "菜单管理",
+    "operationDesc": "编辑菜单：查询订单信息",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-03T08:30:33.227Z",
+    "operationTimeStr": "2026/3/3 16:30:33",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772526628690_wjmuaonfs",
+    "operationType": "菜单管理",
+    "operationDesc": "新增菜单：创建推广订单",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-03T08:30:28.690Z",
+    "operationTimeStr": "2026/3/3 16:30:28",
+    "ip": "127.0.0.1"
+  },
+  {
     "logId": "log_1772176640063_kcw6zoolr",
     "operationType": "菜单管理",
     "operationDesc": "编辑菜单：售价信息记录",

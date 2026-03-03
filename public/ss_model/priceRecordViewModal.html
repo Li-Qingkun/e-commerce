@@ -1,0 +1,41 @@
+<div class="modal fade" id="priceRecordViewModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="priceRecordViewTitle">
+					<i class="fa fa-table"></i> 售价信息记录（<span id="currentShopViewTitle">默认店铺</span>）
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="table-responsive">
+					<table class="table table-bordered table-striped" id="priceRecordViewTable">
+						<thead>
+							<tr style="background-color: #ffeb3b; color: #000;">
+								<th colspan="5" class="text-center">
+									<h4 style="margin: 0;"><span id="viewTableTitle">得力脚垫售价</span></h4>
+								</th>
+							</tr>
+							<tr style="background-color: #ffeb3b; color: #000;">
+								<th>SKU名称</th>
+								<th>售价</th>
+								<th>优惠券</th>
+								<th>直降值</th>
+								<th>一口价</th>
+							</tr>
+						</thead>
+						<tbody id="priceRecordViewBody"></tbody>
+					</table>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-warning" id="btnEditPriceRecord">
+					<i class="fa fa-edit"></i> 修改信息
+				</button>
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+			</div>
+		</div>
+	</div>
+</div>

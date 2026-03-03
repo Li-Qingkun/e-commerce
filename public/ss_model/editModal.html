@@ -1,0 +1,69 @@
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="modalTitle">计划编辑</h4>
+			</div>
+			<div class="modal-body">
+				<form id="planForm">
+					<div class="form-group hidden">
+						<label for="txtID">计划ID</label>
+						<input type="text" class="form-control" id="txtID" readonly>
+					</div>
+					<input type="hidden" id="originalId">
+					<input type="hidden" id="editMode" value="add">
+
+					<div class="form-group">
+						<label for="txtCode">链接商品ID</label>
+						<input type="text" class="form-control" id="txtCode" placeholder="请输入链接商品ID">
+					</div>
+					<div class="form-group">
+						<label for="txtName">链接商品名称 <span class="required">*</span></label>
+						<input type="text" class="form-control" id="txtName" placeholder="请输入链接商品名称">
+					</div>
+					<div class="form-group">
+						<label for="txtSkuName">SKU名称</label>
+						<input type="text" class="form-control" id="txtSkuName" placeholder="请输入SKU名称">
+					</div>
+					<div class="form-group">
+						<label for="txtSkuPrice">SKU售价</label>
+						<input type="number" step="0.01" class="form-control" id="txtSkuPrice" placeholder="请输入SKU售价">
+					</div>
+					<div class="form-group hidden">
+						<label for="txtCreateTime">创建时间</label>
+						<input type="datetime-local" class="form-control" id="txtCreateTime">
+					</div>
+
+					<div class="form-group">
+						<label>放单明细 <span class="required">*</span></label>
+						<button type="button" class="btn btn-sm btn-success" id="btnAddDetail">
+							<i class="fa fa-plus"></i> 添加明细
+						</button>
+						<button type="button" class="btn btn-sm btn-info" id="btnBatchInitDetail"
+							style="margin-left: 8px;">
+							<i class="fa fa-refresh"></i> 批量初始化
+						</button>
+						<table class="table table-bordered" id="detailTable">
+							<thead>
+								<tr>
+									<th>放单日期</th>
+									<th>放单数量</th>
+									<th>放单词</th>
+									<th>操作</th>
+								</tr>
+							</thead>
+							<tbody id="detailTableBody"></tbody>
+						</table>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				<button type="button" class="btn btn-primary" id="btnSaveForm">保存</button>
+			</div>
+		</div>
+	</div>
+</div>

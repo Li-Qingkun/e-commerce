@@ -1,0 +1,36 @@
+<div class="modal fade" id="postPictureReminderModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">
+					<i class="fa fa-bell"></i> 未晒图计划提醒
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="alert alert-warning">
+					以下计划已超过晒图提醒天数，请尽快完成晒图！
+				</div>
+				<div class="table-responsive">
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th>车型名称</th>
+								<th>商品ID</th>
+								<th>最早放单日期</th>
+								<th>当前提醒次数</th>
+							</tr>
+						</thead>
+						<tbody id="postPictureReminderTableBody"></tbody>
+					</table>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn btn-primary" id="btnConfirmReminder">确认（提醒次数+1）</button>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,68 @@
+<!-- ===================== 工厂版型表模态框 ===================== -->
+<div class="modal fade" id="factoryPatternModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">
+					<i class="fa fa-industry"></i> 工厂版型表管理
+				</h4>
+			</div>
+			<div class="modal-body">
+				<!-- 新增表单 -->
+				<div class="panel panel-default" style="margin-bottom:15px;">
+					<div class="panel-heading">
+						<h5 class="panel-title">新增工厂版型</h5>
+					</div>
+					<div class="panel-body">
+						<form id="factoryPatternForm" class="form-inline">
+							<div class="row" style="margin-bottom:8px;">
+								<div class="col-md-4">
+									<label>工厂名称 <span class="text-danger">*</span></label>
+									<input type="text" id="factoryName" class="form-control" style="width:100%;"
+										placeholder="请输入工厂名称" required>
+								</div>
+								<div class="col-md-6">
+									<label>版型表链接 <span class="text-danger">*</span></label>
+									<input type="url" id="patternUrl" class="form-control" style="width:100%;"
+										placeholder="https://" required>
+								</div>
+								<div class="col-md-2" style="margin-top:24px;">
+									<button type="button" class="btn btn-primary btn-block" id="btnSaveFactoryPattern">
+										<i class="fa fa-save"></i> 保存
+									</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+
+				<!-- 数据表格 -->
+				<table class="table table-bordered table-hover table-striped">
+					<thead>
+						<tr>
+							<!-- <th>ID</th> -->
+							<th>工厂名称</th>
+							<th>版型表链接</th>
+							<!-- <th>创建时间</th> -->
+							<!-- <th>创建人ID</th> -->
+						</tr>
+					</thead>
+					<tbody id="factoryPatternTableBody">
+						<tr>
+							<td colspan="2" class="text-center text-muted">加载中...</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn btn-success" id="btnRefreshFactoryPattern">
+					<i class="fa fa-refresh"></i> 刷新数据
+				</button>
+			</div>
+		</div>
+	</div>
+</div>

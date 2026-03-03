@@ -25,39 +25,9 @@
     "icon": "fa fa-database",
     "page": "qnzgOrder",
     "parentId": "menu_1001",
-    "sort": 2,
+    "sort": 3,
     "isVip": true,
     "status": "enable"
-  },
-  {
-    "name": "测试主菜单",
-    "icon": "fa fa-list",
-    "page": "",
-    "parentId": "",
-    "sort": 2,
-    "isVip": true,
-    "status": "enable",
-    "id": "menu_1772090072419"
-  },
-  {
-    "name": "测试子菜单",
-    "icon": "fa fa-table",
-    "page": "ceshizi",
-    "parentId": "menu_1772090072419",
-    "sort": 1,
-    "isVip": true,
-    "status": "enable",
-    "id": "menu_1772090413914"
-  },
-  {
-    "name": "测试子菜单2",
-    "icon": "fa fa-database",
-    "page": "ceshizi2",
-    "parentId": "menu_1772090072419",
-    "sort": 2,
-    "isVip": true,
-    "status": "enable",
-    "id": "menu_1772097234976"
   },
   {
     "name": "售价信息记录",
@@ -68,5 +38,25 @@
     "isVip": false,
     "status": "enable",
     "id": "menu_1772175059635"
+  },
+  {
+    "name": "创建推广订单",
+    "icon": "fa fa-plus",
+    "page": "qnzgAdd",
+    "parentId": "menu_1001",
+    "sort": 2,
+    "isVip": true,
+    "status": "enable",
+    "id": "menu_1772526667590"
+  },
+  {
+    "name": "工厂版型表",
+    "icon": "fa fa-info-circle",
+    "page": "FactoryPattern",
+    "parentId": "",
+    "sort": 3,
+    "isVip": false,
+    "status": "enable",
+    "id": "menu_1772527020462"
   }
 ]

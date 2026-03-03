@@ -1,0 +1,27 @@
+<div id="compareModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="compareModalTitle">
+					<i class="fa fa-calendar"></i> 今日/明日计划对比
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="form-group">
+					<label>对比结果（可直接复制）：</label>
+					<textarea id="compareResult" class="form-control" rows="15" readonly
+						style="font-family: monospace;"></textarea>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn btn-info" id="btnCopyCompare">
+					<i class="fa fa-copy"></i> 复制内容
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
