@@ -1828,7 +1828,7 @@ function initShopSwitcher() {
 			`<button class="shop-btn ${shopName === currentShopName ? 'active' : ''}">${shopName}</button>`);
 
 		// 点击事件：切换店铺并加载数据
-		$btn.click(function() {
+		$btn.off('click').on('click', function() {
 			// 更新选中状态
 			$('.shop-btn').removeClass('active');
 			$(this).addClass('active');
@@ -1844,12 +1844,6 @@ function initShopSwitcher() {
 
 			// 新增：点击店铺后关闭移动端店铺列表
 			$('#shopSwitcher').removeClass('show');
-
-			// 加载对应店铺数据
-			loadDataFromJson();
-
-			// 新增：店铺切换后检查晒图提醒
-			checkPostPictureReminder();
 		});
 
 		$shopBtnGroup.append($btn);
@@ -2949,9 +2943,10 @@ async function loadDataFromJson() {
 	await loadUserData();
 	refreshTimeline();
 	refreshOrderPlanTable();
-	// 数据加载完成后初始化右键菜单和拖动功能
 	initPlanContextMenu();
 	initPlanDrag();
+	checkPostPictureReminder();
+
 	showToast(`【${currentShopName}】数据加载完成，共${orderPlans.length}条计划`, 'success');
 }
 
@@ -2963,12 +2958,14 @@ function renderPostPictureReminderTable() {
 	$tbody.empty();
 
 	postPictureReminderList.forEach(plan => {
+		if (!plan.ReleasePlans || plan.ReleasePlans.length === 0) return;
 		const firstDate = plan.ReleasePlans[0].ReleaseDate;
+		const formatDateStr = formatDateOnly(new Date(firstDate));
 		const $tr = $(`
             <tr>
                 <td>${plan.Name || '未知车型'}</td>
                 <td>${plan.Code || '无'}</td>
-                <td>${firstDate}</td>
+                <td>${formatDateStr}</td>
                 <td>${plan.PostPictureCount || 0}</td>
             </tr>
         `);
@@ -3215,8 +3212,8 @@ async function savePlanForm() {
 	// 获取明细数据
 	const details = [];
 	let hasValidDetail = false;
-    // 修复：声明prevDate变量，初始为空
-    let prevDate = null;
+	// 修复：声明prevDate变量，初始为空
+	let prevDate = null;
 
 	$('#detailTableBody tr').each(function() {
 		const $tr = $(this);
@@ -3243,8 +3240,8 @@ async function savePlanForm() {
 				ReleaseName: remark
 			});
 			hasValidDetail = true;
-            // 修复：更新上一行日期
-            prevDate = currentDate;
+			// 修复：更新上一行日期
+			prevDate = currentDate;
 		}
 	});
 

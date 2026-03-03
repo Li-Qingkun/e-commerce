@@ -45,11 +45,11 @@
       }
     ],
     "createTime": "2026-02-12T09:43:02.396Z",
-    "updateTime": "2026-03-02T08:52:26.733Z",
+    "updateTime": "2026-03-03T02:04:51.191Z",
     "systemSettings": {
       "postPictureReminderEnabled": true,
       "postPictureReminderDay": 7,
-      "postPictureReminderTimes": 1
+      "postPictureReminderTimes": 2
     }
   },
   {
