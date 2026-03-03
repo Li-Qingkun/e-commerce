@@ -36,18 +36,16 @@ body {
 	vertical-align: middle;
 }
 
-/* 顶部导航栏 - 优化布局和移动端适配 */
+/* 顶部导航栏 */
 .navbar-custom {
 	background-color: var(--primary-color);
 	border-radius: 0;
 	margin-bottom: 16px;
 	box-shadow: 0 2px 8px var(--shadow-color);
 	height: auto;
-	/* 改为auto，允许高度自适应 */
 	min-height: 60px;
 	display: flex;
 	align-items: flex-start;
-	/* 改为flex-start，避免垂直居中挤压 */
 	position: relative;
 	z-index: 100;
 }
@@ -58,24 +56,20 @@ body {
 	align-items: center;
 	width: 100%;
 	padding: 0 20px;
-	/* 优化：移动端换行适配 */
 	flex-wrap: nowrap;
 }
 
-/* 适配小屏幕：导航栏容器允许换行 */
+/* 移动端导航栏适配 */
 @media (max-width: 768px) {
-
-	/* 修复导航栏塌陷 */
 	.navbar-custom .container-fluid {
 		flex-wrap: wrap;
 		padding: 0 12px;
 		align-items: flex-start;
-		/* 确保导航栏高度自适应，不被内容撑开 */
 		height: auto;
 	}
 }
 
-/* 修复导航栏 logo + 系统名称错位 */
+/* 导航栏Logo样式 */
 .navbar-custom .navbar-brand {
 	display: flex;
 	align-items: center;
@@ -83,7 +77,6 @@ body {
 	padding: 0;
 	margin: 0;
 	height: 56px;
-	/* 与导航栏高度保持一致 */
 }
 
 .navbar-custom .navbar-brand img {
@@ -104,6 +97,7 @@ body {
 	opacity: 0.9;
 }
 
+/* 用户区域样式 */
 .nav-user-area {
 	display: flex;
 	align-items: center;
@@ -558,13 +552,12 @@ body {
 	}
 }
 
-/* 响应式适配 - 核心优化 */
+/* 响应式适配 */
 @media (max-width: 768px) {
 	.btn-toolbar {
 		flex-direction: column;
 		gap: 12px;
 		align-items: stretch;
-		/* 按钮组高度固定，防止塌陷 */
 		padding: 0 12px;
 	}
 
@@ -576,7 +569,6 @@ body {
 	}
 
 	.btn {
-		/* 按钮高度固定，防止塌陷 */
 		height: 44px;
 		line-height: 28px;
 		font-size: 14px;
@@ -604,7 +596,6 @@ body {
 		padding: 0 12px;
 	}
 
-	/* 优化：移动端保留用户名显示，仅缩小 */
 	.user-info {
 		font-size: 12px;
 		margin-right: 8px;
@@ -732,14 +723,13 @@ body {
 	font-size: 14px;
 }
 
-/* 店铺切换按钮样式 - 核心优化 */
+/* 店铺切换按钮样式 */
 .shop-switcher {
 	display: flex;
 	align-items: center;
 	margin: 0 10px;
 	color: #fff;
 	font-size: 14px;
-	/* 优化：移动端占满整行 */
 	width: 100%;
 	padding: 8px 0;
 }
@@ -757,7 +747,6 @@ body {
 	overflow-x: auto;
 	max-width: 400px;
 	padding-bottom: 2px;
-	/* 优化：移动端占满剩余宽度 */
 	flex: 1;
 }
 
@@ -789,7 +778,7 @@ body {
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* 店铺切换移动端适配 - 核心优化 */
+/* 店铺切换移动端适配 */
 @media (max-width: 768px) {
 	.shop-switcher {
 		display: none;
@@ -828,7 +817,7 @@ body {
 	gap: 6px;
 }
 
-/* 用户下拉菜单新增选项样式 */
+/* 用户下拉菜单选项样式 */
 .dropdown-menu .dropdown-item {
 	padding: 8px 15px;
 	cursor: pointer;
@@ -888,7 +877,7 @@ body {
 	background-color: #f5f7fa;
 }
 
-/* 充值记录表格容器 - 优化滚动和内边距 */
+/* 充值记录表格容器 */
 .recharge-table-wrapper {
 	overflow-x: auto;
 	padding: 0;
@@ -902,17 +891,13 @@ body {
 	width: 100%;
 	margin-bottom: 0;
 	table-layout: fixed;
-	/* 固定列宽，防止内容撑开 */
 }
 
 .recharge-table th,
 .recharge-table td {
 	padding: 6px 8px !important;
-	/* 减小单元格内边距 */
 	font-size: 13px;
-	/* 统一字体大小 */
 	white-space: nowrap;
-	/* 禁止换行，保持单行 */
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
@@ -931,7 +916,7 @@ body {
 	background-color: #f5f7fa;
 }
 
-/* 支付状态标签 - 紧凑版 */
+/* 支付状态标签 */
 .recharge-status {
 	padding: 1px 6px;
 	border-radius: 3px;
@@ -961,7 +946,7 @@ body {
 	opacity: 1;
 }
 
-/* 确保表格单元格相对定位，用于Tooltip定位 */
+/* 确保表格单元格相对定位 */
 .recharge-table td {
 	position: relative;
 }
@@ -981,9 +966,7 @@ body {
 	color: var(--error-color);
 }
 
-
-
-/* 移动端充值记录表格适配（11列） */
+/* 移动端充值记录表格适配 */
 @media (max-width: 768px) {
 	.recharge-table-wrapper {
 		overflow-x: auto;
@@ -992,7 +975,6 @@ body {
 
 	.recharge-table {
 		min-width: 800px;
-		/* 保证移动端可横向滚动 */
 	}
 
 	.recharge-table th,
@@ -1002,7 +984,7 @@ body {
 	}
 }
 
-/* 批量初始化模态框样式优化 */
+/* 批量初始化模态框样式 */
 #batchInitModal .form-group {
 	margin-bottom: 16px;
 }
@@ -1018,7 +1000,7 @@ body {
 	font-size: 12px;
 }
 
-/* 批量初始化按钮样式优化 */
+/* 批量初始化按钮样式 */
 #btnBatchInitDetail {
 	transition: all 0.2s ease;
 }
@@ -1057,11 +1039,10 @@ body {
 	opacity: 0.85;
 }
 
-/* 动态菜单容器 - 统一垂直对齐 */
+/* 动态菜单容器 */
 #dynamicMenuContainer {
 	display: flex;
 	align-items: center;
-	/* 强制垂直居中，消除偏移基础 */
 	margin: 0 15px;
 	justify-content: center;
 }
@@ -1082,26 +1063,24 @@ body {
 	margin: 0 15px;
 }
 
-/* 主菜单列表 - 保持布局稳定 */
+/* 主菜单列表 */
 .nav-menu-list {
 	list-style: none;
 	padding: 0;
 	margin: 0;
 	display: flex;
 	gap: 12px;
-	/* 统一菜单间距 */
 	align-items: center;
-	/* 子项垂直居中，关键修复 */
 }
 
-/* 菜单父项 - 移除导致偏移的内边距 */
+/* 菜单父项 */
 .nav-menu-item {
 	position: relative;
 	display: flex;
 	align-items: center;
 }
 
-/* 关键：用伪元素创建一个透明的“热区”，覆盖缝隙，不影响视觉 */
+/* 伪元素覆盖缝隙 */
 .nav-menu-item::after {
 	content: "";
 	position: absolute;
@@ -1109,10 +1088,8 @@ body {
 	left: 0;
 	right: 0;
 	height: 12px;
-	/* 覆盖缝隙的高度 */
 	background: transparent;
 	pointer-events: auto;
-	/* 让这个区域可以被hover到 */
 	z-index: 1;
 }
 
@@ -1127,7 +1104,6 @@ body {
 	border-radius: 6px;
 	transition: background-color 0.2s ease;
 	white-space: nowrap;
-	/* 关键：链接相对定位，盖住父项的内边距，保证视觉对齐 */
 	position: relative;
 	z-index: 1;
 }
@@ -1142,7 +1118,7 @@ body {
 	font-size: 13px;
 }
 
-/* 子菜单容器 - 消除物理缝隙 */
+/* 子菜单容器 */
 .submenu-container {
 	position: absolute;
 	top: 100%;
@@ -1155,7 +1131,6 @@ body {
 	display: none;
 	z-index: 1000;
 	margin-top: 0;
-	/* 消除缝隙 */
 	list-style: none;
 	padding: 8px 0;
 }
@@ -1190,7 +1165,6 @@ body {
 		margin: 8px 0 0 0;
 		padding: 8px 0;
 		border-top: 1px solid rgba(255, 255, 255, 0.1);
-		/* 防止菜单区域过高 */
 		max-height: 60px;
 		overflow: hidden;
 	}
@@ -1200,7 +1174,6 @@ body {
 		overflow-x: auto;
 		padding-bottom: 4px;
 		flex-wrap: nowrap;
-		/* 菜单高度固定，防止塌陷 */
 		height: 44px;
 		align-items: center;
 	}
@@ -1212,7 +1185,6 @@ body {
 	.nav-menu-link {
 		padding: 6px 10px;
 		font-size: 13px;
-		/* 菜单按钮高度固定 */
 		height: 36px;
 		line-height: 24px;
 	}
@@ -1221,7 +1193,6 @@ body {
 	.submenu-container {
 		position: fixed !important;
 		top: 120px !important;
-		/* 调整到导航栏下方 */
 		left: 50% !important;
 		bottom: auto !important;
 		transform: translateX(-50%) !important;
@@ -1250,7 +1221,7 @@ body {
 	opacity: 0.8;
 }
 
-/* 超级返平台子菜单样式 - 修复hover丢失问题 */
+/* 超级返平台子菜单样式 */
 .nav-menu-item.dropdown {
 	position: relative;
 }
@@ -1267,7 +1238,6 @@ body {
 	display: none;
 	z-index: 1000;
 	margin-top: 0;
-	/* 消除缝隙 */
 	list-style: none;
 	padding: 8px 0;
 	pointer-events: auto;
@@ -1275,11 +1245,10 @@ body {
 
 .nav-menu-item.dropdown:hover .super-return-submenu {
 	display: block;
-	/* 新增：添加动画过渡，让显示更平滑 */
 	animation: fadeIn 0.2s ease;
 }
 
-/* 新增淡入动画 */
+/* 淡入动画 */
 @keyframes fadeIn {
 	from {
 		opacity: 0;
@@ -1292,7 +1261,7 @@ body {
 	}
 }
 
-/* 保留原有子菜单项样式 */
+/* 子菜单项样式 */
 .submenu-item {
 	display: flex;
 	align-items: center;
@@ -1317,7 +1286,7 @@ body {
 	text-align: center;
 }
 
-/* 无权限菜单样式优化 */
+/* 无权限菜单样式 */
 .submenu-item.no-permission {
 	color: #999;
 	cursor: not-allowed;
@@ -1325,7 +1294,6 @@ body {
 	justify-content: space-between;
 	align-items: center;
 	white-space: nowrap;
-	/* 强制不换行 */
 	overflow: hidden;
 }
 
@@ -1351,7 +1319,7 @@ body {
 	color: #999;
 }
 
-/* 订单查询表格样式优化 */
+/* 订单查询表格样式 */
 #orderResultTable {
 	width: 100%;
 	table-layout: fixed;
@@ -1379,7 +1347,7 @@ body {
 	background-color: #f5f7fa;
 }
 
-/* 响应式适配 */
+/* 订单查询响应式适配 */
 @media (max-width: 768px) {
 	.query-condition-wrapper .row {
 		flex-direction: column;
@@ -1397,29 +1365,21 @@ body {
 	}
 }
 
-/* 订单查询模态框全屏样式 */
+/* 订单查询模态框样式 */
 #qnzgOrderModal .modal-dialog {
 	width: 95% !important;
-	/* 宽度占视口95%，左右留2.5%空白 */
 	max-width: 1400px !important;
-	/* 限制最大宽度，避免大屏下太宽 */
 	height: auto !important;
-	/* 高度自动，不再全屏 */
 	max-height: 90vh !important;
-	/* 最大高度占视口90%，上下留5%空白 */
 	margin: 20px auto !important;
-	/* 上下留20px空白，左右居中 */
 	padding: 0 !important;
 }
 
 #qnzgOrderModal .modal-content {
 	height: 100% !important;
-	/* 内容高度跟随dialog */
 	border-radius: 12px !important;
-	/* 保留圆角 */
 	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 	overflow: hidden;
-	/* 防止内容溢出 */
 	display: flex;
 	flex-direction: column;
 }
@@ -1435,14 +1395,11 @@ body {
 #qnzgOrderModal .modal-body {
 	padding: 20px 24px !important;
 	flex: 1;
-	/* 自动填充剩余高度 */
 	overflow: auto !important;
-	/* 内容超出时滚动 */
 }
 
 #qnzgOrderModal .order-table-wrapper {
 	max-height: none !important;
-	/* 取消固定最大高度 */
 	height: 100% !important;
 	overflow-x: auto !important;
 	overflow-y: auto !important;
@@ -1457,13 +1414,11 @@ body {
 	z-index: 100 !important;
 }
 
-/* 移动端适配 - 非全屏模态框 */
+/* 移动端订单查询模态框适配 */
 @media (max-width: 768px) {
 	#qnzgOrderModal .modal-dialog {
 		width: 90% !important;
-		/* 移动端宽度90%，留更多空白 */
 		max-height: 85vh !important;
-		/* 移动端高度85% */
 		margin: 15px auto !important;
 	}
 
@@ -1472,7 +1427,7 @@ body {
 	}
 }
 
-/* 批量初始化模态框新增控件样式 */
+/* 批量初始化模态框控件样式 */
 #defaultInitDays,
 #singleQuantity {
 	width: 100%;
@@ -1500,52 +1455,42 @@ body {
 	cursor: not-allowed;
 }
 
-/* 修复新增计划模态框滚动问题 - 核心样式 */
+/* 新增计划模态框滚动优化 */
 #editModal .modal-dialog {
 	max-width: 900px;
-	/* 限制模态框最大宽度 */
 	margin: 30px auto;
 }
 
 #editModal .modal-content {
 	max-height: calc(100vh - 60px);
-	/* 限制模态框整体高度为视口高度减边距 */
 	overflow: hidden;
-	/* 防止内容溢出模态框 */
 	display: flex;
 	flex-direction: column;
 }
 
 #editModal .modal-body {
 	flex: 1;
-	/* 让body区域自动填充剩余空间 */
 	max-height: calc(100vh - 180px);
-	/* 预留头部和底部的高度 */
 	overflow-y: auto;
-	/* 垂直方向滚动 */
 	overflow-x: hidden;
-	/* 隐藏水平滚动 */
 	padding: 20px;
 }
 
-/* 优化明细表格的滚动体验 */
+/* 明细表格滚动优化 */
 #detailTable {
 	width: 100%;
 	table-layout: fixed;
-	/* 固定表格布局，防止列宽被撑开 */
 }
 
 #detailTable th,
 #detailTable td {
 	white-space: nowrap;
-	/* 禁止单元格内容换行 */
 	overflow: hidden;
 	text-overflow: ellipsis;
-	/* 超长内容显示省略号 */
 	padding: 8px 10px;
 }
 
-/* 滚动条样式优化（可选） */
+/* 滚动条样式优化 */
 #editModal .modal-body::-webkit-scrollbar {
 	width: 6px;
 }
@@ -1564,7 +1509,7 @@ body {
 	background: #999;
 }
 
-/* 移动端适配 */
+/* 新增计划模态框移动端适配 */
 @media (max-width: 768px) {
 	#editModal .modal-dialog {
 		width: 95% !important;
@@ -1653,7 +1598,7 @@ body {
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* 优化移动端菜单触摸体验 */
+/* 移动端菜单触摸体验 */
 .custom-contextmenu-item {
 	-webkit-tap-highlight-color: transparent;
 	touch-action: manipulation;
@@ -1666,7 +1611,7 @@ body {
 	user-select: none;
 }
 
-/* 适配移动端拖动视觉反馈 */
+/* 移动端拖动视觉反馈 */
 @media (max-width: 768px) {
 	.timeline-plan-item.dragging {
 		opacity: 0.95;
@@ -1696,4 +1641,27 @@ body {
 #priceRecordModal .modal-body {
 	max-height: 70vh;
 	overflow-y: auto;
+}
+
+/* 系统设置样式 */
+.setting-group {
+	margin-bottom: 20px;
+	padding-bottom: 15px;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.setting-group:last-child {
+	border-bottom: none;
+	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
+.setting-group-title {
+	font-size: 16px;
+	font-weight: 600;
+	margin-bottom: 15px;
+	color: var(--text-color);
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }

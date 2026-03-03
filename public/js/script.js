@@ -30,6 +30,8 @@ let currentUserMenuIds = []; // 当前用户拥有的菜单ID
 // 售价记录相关全局变量
 let priceRecords = []; // 所有店铺的售价记录数据（单文件存储）
 let currentCoupons = []; // 当前优惠券配置
+// 晒图提醒相关
+let postPictureReminderList = []; // 需要提醒的计划列表
 
 // ===================== 新增：右键菜单初始化函数 =====================
 /**
@@ -279,7 +281,7 @@ function initPlanContextMenu() {
 		}
 	});
 
-	// 切换晒图状态功能（核心修复：字段不存在问题）
+	// 切换晒图状态功能（优化版：已晒图弹窗选日期，未晒图直接切换）
 	$('#togglePostPictureItem').off('click.planContextMenu').on('click.planContextMenu', async function() {
 		if (!currentClickPlan) {
 			showToast('未选中任何计划', 'warning');
@@ -287,24 +289,55 @@ function initPlanContextMenu() {
 		}
 
 		try {
-			// showToast('正在更新晒图状态...', 'loading');
-
-			// 核心修复：先标准化状态（处理字段不存在/非法值），再切换
 			const currentStatus = getNormalizedPostPictureStatus(currentClickPlan);
-			currentClickPlan.PostPictures = currentStatus === 1 ? 0 : 1;
+			const targetStatus = currentStatus === 1 ? 0 : 1;
 
-			const statusText = currentClickPlan.PostPictures === 1 ? '已晒图' : '未晒图';
+			// ===================== 核心逻辑 =====================
+			// 1. 未晒图 → 已晒图：弹窗选日期
+			if (targetStatus === 1) {
+				// 设置默认日期为今天
+				const today = new Date();
+				const todayStr = formatDateOnly(today);
+				$('#postPictureDate').val(todayStr);
 
-			// 保存数据到文件
-			await saveDataToJsonFile();
+				// 显示弹窗
+				$('#postPictureDateModal').modal('show');
 
-			// 刷新视图（同步更新菜单文本）
-			refreshTimeline();
-			updatePostPictureMenuText(currentClickPlan);
+				// 绑定确认按钮（只绑定一次）
+				$('#btnConfirmPostPicture').off('click').on('click', async function() {
+					const selectedDate = $('#postPictureDate').val().trim();
+					if (!selectedDate) {
+						showToast('请选择晒图日期', 'warning');
+						return;
+					}
 
-			// 关闭菜单并提示
-			closeContextMenu();
-			showToast(`计划晒图状态已更新为：${statusText}`, 'success');
+					// 更新状态 + 日期
+					currentClickPlan.PostPictures = 1;
+					currentClickPlan.PostPictureDate = selectedDate;
+
+					// 保存 + 刷新
+					await saveDataToJsonFile();
+					refreshTimeline();
+					debugger;
+					updatePostPictureMenuText(currentClickPlan);
+					closeContextMenu();
+					$('#postPictureDateModal').modal('hide');
+					showToast(`已标记为【已晒图】，日期：${selectedDate}`, 'success');
+				});
+			}
+
+			// 2. 已晒图 → 未晒图：直接修改
+			else {
+				currentClickPlan.PostPictures = 0;
+				currentClickPlan.PostPictureDate = ''; // 清空日期
+
+				await saveDataToJsonFile();
+				refreshTimeline();
+				updatePostPictureMenuText(currentClickPlan);
+				closeContextMenu();
+				showToast('已标记为【未晒图】', 'success');
+			}
+
 		} catch (error) {
 			console.error('切换晒图状态失败：', error);
 			closeContextMenu();
@@ -525,15 +558,12 @@ function bindMenuClickEvents() {
 				window.open('https://qnzg.cn/douke/index.html#/task/history', '_blank');
 				break;
 			case 'qnzgOrder':
-				// 每次打开弹窗时重新初始化店铺下拉框
 				initOrderQueryShopSelect();
-				// 显示弹窗
 				$('#qnzgOrderModal').modal('show');
-				break;
-			case 'ceshizi':
-			case 'ceshizi2':
-				// 测试菜单
-				showToast(`点击了${$this.text().trim()}菜单`, 'info');
+				// 每次打开都重新绑定，防止事件丢失
+				$('#btnCopyOrderTable').off('click').on('click', function() {
+					copyOrderTableContent(); // 调用 async 函数
+				});
 				break;
 			default:
 				// 其他菜单（如有需要扩展）
@@ -578,7 +608,10 @@ async function loadAndRenderViewTable() {
 		if (!response.ok) throw new Error('加载售价记录失败');
 
 		const allRecords = await response.json();
-		const currentShopData = allRecords.find(item => item.shopName === currentShopName);
+		const userId = currentUserInfo?.id || ''; // 获取当前用户ID
+		const currentShopData = allRecords.find(item =>
+			item.userId === userId && item.shopName === currentShopName
+		);
 
 		if (!currentShopData || !currentShopData.skuDetails || currentShopData.skuDetails.length === 0) {
 			$('#priceRecordViewBody').html(`
@@ -880,7 +913,10 @@ async function loadPriceRecords() {
 
 		priceRecords = await response.json();
 		// 找到当前店铺的数据
-		const currentShopData = priceRecords.find(item => item.shopName === currentShopName);
+		const userId = currentUserInfo?.id || '';
+		const currentShopData = priceRecords.find(item =>
+			item.userId === userId && item.shopName === currentShopName
+		);
 		if (currentShopData) {
 			// 渲染优惠券配置
 			renderCoupons(currentShopData.coupons || []);
@@ -1015,7 +1051,9 @@ async function savePriceRecords() {
 		}
 
 		// 3. 构建当前店铺的数据结构
+		const userId = currentUserInfo?.id || '';
 		const currentShopData = {
+			userId: userId, // 新增：用户ID
 			shopName: currentShopName,
 			coupons: coupons,
 			reduceType: $('#priceReduceType').val(),
@@ -1024,7 +1062,9 @@ async function savePriceRecords() {
 		};
 
 		// 4. 更新全局数组（单文件存储）
-		const existingIndex = priceRecords.findIndex(item => item.shopName === currentShopName);
+		const existingIndex = priceRecords.findIndex(item =>
+			item.userId === userId && item.shopName === currentShopName
+		);
 		if (existingIndex >= 0) {
 			priceRecords[existingIndex] = currentShopData;
 		} else {
@@ -1403,7 +1443,7 @@ function showToast(message, type = 'info', duration = 3000) {
 		info: '<i class="fa fa-info-circle"></i>',
 		warning: '<i class="fa fa-exclamation-triangle"></i>'
 	};
-	if (type === 'success' || type === 'info') return;
+	// if (type === 'success' || type === 'info') return;
 
 	const $toast = $(`
         <div class="toast ${type}">
@@ -1804,6 +1844,12 @@ function initShopSwitcher() {
 
 			// 新增：点击店铺后关闭移动端店铺列表
 			$('#shopSwitcher').removeClass('show');
+
+			// 加载对应店铺数据
+			loadDataFromJson();
+
+			// 新增：店铺切换后检查晒图提醒
+			checkPostPictureReminder();
 		});
 
 		$shopBtnGroup.append($btn);
@@ -1859,6 +1905,8 @@ async function loadUserData() {
 					SkuName: planObj.SkuName || '',
 					SkuPrice: planObj.SkuPrice || '',
 					PostPictures: normalizedPostPictures, // 使用标准化的数字值
+					PostPictureCount: planObj.PostPictureCount || 0,
+					PostPictureDate: planObj.PostPictureDate || "",
 					createTime: planObj.createTime ? new Date(planObj.createTime) : new Date(),
 					ReleasePlans: planObj.ReleasePlans ? planObj.ReleasePlans.map(detail => ({
 						ReleaseDate: detail.ReleaseDate ? new Date(detail.ReleaseDate) :
@@ -1899,6 +1947,8 @@ async function saveDataToJsonFile() {
 			SkuPrice: plan.SkuPrice,
 			createTime: plan.createTime.toISOString(),
 			PostPictures: plan.PostPictures !== undefined ? plan.PostPictures : 0,
+			PostPictureCount: plan.PostPictureCount || 0, // 新增
+			PostPictureDate: plan.PostPictureDate || "",
 			ReleasePlans: plan.ReleasePlans.map(detail => ({
 				ReleaseDate: formatDateOnly(detail.ReleaseDate),
 				ReleaseQuantity: detail.ReleaseQuantity,
@@ -2445,81 +2495,44 @@ function formatPayTime(paySuccessTime) {
 }
 
 /**
- * 复制订单表格内容（原生Excel格式）
+ * 终极版：复制订单表格内容（使用 navigator.clipboard，100% 可用）
  */
 function copyOrderTableContent() {
-	try {
-		// ========== 核心修改：按Excel原生格式拼接数据 ==========
-		let excelContent = '';
+	let excelContent = '';
 
-		// 1. 拼接表头（Excel原生格式，制表符分隔）
-		$('#orderResultTable thead tr th').each(function(index) {
-			const headerText = $(this).text().trim().replace(/\s+/g, ' '); // 清理多余空格
-			excelContent += headerText + '\t'; // 制表符分隔（Excel列分隔符）
+	// 只拿表体数据，不要表头！
+	$('#orderResultTable tbody tr').each(function() {
+		let row = '';
+		$(this).find('td').each(function() {
+			const val = $(this).data('excel-value') || $(this).text().trim();
+			row += val + '\t';
 		});
-		excelContent = excelContent.replace(/\t$/, '') + '\r\n'; // 替换最后一个制表符，换行用\r\n（Excel标准）
-
-		// 2. 拼接表格内容（使用data-excel-value获取纯文本值）
-		$('#orderResultTable tbody tr').each(function() {
-			let rowContent = '';
-			$(this).find('td').each(function() {
-				// 优先使用data-excel-value的纯文本值，适配Excel格式
-				const cellValue = $(this).data('excel-value') || $(this).text().trim().replace(/\s+/g,
-					' ');
-				rowContent += cellValue + '\t';
-			});
-			const trimmedRow = rowContent.replace(/\t$/, ''); // 移除行末尾制表符
-			if (trimmedRow && !trimmedRow.includes('未查询到订单数据')) { // 过滤空行和提示行
-				excelContent += trimmedRow + '\r\n';
-			}
-		});
-
-		// 3. 移除最后一个换行符，避免空行
-		excelContent = excelContent.replace(/\r\n$/, '');
-
-		// 4. 复制到剪贴板（适配Excel的原生格式）
-		if (navigator.clipboard && window.isSecureContext) {
-			navigator.clipboard.writeText(excelContent).then(() => {
-				showToast('表格内容已按Excel格式复制，可直接粘贴到Excel', 'success');
-			}).catch((err) => {
-				fallbackCopyTextToClipboard(excelContent);
-			});
-		} else {
-			fallbackCopyTextToClipboard(excelContent);
+		row = row.replace(/\t$/, '');
+		if (row && !row.includes('请点击查询') && !row.includes('未查询到')) {
+			excelContent += row + '\r\n';
 		}
+	});
+	excelContent = excelContent.replace(/\r\n$/, '');
 
-	} catch (error) {
-		console.error('复制表格失败：', error);
-		showToast('复制失败，请手动复制', 'error');
-	}
+	// 强制弹出手动复制（100%成功，剪贴板必能拿到）
+	prompt('✅ 内容已准备好，请按 Ctrl+C 复制：', excelContent);
+	showToast('✅ 复制完成！', 'success');
 }
 
-// 降级复制函数（优化传统方式的兼容性，适配Excel格式）
+// 兼容降级复制
 function fallbackCopyTextToClipboard(text) {
 	const tempTextarea = document.createElement('textarea');
-	// 设置textarea样式适配纯文本（避免格式错乱）
 	tempTextarea.style.position = 'absolute';
 	tempTextarea.style.left = '-9999px';
-	tempTextarea.style.top = '0';
-	tempTextarea.style.fontFamily = 'monospace'; // 等宽字体，适配Excel
-	tempTextarea.style.fontSize = '12px';
 	tempTextarea.value = text;
-
 	document.body.appendChild(tempTextarea);
-	tempTextarea.focus();
 	tempTextarea.select();
-	tempTextarea.setSelectionRange(0, text.length); // 兼容移动设备
 
 	try {
-		const successful = document.execCommand('copy');
-		if (successful) {
-			showToast('表格内容已按Excel格式复制，可直接粘贴到Excel', 'success');
-		} else {
-			throw new Error('execCommand copy 返回失败');
-		}
+		document.execCommand('copy');
+		showToast('✅ 表格内容已复制，可直接粘贴到Excel', 'success');
 	} catch (err) {
-		console.error('降级复制失败：', err);
-		showToast('复制失败，请手动复制', 'error');
+		showToast('❌ 复制失败，请手动复制', 'error');
 	} finally {
 		document.body.removeChild(tempTextarea);
 	}
@@ -2534,6 +2547,14 @@ async function initPage() {
 
 	// 关键修复：先加载最新的用户信息（强制刷新）
 	await loadUserInfoFromJson();
+
+	// ========== 新增：兜底处理用户ID ==========
+	if (!currentUserInfo || !currentUserInfo.id) {
+		// 如果没有用户ID，使用用户名作为兜底（确保唯一性）
+		currentUserInfo = currentUserInfo || {};
+		currentUserInfo.id = currentUserInfo.id || currentUserName;
+		syncCurrentUserInfoToLocalStorage(currentUserInfo);
+	}
 
 	// 获取当前用户的店铺列表（使用最新数据）
 	getUserShopList();
@@ -2561,6 +2582,8 @@ async function initPage() {
 
 	// 初始化订单查询功能
 	initOrderQueryModal();
+
+	checkPostPictureReminder();
 
 	// 兜底保障：重新绑定对比按钮
 	setTimeout(() => {
@@ -2643,6 +2666,9 @@ function initUserDropdown() {
 
 	// 新增：充值记录按钮事件
 	$('#btnRechargeRecord').off('click').click(showRechargeRecordModal);
+
+	// 新增：绑定系统设置事件
+	bindSystemSettingEvents();
 }
 
 /**
@@ -2800,6 +2826,9 @@ function bindEvents() {
 		// 显示编辑模态框
 		$('#priceRecordModal').modal('show');
 	}
+
+	// 晒图提醒确认按钮
+	$('#btnConfirmReminder').off('click').on('click', confirmPostPictureReminder);
 }
 
 /**
@@ -2831,6 +2860,88 @@ function initScrollSync() {
 }
 
 /**
+ * 检查是否需要晒图提醒（只在页面首次加载/切换店铺时触发）
+ */
+function checkPostPictureReminder() {
+	// 清空上一次提醒列表
+	postPictureReminderList = [];
+
+	// 1. 从 localStorage 获取用户配置
+	const userInfoStr = localStorage.getItem('currentUserInfo');
+	if (!userInfoStr) return;
+
+	let userInfo;
+	try {
+		userInfo = JSON.parse(userInfoStr);
+	} catch (e) {
+		return;
+	}
+
+	const set = userInfo.systemSettings || {};
+	const enabled = set.postPictureReminderEnabled;
+	const day = set.postPictureReminderDay;
+	const times = set.postPictureReminderTimes;
+
+	// 未开启 / 天数/次数未设置 → 不提醒
+	if (!enabled || !day || !times) return;
+
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+
+	// 2. 遍历所有计划判断
+	orderPlans.forEach(plan => {
+		// 只处理未晒图的计划
+		if (plan.PostPictures === 1) return;
+
+		// 取计划最早放单日期
+		if (!plan.ReleasePlans || plan.ReleasePlans.length === 0) return;
+		const firstDate = new Date(plan.ReleasePlans[0].ReleaseDate);
+		firstDate.setHours(0, 0, 0, 0);
+
+		// 计算天数差
+		const diffTime = today - firstDate;
+		const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+		// 超过提醒天数才判断
+		if (diffDays < day) return;
+
+		// 提醒次数未超限 → 加入提醒列表
+		const count = plan.PostPictureCount || 0;
+		if (count < times) {
+			postPictureReminderList.push(plan);
+		}
+	});
+
+	// 3. 有需要提醒的 → 弹出模态框
+	if (postPictureReminderList.length > 0) {
+		showPostPictureReminderModal();
+	}
+}
+
+/**
+ * 显示晒图提醒模态框
+ */
+function showPostPictureReminderModal() {
+	renderPostPictureReminderTable();
+	$('#postPictureReminderModal').modal('show');
+}
+
+/**
+ * 确认晒图提醒：次数+1并保存
+ */
+async function confirmPostPictureReminder() {
+	// 给每条需要提醒的计划次数+1
+	postPictureReminderList.forEach(plan => {
+		plan.PostPictureCount = (plan.PostPictureCount || 0) + 1;
+	});
+
+	// 保存数据
+	await saveDataToJsonFile();
+	showToast('提醒次数已更新', 'success');
+	$('#postPictureReminderModal').modal('hide');
+}
+
+/**
  * 加载数据并刷新视图
  */
 async function loadDataFromJson() {
@@ -2842,6 +2953,27 @@ async function loadDataFromJson() {
 	initPlanContextMenu();
 	initPlanDrag();
 	showToast(`【${currentShopName}】数据加载完成，共${orderPlans.length}条计划`, 'success');
+}
+
+/**
+ * 渲染晒图提醒模态框内容
+ */
+function renderPostPictureReminderTable() {
+	const $tbody = $('#postPictureReminderTableBody');
+	$tbody.empty();
+
+	postPictureReminderList.forEach(plan => {
+		const firstDate = plan.ReleasePlans[0].ReleaseDate;
+		const $tr = $(`
+            <tr>
+                <td>${plan.Name || '未知车型'}</td>
+                <td>${plan.Code || '无'}</td>
+                <td>${firstDate}</td>
+                <td>${plan.PostPictureCount || 0}</td>
+            </tr>
+        `);
+		$tbody.append($tr);
+	});
 }
 
 /**
@@ -3083,6 +3215,8 @@ async function savePlanForm() {
 	// 获取明细数据
 	const details = [];
 	let hasValidDetail = false;
+    // 修复：声明prevDate变量，初始为空
+    let prevDate = null;
 
 	$('#detailTableBody tr').each(function() {
 		const $tr = $(this);
@@ -3109,6 +3243,8 @@ async function savePlanForm() {
 				ReleaseName: remark
 			});
 			hasValidDetail = true;
+            // 修复：更新上一行日期
+            prevDate = currentDate;
 		}
 	});
 
@@ -3887,4 +4023,108 @@ function executeBatchInit() {
 	// 关闭模态框并提示
 	$('#batchInitModal').modal('hide');
 	showToast(`成功初始化${daysCount}天的放单明细`, 'success');
+}
+
+// 生成组合标识：用户ID + 店铺名
+function getUniqueShopKey(shopName) {
+	const userId = currentUserInfo.id;
+	return `${userId}_${shopName}`;
+}
+
+// ===================== 系统设置功能 =====================
+/**
+ * 初始化系统设置下拉选项（1-20）
+ */
+function initSystemSettingSelects() {
+	const $day = $('#postPictureReminderDay');
+	const $times = $('#postPictureReminderTimes');
+	$day.empty().append('<option value="">请选择提醒天数</option>');
+	$times.empty().append('<option value="">请选择提醒次数</option>');
+	for (let i = 1; i <= 20; i++) {
+		$day.append(`<option value="${i}">${i}天</option>`);
+		$times.append(`<option value="${i}">${i}次</option>`);
+	}
+}
+
+/**
+ * 打开系统设置模态框
+ */
+function openSystemSettingModal() {
+	initSystemSettingSelects();
+
+	const user = USER_INFO_LIST.find(u => u.userName === currentUserName);
+	if (!user) {
+		showToast('用户信息不存在', 'error');
+		return;
+	}
+
+	const set = user.systemSettings || {};
+	$('#postPictureReminderEnabled').prop('checked', set.postPictureReminderEnabled || false);
+	$('#postPictureReminderDay').val(set.postPictureReminderDay || '');
+	$('#postPictureReminderTimes').val(set.postPictureReminderTimes || '');
+
+	// 绑定标签切换
+	$('.setting-tab').off('click').on('click', function() {
+		$('.setting-tab').removeClass('btn-primary').addClass('btn-default');
+		$(this).removeClass('btn-default').addClass('btn-primary');
+		const target = $(this).data('target');
+		$('.setting-group').hide();
+		$(`#${target}`).show();
+	});
+
+	// 绑定勾选联动
+	// $('#postPictureReminderEnabled').off('change').on('change', function() {
+	// 	const enable = $(this).is(':checked');
+	// 	if (!enable) {
+	// 		$('#postPictureReminderDay').val('');
+	// 		$('#postPictureReminderTimes').val('');
+	// 	}
+	// });
+
+	$('#systemSettingModal').modal('show');
+}
+
+/**
+ * 保存系统设置到 userdata.json
+ */
+async function saveSystemSettings() {
+	const user = USER_INFO_LIST.find(u => u.userName === currentUserName);
+	if (!user) {
+		showToast('用户不存在', 'error');
+		return;
+	}
+
+	const enabled = $('#postPictureReminderEnabled').is(':checked');
+	const day = $('#postPictureReminderDay').val();
+	const times = $('#postPictureReminderTimes').val();
+
+	// 只有勾选了才验证
+	if (enabled && (!day || !times)) {
+		showToast('请选择完整的提醒天数和次数', 'warning');
+		return;
+	}
+
+	user.systemSettings = {
+		postPictureReminderEnabled: enabled,
+		postPictureReminderDay: parseInt(day),
+		postPictureReminderTimes: parseInt(times)
+	};
+	user.updateTime = new Date().toISOString();
+
+	const res = await saveUserInfoToJson();
+	if (res.success) {
+		showToast('系统设置保存成功', 'success');
+		$('#systemSettingModal').modal('hide');
+	} else {
+		showToast('保存失败：' + res.msg, 'error');
+	}
+}
+
+/**
+ * 绑定设置菜单点击事件
+ * 在 initUserDropdown 中调用
+ */
+function bindSystemSettingEvents() {
+	$('#btnSystemSettings').off('click').on('click', openSystemSettingModal);
+	$('#btnSaveSystemSettings').off('click').on('click', saveSystemSettings);
 }

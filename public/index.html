@@ -4,16 +4,14 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>放单计划管理系统</title>
-		<!-- 主图标（推荐16x16/32x32像素，png/ico格式） -->
 		<link rel="icon" href="./images/logo.png" type="image/png">
-		<!-- 兼容旧版IE的ico格式（可选） -->
 		<link rel="shortcut icon" href="./images/logo.png" type="image/x-icon">
 		<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
 		<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<link rel="stylesheet" href="css/style.css">
 	</head>
 	<body oncontextmenu="return false;">
-		<!-- 顶部导航栏 - 优化移动端布局 -->
+		<!-- 顶部导航栏 -->
 		<nav class="navbar navbar-custom">
 			<div class="container-fluid">
 				<div class="navbar-header">
@@ -21,7 +19,6 @@
 						<img src="images/logo.png" alt="logo">
 						<span class="system-name">放单计划管理系统</span>
 					</a>
-					<!-- 移动端店铺切换触发按钮 -->
 					<div class="shop-mobile-toggle" id="shopMobileToggle">
 						<i class="fa fa-store"></i> 切换店铺
 					</div>
@@ -31,14 +28,14 @@
 				<div class="shop-switcher" id="shopSwitcher">
 					<span class="shop-label">当前店铺：</span>
 					<div class="shop-btn-group" id="shopBtnGroup">
-						<!-- 店铺按钮会通过JS动态生成 -->
+						<!-- 店铺按钮通过JS动态生成 -->
 					</div>
 				</div>
 
-				<!-- 动态菜单容器（替换原有写死的菜单） -->
+				<!-- 动态菜单容器 -->
 				<div class="nav-menu-area" id="dynamicMenuContainer">
 					<ul class="nav-menu-list" id="mainMenuList">
-						<!-- 菜单会通过JS动态生成 -->
+						<!-- 菜单通过JS动态生成 -->
 					</ul>
 				</div>
 
@@ -53,9 +50,11 @@
 							<div class="dropdown-item" id="btnAddShop">
 								<i class="fa fa-store"></i> 新增店铺
 							</div>
-							<!-- 新增：充值记录选项 -->
 							<div class="dropdown-item" id="btnRechargeRecord">
 								<i class="fa fa-history"></i> 充值记录
+							</div>
+							<div class="dropdown-item" id="btnSystemSettings">
+								<i class="fa fa-cog"></i> 设置
 							</div>
 							<div class="dropdown-item" id="btnAdminLogout">
 								<i class="fa fa-sign-out"></i> 退出登录
@@ -66,7 +65,7 @@
 			</div>
 		</nav>
 
-		<!-- 内容容器 - 保留原有结构 -->
+		<!-- 主内容容器 -->
 		<div class="main-container">
 			<!-- 功能按钮区 -->
 			<div class="btn-toolbar">
@@ -120,7 +119,7 @@
 			</div>
 		</div>
 
-		<!-- 新增/编辑模态框 -->
+		<!-- 新增/编辑计划模态框 -->
 		<div class="modal fade" id="editModal" tabindex="-1" role="dialog">
 			<div class="modal-dialog modal-lg" role="document">
 				<div class="modal-content">
@@ -192,7 +191,7 @@
 			</div>
 		</div>
 
-		<!-- 今日/明日对比弹窗 -->
+		<!-- 计划对比弹窗 -->
 		<div id="compareModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
 			<div class="modal-dialog modal-lg">
 				<div class="modal-content">
@@ -287,7 +286,7 @@
 			</div>
 		</div>
 
-		<!-- 新增：充值记录模态框 -->
+		<!-- 充值记录模态框 -->
 		<div class="modal fade" id="rechargeRecordModal" tabindex="-1" role="dialog">
 			<div class="modal-dialog modal-lg" role="document">
 				<div class="modal-content">
@@ -304,15 +303,11 @@
 							<table class="table table-bordered table-hover recharge-table">
 								<thead>
 									<tr>
-										<!-- <th>充值ID</th> -->
 										<th>充值金额</th>
 										<th>充值时长</th>
-										<!-- <th>充值类型</th> -->
 										<th>支付方式</th>
 										<th>支付状态</th>
-										<!-- <th>原到期时间</th> -->
 										<th>到期时间</th>
-										<!-- <th>操作人</th> -->
 										<th>放单词</th>
 										<th>充值时间</th>
 									</tr>
@@ -328,7 +323,7 @@
 			</div>
 		</div>
 
-		<!-- 新增批量初始化明细的模态框 -->
+		<!-- 批量初始化放单明细模态框 -->
 		<div class="modal fade" id="batchInitModal" tabindex="-1" role="dialog">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
@@ -377,7 +372,7 @@
 			</div>
 		</div>
 
-		<!-- 新增：订单查询模态框 -->
+		<!-- 订单查询模态框 -->
 		<div class="modal fade" id="qnzgOrderModal" tabindex="-1" role="dialog">
 			<div class="modal-dialog modal-xl" role="document">
 				<div class="modal-content">
@@ -398,7 +393,7 @@
 									<div class="form-group">
 										<label for="queryShopName">店铺名称</label>
 										<select class="form-control" id="queryShopName">
-											<!-- 店铺选项会通过JS动态生成 -->
+											<!-- 店铺选项通过JS动态生成 -->
 										</select>
 									</div>
 								</div>
@@ -458,7 +453,7 @@
 			</div>
 		</div>
 
-		<!-- 售价信息记录 - 查看模态框 -->
+		<!-- 售价信息记录查看模态框 -->
 		<div class="modal fade" id="priceRecordViewModal" tabindex="-1" role="dialog">
 			<div class="modal-dialog modal-lg" role="document">
 				<div class="modal-content">
@@ -503,7 +498,7 @@
 			</div>
 		</div>
 
-		<!-- 售价信息记录模态框 -->
+		<!-- 售价信息记录编辑模态框 -->
 		<div class="modal fade" id="priceRecordModal" tabindex="-1" role="dialog">
 			<div class="modal-dialog modal-lg" role="document">
 				<div class="modal-content">
@@ -569,7 +564,7 @@
 							<thead>
 								<tr>
 									<th>SKU名称</th>
-									<th>售价（自动计算/反推）</th>
+									<th>售价（自动计算）</th>
 									<th>优惠券（自动匹配）</th>
 									<th>直降值</th>
 									<th>一口价</th>
@@ -580,14 +575,14 @@
 								<!-- 初始行 -->
 								<tr class="price-row">
 									<td><input type="text" class="form-control sku-name" placeholder="如：单五脚垫"></td>
-									<td><input type="number" class="form-control price" step="0.01"
-											placeholder="自动计算/手动输入"></td>
+									<td><input type="number" class="form-control price" step="0.01" placeholder="自动计算">
+									</td>
 									<td><input type="number" class="form-control coupon" step="0.01" readonly
 											placeholder="自动匹配"></td>
 									<td><input type="number" class="form-control reduce-value" step="0.01"
 											placeholder="直降金额/折扣数"></td>
 									<td><input type="number" class="form-control final-price" step="0.01"
-											placeholder="自动反推/手动输入"></td>
+											placeholder="手动输入"></td>
 									<td><button type="button" class="btn btn-danger btn-sm btn-remove-row">删除</button>
 									</td>
 								</tr>
@@ -605,11 +600,145 @@
 			</div>
 		</div>
 
+		<!-- 系统设置模态框 -->
+		<div class="modal fade" id="systemSettingModal" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">
+							<i class="fa fa-cog"></i> 系统基础设置
+						</h4>
+					</div>
+					<div class="modal-body">
+						<form id="systemSettingForm">
+
+							<!-- 设置菜单标签 -->
+							<div style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:8px;">
+								<button type="button" class="btn btn-sm btn-primary setting-tab"
+									data-target="setting-postpic">晒图相关</button>
+								<button type="button" class="btn btn-sm btn-default setting-tab"
+									data-target="setting-other">其他设置</button>
+							</div>
+
+							<!-- ===================== 晒图相关 ===================== -->
+							<div class="setting-group" id="setting-postpic">
+								<h5 class="setting-group-title">
+									<i class="fa fa-picture-o"></i> 晒图相关
+								</h5>
+								<div class="form-group">
+									<div class="checkbox">
+										<label>
+											<input type="checkbox" id="postPictureReminderEnabled">
+											是否开启晒图提醒（勾选即开启查询提醒）
+										</label>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="postPictureReminderDay">晒图提醒天数</label>
+									<select class="form-control" id="postPictureReminderDay">
+										<option value="">请选择提醒天数</option>
+									</select>
+									<small class="text-muted">第几天提醒查看评价情况</small>
+								</div>
+								<div class="form-group">
+									<label for="postPictureReminderTimes">提醒次数</label>
+									<select class="form-control" id="postPictureReminderTimes">
+										<option value="">请选择提醒次数</option>
+									</select>
+									<small class="text-muted">从提醒天数往后顺延连续几天提醒</small>
+								</div>
+							</div>
+
+							<!-- ===================== 其他设置（示例） ===================== -->
+							<div class="setting-group" id="setting-other" style="display:none;">
+								<h5 class="setting-group-title">
+									<i class="fa fa-cog"></i> 其他设置
+								</h5>
+								<div class="form-group">
+									<label>示例配置项</label>
+									<input type="text" class="form-control" placeholder="这里可以放其他配置">
+								</div>
+							</div>
+
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-primary" id="btnSaveSystemSettings">保存设置</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 晒图日期选择弹窗 -->
+		<div class="modal fade" id="postPictureDateModal" tabindex="-1" role="dialog">
+			<div class="modal-dialog modal-sm" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">选择晒图日期</h4>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label>晒图日期：</label>
+							<input type="date" class="form-control" id="postPictureDate" required>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-primary" id="btnConfirmPostPicture">确认</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 晒图提醒模态框 -->
+		<div class="modal fade" id="postPictureReminderModal" tabindex="-1" role="dialog">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">
+							<i class="fa fa-bell"></i> 未晒图计划提醒
+						</h4>
+					</div>
+					<div class="modal-body">
+						<div class="alert alert-warning">
+							以下计划已超过晒图提醒天数，请尽快完成晒图！
+						</div>
+						<div class="table-responsive">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr>
+										<th>车型名称</th>
+										<th>商品ID</th>
+										<th>最早放单日期</th>
+										<th>当前提醒次数</th>
+									</tr>
+								</thead>
+								<tbody id="postPictureReminderTableBody"></tbody>
+							</table>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+						<button type="button" class="btn btn-primary" id="btnConfirmReminder">确认（提醒次数+1）</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- 自定义右键菜单 -->
 		<div class="custom-contextmenu" id="planContextMenu">
 			<div class="custom-contextmenu-item" id="copyPlanItem">复制</div>
 			<div class="custom-contextmenu-item" id="deletePlanItem">删除</div>
-			<!-- 新增：晒图状态切换选项 -->
 			<div class="custom-contextmenu-item" id="togglePostPictureItem">已晒图/未晒图</div>
 		</div>
 
