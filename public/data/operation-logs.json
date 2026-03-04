@@ -1,5 +1,45 @@
 ﻿[
   {
+    "logId": "log_1772618183085_poa0h33vb",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【李庆坤】成功",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-04T09:56:23.085Z",
+    "operationTimeStr": "2026/3/4 17:56:23",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772618163631_a499hvg6j",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【李庆坤】成功",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-04T09:56:03.631Z",
+    "operationTimeStr": "2026/3/4 17:56:03",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772618126082_8366lyfge",
+    "operationType": "编辑用户",
+    "operationDesc": "编辑用户【李庆坤】成功，身份：VIP会员，店铺：得力沐璞汽车用品专卖店,迈库雷汽车用品旗舰店，到期时间：2026-03-16",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-04T09:55:26.082Z",
+    "operationTimeStr": "2026/3/4 17:55:26",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1772592989449_371zj7zpc",
+    "operationType": "新增充值记录",
+    "operationDesc": "为用户【张恩铭】充值10元，时长12个月，用户已升级为VIP，到期时间：2027-03-05",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-04T02:56:29.449Z",
+    "operationTimeStr": "2026/3/4 10:56:29",
+    "ip": "127.0.0.1"
+  },
+  {
     "logId": "log_1772527020499_avbfqpbgx",
     "operationType": "菜单管理",
     "operationDesc": "新增菜单：工厂版型表",

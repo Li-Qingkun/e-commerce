@@ -78,5 +78,21 @@
     "operator": "admin",
     "remark": "",
     "updateTime": "2026-02-24T03:09:32.847Z"
+  },
+  {
+    "rechargeId": "log_1772592988599_t29xhajtw",
+    "userId": "user_mm397zsg_ofwmcr7a68k_xi3tmof8lgp",
+    "userName": "张恩铭",
+    "rechargeAmount": 10,
+    "rechargeMonths": 12,
+    "originalExpireTime": "",
+    "newExpireTime": "2027-03-05T00:00:00.000Z",
+    "rechargeType": "normal",
+    "paymentMethod": "wechat",
+    "paymentStatus": "success",
+    "rechargeTime": "2026-03-04T02:56:28.599Z",
+    "operator": "admin",
+    "remark": "1",
+    "updateTime": "2026-03-04T02:56:28.599Z"
   }
 ]

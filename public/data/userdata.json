@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "id": "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
     "userName": "张云翔",
@@ -7,12 +7,18 @@
     "memberExpireTime": "2026-04-24",
     "shopList": [
       {
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be1",
         "shopName": "众合祥汽车配件",
         "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4bed"
       }
     ],
     "createTime": "2026-02-12T09:40:56.599Z",
-    "updateTime": "2026-02-24T03:09:32.847Z"
+    "updateTime": "2026-03-03T05:40:04.171Z",
+    "systemSettings": {
+      "postPictureReminderEnabled": true,
+      "postPictureReminderDay": 1,
+      "postPictureReminderTimes": 3
+    }
   },
   {
     "id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
@@ -22,6 +28,7 @@
     "memberExpireTime": "2027-02-12",
     "shopList": [
       {
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be2",
         "shopName": "111"
       }
     ],
@@ -36,16 +43,18 @@
     "memberExpireTime": "2026-03-16",
     "shopList": [
       {
-        "shopName": "得力沐璞汽车用品专卖店",
-        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed"
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be3",
+        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed",
+        "shopName": "得力沐璞汽车用品专卖店"
       },
       {
-        "shopName": "迈库雷汽车用品专卖店",
-        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4bed"
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be4",
+        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4bed",
+        "shopName": "迈库雷汽车用品旗舰店"
       }
     ],
     "createTime": "2026-02-12T09:43:02.396Z",
-    "updateTime": "2026-03-03T02:04:51.191Z",
+    "updateTime": "2026-03-04T09:56:03.619Z",
     "systemSettings": {
       "postPictureReminderEnabled": true,
       "postPictureReminderDay": 7,
@@ -60,6 +69,7 @@
     "memberExpireTime": "2028-02-12",
     "shopList": [
       {
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be5",
         "shopName": "超级管理员"
       }
     ],
@@ -74,6 +84,7 @@
     "memberExpireTime": "2026-09-14",
     "shopList": [
       {
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be6",
         "shopName": "祥铁旗舰店"
       }
     ],
@@ -88,12 +99,15 @@
     "memberExpireTime": "2026-03-23",
     "shopList": [
       {
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be7",
         "shopName": "迈库雷旗舰店"
       },
       {
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be8",
         "shopName": "庆赢旗舰店"
       },
       {
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be9",
         "shopName": "米其林海瑶专卖店",
         "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed"
       }
@@ -108,7 +122,9 @@
     "role": "normal",
     "shopList": [
       {
-        "shopName": "得力堪卢专卖店"
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4b10",
+        "shopName": "得力堪卢专卖店",
+        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed"
       }
     ],
     "createTime": "2026-02-23T10:04:07.202Z",
@@ -121,6 +137,7 @@
     "role": "vip",
     "shopList": [
       {
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4b11",
         "shopName": "驹伽旺旗舰店"
       }
     ],
@@ -129,17 +146,18 @@
     "memberExpireTime": "2026-04-26"
   },
   {
-    "id": "user_mm397zsg_ofwmcr7a68k_xi3tmof8lgp",
-    "userName": "张恩铭",
-    "password": "1",
+    "id": "user_mm5n71m0_2qpfkid75e1_1rcyg2jc607h",
+    "userName": "管宜鑫",
+    "password": "gyx1225",
     "role": "normal",
     "memberExpireTime": "",
     "shopList": [
       {
-        "shopName": "得力堪卢专卖店"
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4b12",
+        "shopName": "1"
       }
     ],
-    "createTime": "2026-02-26T09:21:49.552Z",
-    "updateTime": "2026-02-26T09:21:49.552Z"
+    "createTime": "2026-02-28T01:28:32.232Z",
+    "updateTime": "2026-02-28T01:28:32.232Z"
   }
 ]

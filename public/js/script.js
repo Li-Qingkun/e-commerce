@@ -12,6 +12,7 @@ const CONFIG = {
 // ===================== 全局变量 =====================
 let orderPlans = []; // 订单计划数据
 let currentUserName = ''; // 当前登录用户名
+let currentShopId = ''; // 当前选中店铺Id
 let currentShopName = ''; // 当前选中店铺名称
 let userShopList = []; // 当前用户的店铺列表
 // 用户信息JSON（初始为空，确保每次都从文件加载）
@@ -576,7 +577,7 @@ function renderDynamicMenu() {
 				// 触发对应功能
 				if (page === 'priceRecord') {
 					openPriceRecordModal();
-				} else if (page === 'FactoryPattern') {
+				} else if (page === 'factoryPattern') {
 					openFactoryPatternModal();
 				}
 			});
@@ -661,7 +662,7 @@ async function loadAndRenderViewTable() {
 		const allRecords = await response.json();
 		const userId = currentUserInfo?.id || ''; // 获取当前用户ID
 		const currentShopData = allRecords.find(item =>
-			item.userId === userId && item.shopName === currentShopName
+			item.shopId === currentShopId && item.shopName === currentShopName
 		);
 
 		if (!currentShopData || !currentShopData.skuDetails || currentShopData.skuDetails.length === 0) {
@@ -966,7 +967,7 @@ async function loadPriceRecords() {
 		// 找到当前店铺的数据
 		const userId = currentUserInfo?.id || '';
 		const currentShopData = priceRecords.find(item =>
-			item.userId === userId && item.shopName === currentShopName
+			item.shopId === currentShopId && item.shopName === currentShopName
 		);
 		if (currentShopData) {
 			// 渲染优惠券配置
@@ -1105,6 +1106,7 @@ async function savePriceRecords() {
 		const userId = currentUserInfo?.id || '';
 		const currentShopData = {
 			userId: userId, // 新增：用户ID
+			shopId: currentShopId,
 			shopName: currentShopName,
 			coupons: coupons,
 			reduceType: $('#priceReduceType').val(),
@@ -1114,7 +1116,7 @@ async function savePriceRecords() {
 
 		// 4. 更新全局数组（单文件存储）
 		const existingIndex = priceRecords.findIndex(item =>
-			item.userId === userId && item.shopName === currentShopName
+			item.shopId === currentShopId && item.shopName === currentShopName
 		);
 		if (existingIndex >= 0) {
 			priceRecords[existingIndex] = currentShopData;
@@ -1568,9 +1570,11 @@ function padZero(num) {
  */
 function getJsonFileName() {
 	// 替换特殊字符，避免文件名错误
-	const safeUserName = currentUserName.replace(/[\\/:*?"<>|]/g, '_');
-	const safeShopName = currentShopName.replace(/[\\/:*?"<>|]/g, '_');
-	return `${safeUserName}_${safeShopName}.json`;
+	// const safeUserName = currentUserName.replace(/[\\/:*?"<>|]/g, '_');
+	// const safeShopName = currentShopName.replace(/[\\/:*?"<>|]/g, '_');
+	// return `${safeUserName}_${safeShopName}.json`;
+	// return `${safeUserName}_${currentShopId}_${safeShopName}.json`;
+	return `${currentShopId}.json`;
 }
 
 /**
@@ -1807,6 +1811,8 @@ async function addNewShop() {
 
 	// 新增店铺
 	currentUser.shopList.push({
+		// shopId: `${currentUserName}_${newShopName}_${Date.now()}`, // 唯一ID
+		shopId: generateUUID(), // 唯一ID
 		shopName: newShopName
 	});
 	currentUser.updateTime = new Date().toISOString();
@@ -1841,12 +1847,18 @@ function getUserShopList() {
 
 	const userInfo = USER_INFO_LIST.find(user => user.userName === currentUserName);
 	if (userInfo && userInfo.shopList && Array.isArray(userInfo.shopList)) {
-		// 核心修复：确保正确提取店铺名称
 		userShopList = userInfo.shopList.map(item => {
-			// 兼容不同的数据格式
-			if (typeof item === 'string') return item;
-			return item.shopName || '';
-		}).filter(shopName => shopName.trim() !== ''); // 过滤空值
+			if (typeof item === 'string') {
+				return {
+					shopId: item,
+					shopName: item
+				};
+			}
+			return {
+				shopId: item.shopId || item.shopName, // 用 shopId 优先
+				shopName: item.shopName || ''
+			};
+		}).filter(item => item.shopName.trim() !== '');
 		console.log('✅ 提取到的店铺列表：', userShopList);
 	} else {
 		userShopList = ['默认店铺'];
@@ -1855,7 +1867,23 @@ function getUserShopList() {
 
 	// 首次加载默认选第一个店铺
 	const savedShop = localStorage.getItem(`currentShop_${currentUserName}`);
-	currentShopName = savedShop && userShopList.includes(savedShop) ? savedShop : userShopList[0];
+	let savedShopId = '',
+		savedShopName = '';
+	if (savedShop) {
+		try {
+			const parsed = JSON.parse(savedShop);
+			savedShopId = parsed.shopId;
+			savedShopName = parsed.shopName;
+		} catch (e) {}
+	}
+	// 匹配
+	const matchShop = userShopList.find(s =>
+		s.shopId === savedShopId || s.shopName === savedShopName
+	) || userShopList[0];
+
+	currentShopId = matchShop.shopId; // 关键
+	currentShopName = matchShop.shopName;
+	// currentShopName = savedShop && userShopList.includes(savedShop) ? savedShop : userShopList[0];
 	console.log('✅ 当前选中店铺：', currentShopName);
 }
 
@@ -1874,21 +1902,25 @@ function initShopSwitcher() {
 	console.log('🔄 重新生成店铺按钮，店铺列表：', userShopList);
 
 	// 生成店铺按钮
-	userShopList.forEach(shopName => {
-		const $btn = $(
-			`<button class="shop-btn ${shopName === currentShopName ? 'active' : ''}">${shopName}</button>`);
-
+	userShopList.forEach(shop => {
+		// const $btn = $(
+		// 	`<button class="shop-btn ${shopName === currentShopName ? 'active' : ''}">${shopName}</button>`);
+		const $btn = $(`<button class="shop-btn ${shop.shopName === currentShopName ? 'active' : ''}" 
+                        data-shop-id="${shop.shopId}">${shop.shopName}</button>`)
 		// 点击事件：切换店铺并加载数据
 		$btn.off('click').on('click', function() {
 			// 更新选中状态
 			$('.shop-btn').removeClass('active');
 			$(this).addClass('active');
-
 			// 更新当前店铺
-			currentShopName = shopName;
+			currentShopId = shop.shopId;
+			currentShopName = shop.shopName;
 
 			// 保存到本地存储
-			localStorage.setItem(`currentShop_${currentUserName}`, currentShopName);
+			localStorage.setItem(`currentShop_${currentUserName}`, JSON.stringify({
+				shopId: currentShopId,
+				shopName: currentShopName
+			}));
 
 			// 加载对应店铺数据
 			loadDataFromJson();
@@ -2273,10 +2305,10 @@ function initOrderQueryShopSelect() {
 	$shopSelect.empty();
 
 	// 添加用户的所有店铺选项
-	userShopList.forEach(shopName => {
-		const $option = $(`<option value="${shopName}">${shopName}</option>`);
+	userShopList.forEach(shop => {
+		const $option = $(`<option value="${shop.shopName}">${shop.shopName}</option>`);
 		// 默认选中当前店铺
-		if (shopName === currentShopName) {
+		if (shop.shopName === currentShopName) {
 			$option.prop('selected', true);
 		}
 		$shopSelect.append($option);
@@ -2442,7 +2474,9 @@ function getCjfIdByShopName(targetShopName) {
 		// find方法：找到第一个匹配的元素，未找到返回undefined
 		const targetShop = currentUserInfo.shopList.find(shop => {
 			// 严格匹配shopName（如需模糊匹配，可改为shop.shopName.includes(targetShopName)）
-			return shop.shopName === targetShopName;
+			// return shop.shopName === targetShopName;
+			// return shop.shopId === currentShopId && shop.shopName === targetShopName;
+			return shop.shopId === currentShopId;
 		});
 
 		// 4. 返回结果：找到则返回cjfId，未找到返回null
@@ -2689,10 +2723,10 @@ function initUserDropdown() {
 		$('#changePwdModal').modal('show');
 	});
 
-	// 保存密码修改按钮事件（新增）
+	// 保存密码修改按钮事件
 	$('#btnSavePwd').off('click').click(changePassword);
 
-	// 新增店铺按钮事件（新增）
+	// 新增店铺按钮事件
 	$('#btnAddShop').off('click').click(function() {
 		const userInfo = USER_INFO_LIST.find(user => user.userName === currentUserName);
 		const shopCount = userInfo?.shopList?.length || 0;
@@ -2706,7 +2740,7 @@ function initUserDropdown() {
 		$('#addShopModal').modal('show');
 	});
 
-	// 保存新增店铺按钮事件（新增）
+	// 保存新增店铺按钮事件
 	$('#btnSaveShop').off('click').click(addNewShop);
 
 	// 新增：充值记录按钮事件
@@ -4265,4 +4299,20 @@ async function saveFactoryPattern() {
 		console.error(err);
 		showToast('保存失败，请检查接口', 'error');
 	}
+}
+
+function generateUUID() {
+	let d = new Date().getTime();
+	let d2 = (performance && performance.now && (performance.now() * 1000)) || 0;
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		let r = Math.random() * 16;
+		if (d > 0) {
+			r = (d + r) % 16 | 0;
+			d = Math.floor(d / 16);
+		} else {
+			r = (d2 + r) % 16 | 0;
+			d2 = Math.floor(d2 / 16);
+		}
+		return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+	});
 }

@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "id": "menu_1001",
     "name": "超级返平台",
@@ -52,7 +52,7 @@
   {
     "name": "工厂版型表",
     "icon": "fa fa-info-circle",
-    "page": "FactoryPattern",
+    "page": "factoryPattern",
     "parentId": "",
     "sort": 3,
     "isVip": false,
