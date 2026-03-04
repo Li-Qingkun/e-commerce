@@ -1,0 +1,307 @@
+﻿[
+  {
+    "ID": 1771892619331,
+    "Code": "3804942427769405514",
+    "Name": "哈弗大狗",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-24T00:23:39.312Z",
+    "PostPictures": 1,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-24",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "168"
+      },
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "248"
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "168/248"
+      }
+    ]
+  },
+  {
+    "ID": "1771892655264",
+    "Code": "3804975320927437085",
+    "Name": "哈弗H6L",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-24T00:24:00.000Z",
+    "PostPictures": 1,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-24",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "168"
+      },
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "248"
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "168/248"
+      }
+    ]
+  },
+  {
+    "ID": 1771892706544,
+    "Code": "3804991036212772864",
+    "Name": "吉利帝豪",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-24T00:25:06.544Z",
+    "PostPictures": 1,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-24",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "168"
+      },
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "248"
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "168/248"
+      }
+    ]
+  },
+  {
+    "ID": "1771902216953",
+    "Code": "",
+    "Name": "本田雅阁",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-24T03:03:00.000Z",
+    "PostPictures": 1,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 1,
+        "ReleaseName": "168"
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 1,
+        "ReleaseName": "168"
+      },
+      {
+        "ReleaseDate": "2026-02-27",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "248"
+      },
+      {
+        "ReleaseDate": "2026-02-28",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "168/248"
+      }
+    ]
+  },
+  {
+    "ID": "1771914533256",
+    "Code": "",
+    "Name": "哈弗猛龙",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-24T06:28:00.000Z",
+    "PostPictures": 1,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 1,
+        "ReleaseName": "168"
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 1,
+        "ReleaseName": "168"
+      },
+      {
+        "ReleaseDate": "2026-02-27",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "248"
+      }
+    ]
+  },
+  {
+    "ID": "1771914555415",
+    "Code": "",
+    "Name": "哈弗H6",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-24T06:29:00.000Z",
+    "PostPictures": 1,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-25",
+        "ReleaseQuantity": 1,
+        "ReleaseName": "168"
+      },
+      {
+        "ReleaseDate": "2026-02-26",
+        "ReleaseQuantity": 1,
+        "ReleaseName": "168"
+      },
+      {
+        "ReleaseDate": "2026-02-27",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "248"
+      }
+    ]
+  },
+  {
+    "ID": 1772501595982,
+    "Code": "",
+    "Name": "迈腾",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-03-03T01:33:15.982Z",
+    "PostPictures": 0,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-03-03",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-04",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-05",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-06",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": 1772501773229,
+    "Code": "",
+    "Name": "帕萨特",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-03-03T01:36:13.229Z",
+    "PostPictures": 0,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-03-03",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-04",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-05",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-06",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": 1772501801125,
+    "Code": "",
+    "Name": "途观L",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-03-03T01:36:41.125Z",
+    "PostPictures": 0,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-03-03",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-04",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-05",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-06",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  },
+  {
+    "ID": 1772501817781,
+    "Code": "",
+    "Name": "速腾",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-03-03T01:36:57.781Z",
+    "PostPictures": 0,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-03-03",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-04",
+        "ReleaseQuantity": 1,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-05",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-06",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  }
+]

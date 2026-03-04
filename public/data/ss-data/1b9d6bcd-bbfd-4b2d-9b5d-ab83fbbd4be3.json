@@ -547,12 +547,12 @@
     ]
   },
   {
-    "ID": 1771826338602,
+    "ID": "1771826338602",
     "Code": "3801271968062374262",
     "Name": "比亚迪元系列",
     "SkuName": "",
-    "SkuPrice": "",
-    "createTime": "2026-02-23T05:58:58.602Z",
+    "SkuPrice": "288",
+    "createTime": "2026-02-23T05:58:00.000Z",
     "PostPictures": 0,
     "PostPictureCount": 0,
     "PostPictureDate": "",
@@ -575,12 +575,12 @@
     ]
   },
   {
-    "ID": 1771826463204,
+    "ID": "1771826463204",
     "Code": "3801271940262527898",
     "Name": "比亚迪海洋",
     "SkuName": "",
-    "SkuPrice": "",
-    "createTime": "2026-02-23T06:01:03.204Z",
+    "SkuPrice": "288",
+    "createTime": "2026-02-23T06:01:00.000Z",
     "PostPictures": 0,
     "PostPictureCount": 0,
     "PostPictureDate": "",

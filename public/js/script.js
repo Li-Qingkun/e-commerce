@@ -13,6 +13,7 @@ const CONFIG = {
 let orderPlans = []; // 订单计划数据
 let currentUserName = ''; // 当前登录用户名
 let currentShopId = ''; // 当前选中店铺Id
+let currentShopType = ''; //当前选中店铺类型
 let currentShopName = ''; // 当前选中店铺名称
 let userShopList = []; // 当前用户的店铺列表
 // 用户信息JSON（初始为空，确保每次都从文件加载）
@@ -35,6 +36,9 @@ let currentCoupons = []; // 当前优惠券配置
 let postPictureReminderList = []; // 需要提醒的计划列表
 let factoryPatternList = []; //工厂版型表管理
 
+let currentSelectedPlan = null;
+let todayPlanMaxQuantity = 0;
+
 // ===================== 模态框自动加载 =====================
 async function loadAllModals() {
 	const modalFiles = [
@@ -51,7 +55,8 @@ async function loadAllModals() {
 		"postPictureDateModal.html",
 		"postPictureReminderModal.html",
 		"planContextMenu.html",
-		"factoryPatternModal.html"
+		"factoryPatternModal.html",
+		"qnzgAddModal.html"
 	];
 
 	const $container = $("#modalContainer");
@@ -618,6 +623,14 @@ function bindMenuClickEvents() {
 					copyOrderTableContent(); // 调用 async 函数
 				});
 				break;
+			case 'qnzgAdd':
+				$('#qnzgAddModal').modal('show');
+				resetForm();
+				setTimeout(() => {
+					initPlanSelect();
+					initPlanSelectChangeEvent();
+				}, 100);
+				break;
 			default:
 				// 其他菜单（如有需要扩展）
 				showToast(`菜单【${$this.text().trim()}】暂未配置功能`, 'warning');
@@ -1107,6 +1120,7 @@ async function savePriceRecords() {
 		const currentShopData = {
 			userId: userId, // 新增：用户ID
 			shopId: currentShopId,
+			shopType: currentShopType,
 			shopName: currentShopName,
 			coupons: coupons,
 			reduceType: $('#priceReduceType').val(),
@@ -1790,6 +1804,11 @@ async function addNewShop() {
 		showToast('请输入店铺名称', 'error');
 		return;
 	}
+	const newShopType = $('#newShopType').val().trim();
+	if (!newShopType) {
+		showToast('请选择店铺类型', 'error');
+		return;
+	}
 
 	// 获取当前用户信息
 	const userIndex = USER_INFO_LIST.findIndex(user => user.userName === currentUserName);
@@ -1813,6 +1832,7 @@ async function addNewShop() {
 	currentUser.shopList.push({
 		// shopId: `${currentUserName}_${newShopName}_${Date.now()}`, // 唯一ID
 		shopId: generateUUID(), // 唯一ID
+		shopType: newShopType,
 		shopName: newShopName
 	});
 	currentUser.updateTime = new Date().toISOString();
@@ -1851,11 +1871,13 @@ function getUserShopList() {
 			if (typeof item === 'string') {
 				return {
 					shopId: item,
+					shopType: item,
 					shopName: item
 				};
 			}
 			return {
 				shopId: item.shopId || item.shopName, // 用 shopId 优先
+				shopType: item.shopType || '', // 用 shopType 优先
 				shopName: item.shopName || ''
 			};
 		}).filter(item => item.shopName.trim() !== '');
@@ -1882,6 +1904,7 @@ function getUserShopList() {
 	) || userShopList[0];
 
 	currentShopId = matchShop.shopId; // 关键
+	currentShopType = matchShop.shopType; // 关键
 	currentShopName = matchShop.shopName;
 	// currentShopName = savedShop && userShopList.includes(savedShop) ? savedShop : userShopList[0];
 	console.log('✅ 当前选中店铺：', currentShopName);
@@ -1914,11 +1937,13 @@ function initShopSwitcher() {
 			$(this).addClass('active');
 			// 更新当前店铺
 			currentShopId = shop.shopId;
+			currentShopType = shop.shopType;
 			currentShopName = shop.shopName;
 
 			// 保存到本地存储
 			localStorage.setItem(`currentShop_${currentUserName}`, JSON.stringify({
 				shopId: currentShopId,
+				shopType: currentShopType,
 				shopName: currentShopName
 			}));
 
@@ -2684,6 +2709,7 @@ async function initPage() {
 			}
 		});
 	}, 500);
+	initPlanSelect();
 
 	console.log('✅ 页面初始化完成');
 }
@@ -4316,3 +4342,313 @@ function generateUUID() {
 		return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
 	});
 }
+
+
+// 初始化计划下拉（核心修复：每次打开弹窗都加载今日有数据的计划）
+function initPlanSelect() {
+	const $sel = $('#planNameSelect');
+	if (!$sel.length) {
+		console.warn('planNameSelect 下拉框不存在');
+		return;
+	}
+
+	$sel.empty().append('<option value="">请选择计划</option>');
+	const plans = orderPlans || [];
+
+	if (plans.length === 0) {
+		// showToast('暂无计划数据，请先加载店铺数据', 'warning');
+		return;
+	}
+
+	// 获取今日日期
+	const todayStr = formatDateOnly(new Date());
+
+	// 筛选：今日有放单且数量>0的计划
+	const todayPlans = plans.filter(plan => {
+		if (!plan.ReleasePlans || !Array.isArray(plan.ReleasePlans)) return false;
+		return plan.ReleasePlans.some(d =>
+			formatDateOnly(new Date(d.ReleaseDate)) === todayStr && d.ReleaseQuantity > 0
+		);
+	});
+
+	if (todayPlans.length === 0) {
+		showToast('今日暂无有效放单计划', 'info');
+		return;
+	}
+
+	// 渲染
+	todayPlans.forEach(plan => {
+		$sel.append(`<option value="${plan.ID}">${plan.Name}</option>`);
+	});
+	// showToast(`已加载今日 ${todayPlans.length} 个有效计划`, 'success');
+}
+
+// 初始化计划选择事件（修复：确保每次打开弹窗都能绑定成功）
+function initPlanSelectChangeEvent() {
+	// 先解绑，避免重复绑定
+	$(document).off('change', '#planNameSelect');
+	$(document).on('change', '#planNameSelect', function() {
+		const planId = $(this).val();
+		if (!planId) {
+			resetForm();
+			return;
+		}
+
+		// 找到选中的计划
+		currentSelectedPlan = orderPlans.find(p => p.ID == planId);
+		if (!currentSelectedPlan) return;
+
+		// ===================== 自动赋值 =====================
+		let searchWord = '';
+		const todayStr = formatDateOnly(new Date());
+		if (currentSelectedPlan.ReleasePlans && currentSelectedPlan.ReleasePlans.length) {
+			const todayPlan = currentSelectedPlan.ReleasePlans.find(d =>
+				formatDateOnly(new Date(d.ReleaseDate)) === todayStr
+			);
+			searchWord = todayPlan?.ReleaseName || currentSelectedPlan.ReleasePlans[0].ReleaseName || '';
+		}
+
+		$('#goodsPassword').val(searchWord); // 搜索词
+		$('#doudianPrice').val(currentSelectedPlan.SkuPrice || 0); // 刷单金额
+		let goodsUrl = '';
+		const code = currentSelectedPlan.Code || '';
+		if (currentShopType === 'dy') {
+			goodsUrl =
+				`https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?id=${code}&origin_type=604`;
+		} else if (currentShopType === 'tb') {
+			goodsUrl = `https://detail.tmall.com/item.htm?id=${code}`;
+		}
+		$('#goodsUrl').val(goodsUrl);
+
+		// ===================== 计算今日单量上限 =====================
+		todayPlanMaxQuantity = 0;
+		if (currentSelectedPlan.ReleasePlans) {
+			currentSelectedPlan.ReleasePlans.forEach(d => {
+				if (formatDateOnly(new Date(d.ReleaseDate)) === todayStr) {
+					todayPlanMaxQuantity += d.ReleaseQuantity || 0;
+				}
+			});
+		}
+		$('#maxOrderLimit').text(`上限：${todayPlanMaxQuantity} 单`);
+
+		// ===================== 生成时间段 =====================
+		generateTimeIntervals();
+	});
+}
+
+// 生成时间段
+function generateTimeIntervals() {
+	const $container = $('#timeIntervalContainer');
+	$container.empty();
+
+	const now = new Date();
+	const currentHour = now.getHours();
+	const currentMinute = now.getMinutes();
+
+	// 计算当前时间段的开始时间（例如19:42 → 19:42开始，下一个整点结束）
+	let startHour = currentHour;
+	let startMinute = currentMinute;
+	// 按15分钟/30分钟/整点分段，这里按当前分钟直接取段
+	const nextHour = startHour + 1;
+	const nextMinute = 0;
+
+	// 生成当前时间段
+	const currentTimeSlot =
+		`${startHour}:${startMinute.toString().padStart(2, '0')} 至 ${nextHour}:${nextMinute.toString().padStart(2, '0')}`;
+	const currentSlotItem = $(`
+		<div class="time-slot-item">
+			<span class="time-slot-label">${currentTimeSlot}</span>
+			<div class="quantity-control">
+				<div class="quantity-btn minus" data-hour="${startHour}" data-minute="${startMinute}">-</div>
+				<input type="number" class="quantity-input time-order-input" data-hour="${startHour}" data-minute="${startMinute}" min="0" max="${todayPlanMaxQuantity}" value="0">
+				<div class="quantity-btn plus" data-hour="${startHour}" data-minute="${startMinute}">+</div>
+			</div>
+		</div>
+	`);
+	$container.append(currentSlotItem);
+
+	// 生成后续整点时间段（从下一个整点到23:00）
+	for (let h = nextHour; h <= 23; h++) {
+		const next = h + 1;
+		const timeText = `${h}:00 至 ${next}:00`;
+		const slotItem = $(`
+			<div class="time-slot-item">
+				<span class="time-slot-label">${timeText}</span>
+				<div class="quantity-control">
+					<div class="quantity-btn minus" data-hour="${h}">-</div>
+					<input type="number" class="quantity-input time-order-input" data-hour="${h}" min="0" max="${todayPlanMaxQuantity}" value="0">
+					<div class="quantity-btn plus" data-hour="${h}">+</div>
+				</div>
+			</div>
+		`);
+		$container.append(slotItem);
+	}
+
+	bindTimeInputChange();
+	bindQuantityBtnEvent(); // 绑定加减按钮事件
+	calcTotalOrder();
+}
+
+// 绑定单量加减按钮事件【修复：总单量不超上限】
+function bindQuantityBtnEvent() {
+	// 减按钮
+	$('.quantity-btn.minus').off('click').on('click', function() {
+		const $input = $(this).siblings('.time-order-input');
+		let val = parseInt($input.val()) || 0;
+		if (val > 0) {
+			val--;
+			$input.val(val);
+			calcTotalOrder();
+		}
+	});
+
+	// 加按钮【核心修复：计算总单量后判断是否超上限】
+	$('.quantity-btn.plus').off('click').on('click', function() {
+		const $input = $(this).siblings('.time-order-input');
+		let currentVal = parseInt($input.val()) || 0;
+		// 先计算当前所有时间段的总单量
+		let total = 0;
+		$('.time-order-input').each(function() {
+			total += parseInt($(this).val()) || 0;
+		});
+		// 总单量 +1 后不超过上限才允许增加
+		if (total < todayPlanMaxQuantity) {
+			currentVal++;
+			$input.val(currentVal);
+			calcTotalOrder();
+		} else {
+			showToast('总单量已达上限，无法继续增加', 'error');
+		}
+	});
+}
+
+// 监听单量输入【修复：总单量不超上限】
+function bindTimeInputChange() {
+	$('.time-order-input').off('input').on('input', function() {
+		const $this = $(this);
+		let inputVal = parseInt($this.val()) || 0;
+		// 限制输入值为非负整数
+		if (inputVal < 0) inputVal = 0;
+		$this.val(inputVal);
+
+		// 计算总单量
+		let total = 0;
+		$('.time-order-input').each(function() {
+			total += parseInt($(this).val()) || 0;
+		});
+
+		// 总单量超过上限时，重置当前输入框并提示
+		if (total > todayPlanMaxQuantity) {
+			const diff = total - todayPlanMaxQuantity;
+			$this.val(inputVal - diff); // 扣减超出部分
+			showToast(`总单量不能超过${todayPlanMaxQuantity}单`, 'error');
+		}
+		calcTotalOrder();
+	});
+}
+
+// 计算总单量
+function calcTotalOrder() {
+	let total = 0;
+	$('.time-order-input').each(function() {
+		total += parseInt($(this).val()) || 0;
+	});
+	$('#totalOrderCount').text(`已选：${total} 单`);
+	return total;
+}
+
+// 重置表单
+function resetForm() {
+	currentSelectedPlan = null;
+	todayPlanMaxQuantity = 0;
+	$('#qnzgAddForm')[0].reset();
+	$('#timeIntervalContainer').html('<div class="alert alert-info">请先选择计划</div>');
+	$('#totalOrderCount').text('已选：0 单');
+	$('#maxOrderLimit').text('上限：0 单');
+}
+
+// 点击创建按钮
+$('#btnCreateQnzgOrder').off('click').on('click', async function() {
+	if (!currentSelectedPlan) {
+		showToast('请先选择刷单计划', 'warning');
+		return;
+	}
+
+	const total = calcTotalOrder();
+	if (total <= 0) {
+		showToast('请设置至少1单', 'warning');
+		return;
+	}
+
+	if (!confirm('确认创建推广订单？')) return;
+
+	// 收集参数
+	const goodsPassword = $('#goodsPassword').val().trim();
+	const doudianPrice = $('#doudianPrice').val().trim();
+	const goodsUrl = $('#goodsUrl').val().trim();
+	const genderLabel = $('input[name=genderLabel]:checked').val();
+	const ageLabel = $('input[name=ageLabel]:checked').val();
+	const shopId = window.currentShopId || '';
+
+	// 取第一个时间段作为活动时间
+	const firstHour = $('.time-order-input').eq(0).data('hour');
+	const activityDate = formatDateOnly(new Date());
+	const activityStartTime = `${activityDate} ${firstHour || 9}:00:00`;
+
+	// 固定值
+	const activityName = "刷单";
+	const productImg = "https://h5.qnzg.cn/image.png";
+	const serviceType = 0;
+	const app = 0;
+	const sffl = 2;
+	const fanliPrice = doudianPrice;
+	const categoryId = 20094;
+	const buyWay = 2;
+	const buyerLabel = 1;
+	const goodsShareUrl = productImg;
+	const sfdf = 1;
+	const timeInterval = 0;
+
+	const params = new URLSearchParams();
+	params.append('activityName', activityName);
+	params.append('goodsUrl', goodsUrl);
+	params.append('productImg', productImg);
+	params.append('spreadNum', total);
+	params.append('serviceType', serviceType);
+	params.append('app', app);
+	params.append('sffl', sffl);
+	params.append('fanliPrice', fanliPrice);
+	params.append('doudianPrice', doudianPrice);
+	params.append('activityStartTime', activityStartTime);
+	params.append('categoryId', categoryId);
+	params.append('buyWay', buyWay);
+	params.append('buyerLabel', buyerLabel);
+	params.append('goodsShareUrl', goodsShareUrl);
+	params.append('goodsPassword', goodsPassword);
+	params.append('sfdf', sfdf);
+	params.append('shopId', shopId);
+	params.append('genderLabel', genderLabel);
+	params.append('ageLabel', ageLabel);
+	params.append('timeInterval', timeInterval);
+
+	try {
+		showToast('提交中...', 'loading');
+		const res = await fetch('https://qnzg.cn/api/dk/seller/activity/createWithNoUnion', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded'
+			},
+			body: params.toString()
+		});
+		const json = await res.json();
+		if (json.code == 200) {
+			showToast('创建成功', 'success');
+			$('#qnzgAddModal').modal('hide');
+		} else {
+			showToast('创建失败：' + (json.msg || '未知错误'), 'error');
+		}
+	} catch (e) {
+		console.error(e);
+		showToast('网络请求失败', 'error');
+	}
+});

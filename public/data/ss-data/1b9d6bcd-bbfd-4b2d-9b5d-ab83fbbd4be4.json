@@ -1,0 +1,38 @@
+﻿[
+  {
+    "ID": 1772523644152,
+    "Code": "3781191647400952135",
+    "Name": "哈弗大狗",
+    "SkuName": "https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?id=3781191647400952135&origin_type=604",
+    "SkuPrice": "168",
+    "createTime": "2026-03-03T07:40:44.152Z",
+    "PostPictures": 0,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-03-03",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "哈弗大狗后备箱垫"
+      }
+    ]
+  },
+  {
+    "ID": 1772523678186,
+    "Code": "3780640837357142339",
+    "Name": "坦克300",
+    "SkuName": "https://haohuo.jinritemai.com/ecommerce/trade/detail/index.html?id=3780640837357142339&origin_type=604",
+    "SkuPrice": "168",
+    "createTime": "2026-03-03T07:41:18.186Z",
+    "PostPictures": 0,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-03-03",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
+      }
+    ]
+  }
+]

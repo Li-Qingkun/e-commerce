@@ -1665,3 +1665,169 @@ body {
 	align-items: center;
 	gap: 8px;
 }
+
+.quantity-control {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.quantity-btn {
+	width: 30px;
+	height: 30px;
+	border: 1px solid #ccc;
+	background: #f5f5f5;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 3px;
+}
+
+.quantity-input {
+	width: 50px;
+	height: 30px;
+	text-align: center;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+}
+
+.time-slot-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 8px;
+	padding: 5px;
+	border: 1px solid #eee;
+	border-radius: 4px;
+}
+
+.time-slot-label {
+	width: 120px;
+	font-size: 14px;
+	color: #666;
+}
+
+.invite-tip {
+	font-size: 12px;
+	color: #0066cc;
+	cursor: pointer;
+	margin-left: 10px;
+}
+
+/* 时间段容器整体排版优化 */
+#timeIntervalContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: stretch;
+    padding: 10px 0;
+}
+
+/* 单个时间段项样式 */
+.time-slot-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-bg);
+    box-shadow: 0 2px 4px var(--shadow-color);
+    width: calc(20% - 12px); /* 5列布局，适配截图样式 */
+    margin-bottom: 0 !important;
+    gap: 8px;
+}
+
+/* 时间段标签样式 */
+.time-slot-label {
+    width: 100%;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-color);
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* 数量控制区域样式 */
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    justify-content: center;
+}
+
+/* 数量按钮样式美化 */
+.quantity-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--primary-color);
+    background-color: var(--primary-color);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.quantity-btn:hover {
+    background-color: #4096ff;
+    border-color: #4096ff;
+}
+
+/* 数量输入框样式优化 + 移除原生增减按钮 */
+.quantity-input {
+    width: 60px;
+    height: 32px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    /* 移除Chrome/Edge原生增减按钮 */
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* 移除Firefox原生增减按钮 */
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.quantity-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* 邀请买家提示样式 */
+.invite-tip {
+    font-size: 12px;
+    color: var(--info-color);
+    cursor: pointer;
+    margin-top: 5px;
+    text-align: center;
+    width: 100%;
+}
+
+/* 响应式适配：小屏幕下调整列数 */
+@media (max-width: 992px) {
+    .time-slot-item {
+        width: calc(33.33% - 10px);
+    }
+}
+
+@media (max-width: 768px) {
+    .time-slot-item {
+        width: calc(50% - 8px);
+    }
+}
+
+@media (max-width: 576px) {
+    .time-slot-item {
+        width: 100%;
+    }
+}

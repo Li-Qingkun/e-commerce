@@ -1,0 +1,23 @@
+﻿[
+  {
+    "ID": "1771925918527",
+    "Code": "米其林宝马",
+    "Name": "米其林宝马",
+    "SkuName": "",
+    "SkuPrice": "",
+    "createTime": "2026-02-24T09:38:00.000Z",
+    "PostPictures": 1,
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-02-24",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "宝马米其林后备箱垫"
+      },
+      {
+        "ReleaseDate": "2026-02-28",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "宝马米其林后备箱垫"
+      }
+    ]
+  }
+]
