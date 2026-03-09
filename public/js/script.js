@@ -15,6 +15,7 @@ let currentUserName = ''; // 当前登录用户名
 let currentShopId = ''; // 当前选中店铺Id
 let currentShopType = ''; //当前选中店铺类型
 let currentShopName = ''; // 当前选中店铺名称
+let currentShopCode = ''; // 当前选中店铺编码
 let userShopList = []; // 当前用户的店铺列表
 // 用户信息JSON（初始为空，确保每次都从文件加载）
 let USER_INFO_LIST = [];
@@ -1122,6 +1123,7 @@ async function savePriceRecords() {
 			shopId: currentShopId,
 			shopType: currentShopType,
 			shopName: currentShopName,
+			shopCode: currentShopCode,
 			coupons: coupons,
 			reduceType: $('#priceReduceType').val(),
 			skuDetails: skuDetails,
@@ -1804,6 +1806,11 @@ async function addNewShop() {
 		showToast('请输入店铺名称', 'error');
 		return;
 	}
+	const newShopCode = $('#newShopCode').val().trim();
+	if (!newShopCode) {
+		showToast('请输入店铺ID', 'error');
+		return;
+	}
 	const newShopType = $('#newShopType').val().trim();
 	if (!newShopType) {
 		showToast('请选择店铺类型', 'error');
@@ -1833,7 +1840,8 @@ async function addNewShop() {
 		// shopId: `${currentUserName}_${newShopName}_${Date.now()}`, // 唯一ID
 		shopId: generateUUID(), // 唯一ID
 		shopType: newShopType,
-		shopName: newShopName
+		shopName: newShopName,
+		shopCode: newshopCode
 	});
 	currentUser.updateTime = new Date().toISOString();
 
@@ -1872,13 +1880,15 @@ function getUserShopList() {
 				return {
 					shopId: item,
 					shopType: item,
-					shopName: item
+					shopName: item,
+					shopCode: item
 				};
 			}
 			return {
 				shopId: item.shopId || item.shopName, // 用 shopId 优先
-				shopType: item.shopType || '', // 用 shopType 优先
-				shopName: item.shopName || ''
+				shopType: item.shopType || '',
+				shopName: item.shopName || '',
+				shopCode: item.shopCode || ''
 			};
 		}).filter(item => item.shopName.trim() !== '');
 		console.log('✅ 提取到的店铺列表：', userShopList);
@@ -1890,12 +1900,14 @@ function getUserShopList() {
 	// 首次加载默认选第一个店铺
 	const savedShop = localStorage.getItem(`currentShop_${currentUserName}`);
 	let savedShopId = '',
-		savedShopName = '';
+		savedShopName = '',
+		savedShopCode = '';
 	if (savedShop) {
 		try {
 			const parsed = JSON.parse(savedShop);
 			savedShopId = parsed.shopId;
 			savedShopName = parsed.shopName;
+			savedshopCode = parsed.shopCode;
 		} catch (e) {}
 	}
 	// 匹配
@@ -1906,6 +1918,7 @@ function getUserShopList() {
 	currentShopId = matchShop.shopId; // 关键
 	currentShopType = matchShop.shopType; // 关键
 	currentShopName = matchShop.shopName;
+	currentShopCode = matchShop.shopCode;
 	// currentShopName = savedShop && userShopList.includes(savedShop) ? savedShop : userShopList[0];
 	console.log('✅ 当前选中店铺：', currentShopName);
 }
@@ -1939,12 +1952,14 @@ function initShopSwitcher() {
 			currentShopId = shop.shopId;
 			currentShopType = shop.shopType;
 			currentShopName = shop.shopName;
+			currentShopCode = shop.shopCode;
 
 			// 保存到本地存储
 			localStorage.setItem(`currentShop_${currentUserName}`, JSON.stringify({
 				shopId: currentShopId,
 				shopType: currentShopType,
-				shopName: currentShopName
+				shopName: currentShopName,
+				shopCode: currentshopCode
 			}));
 
 			// 加载对应店铺数据
@@ -2938,6 +2953,8 @@ function bindEvents() {
 
 	// 晒图提醒确认按钮
 	$('#btnConfirmReminder').off('click').on('click', confirmPostPictureReminder);
+
+	$('#btnCreateQnzgOrder').off('click').on('click', qnzgAdd);
 }
 
 /**
@@ -4568,7 +4585,7 @@ function resetForm() {
 }
 
 // 点击创建按钮
-$('#btnCreateQnzgOrder').off('click').on('click', async function() {
+async function qnzgAdd() {
 	if (!currentSelectedPlan) {
 		showToast('请先选择刷单计划', 'warning');
 		return;
@@ -4582,21 +4599,22 @@ $('#btnCreateQnzgOrder').off('click').on('click', async function() {
 
 	if (!confirm('确认创建推广订单？')) return;
 
-	// 收集参数
 	const goodsPassword = $('#goodsPassword').val().trim();
-	const doudianPrice = $('#doudianPrice').val().trim();
+	const doudianPrice = $('#doudianPrice').val().trim() + '00';
 	const goodsUrl = $('#goodsUrl').val().trim();
 	const genderLabel = $('input[name=genderLabel]:checked').val();
 	const ageLabel = $('input[name=ageLabel]:checked').val();
-	const shopId = window.currentShopId || '';
+	const cookie = await QueryCjfInfo(getCjfIdByShopName(currentShopName));
 
-	// 取第一个时间段作为活动时间
-	const firstHour = $('.time-order-input').eq(0).data('hour');
+	if (!cookie) {
+		showToast('获取店铺Cookie失败，无法继续创建订单', 'error');
+		return;
+	}
+
+	const encodedCookie = encodeURIComponent(cookie);
 	const activityDate = formatDateOnly(new Date());
-	const activityStartTime = `${activityDate} ${firstHour || 9}:00:00`;
 
-	// 固定值
-	const activityName = "刷单";
+	const activityName = "盲盒！随机发礼品";
 	const productImg = "https://h5.qnzg.cn/image.png";
 	const serviceType = 0;
 	const app = 0;
@@ -4605,50 +4623,110 @@ $('#btnCreateQnzgOrder').off('click').on('click', async function() {
 	const categoryId = 20094;
 	const buyWay = 2;
 	const buyerLabel = 1;
-	const goodsShareUrl = productImg;
 	const sfdf = 1;
 	const timeInterval = 0;
 
-	const params = new URLSearchParams();
-	params.append('activityName', activityName);
-	params.append('goodsUrl', goodsUrl);
-	params.append('productImg', productImg);
-	params.append('spreadNum', total);
-	params.append('serviceType', serviceType);
-	params.append('app', app);
-	params.append('sffl', sffl);
-	params.append('fanliPrice', fanliPrice);
-	params.append('doudianPrice', doudianPrice);
-	params.append('activityStartTime', activityStartTime);
-	params.append('categoryId', categoryId);
-	params.append('buyWay', buyWay);
-	params.append('buyerLabel', buyerLabel);
-	params.append('goodsShareUrl', goodsShareUrl);
-	params.append('goodsPassword', goodsPassword);
-	params.append('sfdf', sfdf);
-	params.append('shopId', shopId);
-	params.append('genderLabel', genderLabel);
-	params.append('ageLabel', ageLabel);
-	params.append('timeInterval', timeInterval);
-
 	try {
 		showToast('提交中...', 'loading');
-		const res = await fetch('https://qnzg.cn/api/dk/seller/activity/createWithNoUnion', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded'
-			},
-			body: params.toString()
+
+		// ==============================================
+		// 第一步：获取商品图片（只需调用一次）
+		// ==============================================
+		const previewRes = await fetch("/aspx/ApiProxy.aspx?cookie=" + encodedCookie, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				type: "preview",
+				app: currentShopType == "dy" ? 0 : 1,
+				goodsUrl: goodsUrl,
+				shopId: currentShopCode
+			})
 		});
-		const json = await res.json();
-		if (json.code == 200) {
-			showToast('创建成功', 'success');
-			$('#qnzgAddModal').modal('hide');
-		} else {
-			showToast('创建失败：' + (json.msg || '未知错误'), 'error');
+
+		const previewResult = await previewRes.json();
+		if (previewResult.code !== 200) {
+			showToast(previewResult.msg || '预览失败', 'error');
+			return;
 		}
+
+		const goodsImg = previewResult.data.goodsImg;
+		if (!goodsImg) {
+			showToast('未获取到商品图片', 'error');
+			return;
+		}
+
+		// ==============================================
+		// 第二步：获取页面所有时间段 + 逐个循环创建
+		// ==============================================
+		const timeItems = $('.time-order-input');
+		let successCount = 0;
+		let failCount = 0;
+
+		for (let i = 0; i < timeItems.length; i++) {
+			const item = $(timeItems[i]);
+			const hour = item.data('hour');
+			const spreadNum = parseInt(item.val() || 0);
+
+			if (spreadNum <= 0) continue;
+
+			// 拼接当前时间段的开始时间
+			const activityStartTime = `${activityDate} ${hour}:00:00`;
+
+			try {
+				// 逐个创建订单（串行，防止接口报错）
+				const createRes = await fetch("/aspx/ApiProxy.aspx?cookie=" + encodedCookie, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						type: "create",
+						activityName: activityName,
+						goodsUrl: goodsUrl,
+						productImg: productImg,
+						spreadNum: spreadNum,
+						serviceType: serviceType,
+						app: app,
+						sffl: sffl,
+						fanliPrice: fanliPrice,
+						doudianPrice: doudianPrice,
+						activityStartTime: activityStartTime,
+						categoryId: categoryId,
+						buyWay: buyWay,
+						buyerLabel: buyerLabel,
+						goodsShareUrl: goodsImg,
+						goodsPassword: goodsPassword,
+						sfdf: sfdf,
+						shopId: currentShopCode,
+						genderLabel: genderLabel,
+						ageLabel: ageLabel,
+						timeInterval: timeInterval
+					})
+				});
+
+				const createResult = await createRes.json();
+				if (createResult.code == 200) {
+					successCount++;
+				} else {
+					failCount++;
+					console.error("创建失败：" + createResult.msg);
+				}
+			} catch (e) {
+				failCount++;
+				console.error(e);
+			}
+		}
+
+		// ==============================================
+		// 最终结果
+		// ==============================================
+		if (failCount === 0) {
+			showToast(`创建成功！共创建 ${successCount} 个时段`, 'success');
+		} else {
+			showToast(`成功 ${successCount} 个，失败 ${failCount} 个`, 'warning');
+		}
+
+		$('#qnzgAddModal').modal('hide');
 	} catch (e) {
 		console.error(e);
 		showToast('网络请求失败', 'error');
 	}
-});
+};

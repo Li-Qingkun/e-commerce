@@ -571,6 +571,26 @@
         "ReleaseDate": "2026-03-05",
         "ReleaseQuantity": 2,
         "ReleaseName": "元PLUS脚垫/元UP脚垫"
+      },
+      {
+        "ReleaseDate": "2026-03-06",
+        "ReleaseQuantity": 0,
+        "ReleaseName": "元PLUS脚垫/元UP脚垫"
+      },
+      {
+        "ReleaseDate": "2026-03-07",
+        "ReleaseQuantity": 0,
+        "ReleaseName": "元PLUS脚垫/元UP脚垫"
+      },
+      {
+        "ReleaseDate": "2026-03-08",
+        "ReleaseQuantity": 0,
+        "ReleaseName": "元PLUS脚垫/元UP脚垫"
+      },
+      {
+        "ReleaseDate": "2026-03-09",
+        "ReleaseQuantity": 1,
+        "ReleaseName": "元PLUS脚垫/元UP脚垫"
       }
     ]
   },
@@ -597,8 +617,56 @@
       },
       {
         "ReleaseDate": "2026-03-05",
-        "ReleaseQuantity": 2,
+        "ReleaseQuantity": 0,
         "ReleaseName": "海狮06脚垫/比亚迪海豚脚垫"
+      },
+      {
+        "ReleaseDate": "2026-03-06",
+        "ReleaseQuantity": 0,
+        "ReleaseName": "海狮06脚垫/比亚迪海豚脚垫"
+      },
+      {
+        "ReleaseDate": "2026-03-07",
+        "ReleaseQuantity": 0,
+        "ReleaseName": "海狮06脚垫/比亚迪海豚脚垫"
+      },
+      {
+        "ReleaseDate": "2026-03-08",
+        "ReleaseQuantity": 0,
+        "ReleaseName": "海狮06脚垫/比亚迪海豚脚垫"
+      },
+      {
+        "ReleaseDate": "2026-03-09",
+        "ReleaseQuantity": 1,
+        "ReleaseName": "海狮06脚垫/比亚迪海豚脚垫"
+      }
+    ]
+  },
+  {
+    "ID": 1773028505549,
+    "Code": "3806617550930968934",
+    "Name": "大众途观L",
+    "SkuName": "",
+    "SkuPrice": "288",
+    "createTime": "2026-03-09T03:55:05.549Z",
+    "PostPictures": 0,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
+    "ReleasePlans": [
+      {
+        "ReleaseDate": "2026-03-09",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "Deli/得力TPE脚垫适用于大众途观L专用全包围汽车用品主驾驶lpro"
+      },
+      {
+        "ReleaseDate": "2026-03-10",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "TPE脚垫适用于大众途观L专用全包围lpro"
+      },
+      {
+        "ReleaseDate": "2026-03-11",
+        "ReleaseQuantity": 2,
+        "ReleaseName": "途观L脚垫"
       }
     ]
   }

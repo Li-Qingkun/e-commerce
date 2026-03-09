@@ -41,13 +41,15 @@
 				"shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be3",
 				"cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed",
 				"shopType": "dy",
-				"shopName": "得力沐璞汽车用品专卖店"
+				"shopName": "得力沐璞汽车用品专卖店",
+				"shopCode": "265396706"
 			},
 			{
 				"shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be4",
 				"cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4bed",
 				"shopType": "dy",
-				"shopName": "迈库雷汽车用品旗舰店"
+				"shopName": "迈库雷汽车用品旗舰店",
+				"shopCode": "246991168"
 			}
 		],
 		"createTime": "2026-02-12T09:43:02.396Z",
