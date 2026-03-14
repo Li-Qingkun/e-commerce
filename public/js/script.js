@@ -4697,7 +4697,7 @@ async function qnzgAdd() {
 	const activityName = "盲盒！随机发礼品";
 	const productImg = "https://h5.qnzg.cn/image.png";
 	const serviceType = 0;
-	const app = 0;
+	const app = currentShopType == "dy" ? 0 : 1;
 	const sffl = 2;
 	const fanliPrice = doudianPrice;
 	const categoryId = 20094;
