@@ -4522,6 +4522,7 @@ function initPlanSelectChangeEvent() {
 		// ===================== 生成时间段 =====================
 		generateTimeIntervals();
 	});
+	updateSfdfStatus();
 }
 
 // 生成时间段
@@ -4655,6 +4656,19 @@ function resetForm() {
 	$('#maxOrderLimit').text('上限：0 单');
 }
 
+// 控制是否代发单选框：dy可选择，tb禁用并默认否
+function updateSfdfStatus() {
+	const $radios = $('input[name="sfdf"]');
+	if (currentShopType === 'dy') {
+		// 抖音：启用，可选择
+		$radios.prop('disabled', false);
+	} else if (currentShopType === 'tb') {
+		// 淘宝：禁用，强制选 否(1)
+		$radios.prop('disabled', true);
+		$('input[name="sfdf"][value="1"]').prop('checked', true);
+	}
+}
+
 // 点击创建按钮
 async function qnzgAdd() {
 	if (!currentShopCode) {
@@ -4693,17 +4707,16 @@ async function qnzgAdd() {
 
 	const encodedCookie = encodeURIComponent(cookie);
 	const activityDate = formatDateOnly(new Date());
-
 	const activityName = "盲盒！随机发礼品";
 	const productImg = "https://h5.qnzg.cn/image.png";
 	const serviceType = 0;
 	const app = currentShopType == "dy" ? 0 : 1;
 	const sffl = 2;
 	const fanliPrice = doudianPrice;
-	const categoryId = 20094;
+	const categoryId = currentShopType == "dy" ? 20094 : 50016722;
 	const buyWay = 2;
 	const buyerLabel = 1;
-	const sfdf = 1;
+	const sfdf = $('input[name="sfdf"]:checked').val();
 	const timeInterval = 0;
 
 	try {
