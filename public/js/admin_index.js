@@ -12,8 +12,8 @@ const PAGE_MAP = {
 	'permission-config': {
 		path: '仪表盘 / 菜单权限配置'
 	},
-	'data-analysis': {
-		path: '仪表盘 / 数据分析'
+	'super-return-management': {
+		path: '仪表盘 / 超级返管理'
 	},
 	'recharge-records': {
 		path: '仪表盘 / 会员充值记录'
@@ -184,6 +184,8 @@ function loadPage(pageName, pagePath) {
 				window.initMenuManagement();
 			} else if (pageName === 'permission-config' && window.initPermissionConfig) {
 				window.initPermissionConfig();
+			} else if (pageName === 'super-return-management' && window.initSuperReturnManagement) {
+				window.initSuperReturnManagement();
 			}
 		} else {
 			$('#contentContainer').html(`
@@ -218,33 +220,34 @@ function readJsonFile(filePath) {
  * @returns {Promise} 保存结果Promise
  */
 function saveJsonFile(fullFilePath, data) {
-    // 1. 拆分完整路径为【目录路径】和【文件名】
-    // 示例：/data/menus.json → 目录路径：data，文件名：menus.json
-    const pathParts = fullFilePath.trimStart('/').split('/');
-    const fileName = pathParts.pop(); // 弹出最后一个元素作为文件名
-    const filePath = pathParts.join('/'); // 剩余部分作为目录路径
+	// 1. 拆分完整路径为【目录路径】和【文件名】
+	// 示例：/data/menus.json → 目录路径：data，文件名：menus.json
+	const pathParts = fullFilePath.trimStart('/').split('/');
+	const fileName = pathParts.pop(); // 弹出最后一个元素作为文件名
+	const filePath = pathParts.join('/'); // 剩余部分作为目录路径
 
-    // 2. 转换数据为JSON字符串（无需额外编码，后端直接接收）
-    const jsonData = JSON.stringify(data, null, 2);
+	// 2. 转换数据为JSON字符串（无需额外编码，后端直接接收）
+	const jsonData = JSON.stringify(data, null, 2);
 
-    // 3. 拼接符合后端要求的参数
-    const bodyParams = `fileName=${encodeURIComponent(fileName)}&filePath=${encodeURIComponent(filePath)}&data=${encodeURIComponent(jsonData)}`;
+	// 3. 拼接符合后端要求的参数
+	const bodyParams =
+		`fileName=${encodeURIComponent(fileName)}&filePath=${encodeURIComponent(filePath)}&data=${encodeURIComponent(jsonData)}`;
 
-    return fetch(`/aspx/SaveJsonFile.aspx`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
-        },
-        body: bodyParams
-    }).then(res => {
-        if (!res.ok) throw new Error(`HTTP请求失败：${res.status} ${res.statusText}`);
-        // 解析后端JSON响应
-        return res.json();
-    }).then(result => {
-        // 校验后端返回的success状态
-        if (!result.success) throw new Error(result.msg || '保存失败');
-        return result;
-    });
+	return fetch(`/aspx/SaveJsonFile.aspx`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+		},
+		body: bodyParams
+	}).then(res => {
+		if (!res.ok) throw new Error(`HTTP请求失败：${res.status} ${res.statusText}`);
+		// 解析后端JSON响应
+		return res.json();
+	}).then(result => {
+		// 校验后端返回的success状态
+		if (!result.success) throw new Error(result.msg || '保存失败');
+		return result;
+	});
 }
 
 window.readJsonFile = readJsonFile;

@@ -1,0 +1,279 @@
+<!-- 超级返管理页面 → 完全对齐用户管理风格 -->
+<div class="page-header">
+	<h2 class="page-title">超级返管理</h2>
+	<button class="btn-add-user" id="btnAddSuperReturn">
+		<i class="fa fa-plus"></i> 新增超级返
+	</button>
+</div>
+
+<div class="card">
+	<table class="table table-bordered table-hover">
+		<thead>
+			<tr>
+				<th>序号</th>
+				<th>ID</th>
+				<th>名称</th>
+				<th>手机号</th>
+				<th>Cookie</th>
+				<th>备注</th>
+				<th>创建时间</th>
+				<th>更新时间</th>
+				<th>操作</th>
+			</tr>
+		</thead>
+		<tbody id="superReturnTableBody">
+		</tbody>
+	</table>
+</div>
+
+<!-- 弹窗 → 完全复用系统CSS样式，解决坍塌问题 -->
+<div class="modal" id="superReturnModal">
+	<div class="modal-content">
+		<div class="modal-header">
+			<h3 class="modal-title" id="modalTitle">新增超级返</h3>
+			<i class="fa fa-times modal-close" id="modalClose" style="cursor: pointer;"></i>
+		</div>
+		<div class="modal-body">
+			<input type="hidden" id="id">
+
+			<div class="form-group">
+				<label for="name">名称 <span style="color:red">*</span></label>
+				<input type="text" id="name" class="form-control" placeholder="请输入超级返名称" autocomplete="off">
+			</div>
+			<div class="form-group">
+				<label for="phone">手机号 <span style="color:red">*</span></label>
+				<input type="text" id="phone" class="form-control" placeholder="请输入手机号" autocomplete="off">
+			</div>
+			<div class="form-group">
+				<label for="cookie">Cookie <span style="color:red">*</span></label>
+				<textarea id="cookie" class="form-control" rows="4" placeholder="请输入Cookie信息"></textarea>
+			</div>
+			<div class="form-group">
+				<label for="remark">备注</label>
+				<textarea id="remark" class="form-control" rows="2" placeholder="可选备注信息"></textarea>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn-cancel" id="btnModalCancel">取消</button>
+			<button class="btn-save" id="btnModalSave">保存</button>
+		</div>
+	</div>
+</div>
+
+<script>
+	let superReturnList = [];
+	const JSON_FILE_PATH = "/data/cjfInfo.json";
+
+	// 初始化
+	function initSuperReturnManagement() {
+		// 强制触发CSS样式渲染
+		$('#superReturnModal').css({
+			display: 'none',
+			opacity: 0
+		});
+		loadSuperReturnData();
+		bindEvents();
+	}
+
+	// 绑定事件
+	function bindEvents() {
+		// 新增
+		$('#btnAddSuperReturn').click(function() {
+			openModal('add');
+		});
+
+		// 编辑
+		$('#superReturnTableBody').on('click', '.btn-edit-user', function() {
+			const id = $(this).data('id');
+			const item = superReturnList.find(x => x.id === id);
+			if (!item) return;
+			openModal('edit', item);
+		});
+
+		// 删除
+		$('#superReturnTableBody').on('click', '.btn-delete-user', function() {
+			const id = $(this).data('id');
+			if (!confirm("确定删除这条超级返信息吗？")) return;
+
+			superReturnList = superReturnList.filter(x => x.id !== id);
+			saveSuperReturnData().then(() => {
+				showToast("删除成功", "success");
+				recordOperationLog("超级返管理", `删除超级返：${id}`);
+			}).catch(() => {
+				showToast("删除失败", "error");
+			});
+		});
+
+		// 关闭弹窗
+		$('#modalClose, #btnModalCancel').click(function() {
+			closeModal();
+		});
+
+		// 点击外部关闭
+		$('#superReturnModal').click(function(e) {
+			if (e.target === this) closeModal();
+		});
+		$('.modal-content').click(function(e) {
+			e.stopPropagation();
+		});
+
+		// 保存
+		$('#btnModalSave').click(function() {
+			saveFormData();
+		});
+	}
+
+	// 打开弹窗
+	function openModal(type, data = {}) {
+		// 重置表单
+		$('#name').val('').removeClass('error');
+		$('#phone').val('').removeClass('error');
+		$('#cookie').val('').removeClass('error');
+		$('#remark').val('');
+		$('#id').val('');
+
+		if (type === 'edit') {
+			$('#modalTitle').text('编辑超级返');
+			$('#id').val(data.id);
+			$('#name').val(data.name);
+			$('#phone').val(data.phone);
+			$('#cookie').val(data.cookie);
+			$('#remark').val(data.remark);
+		} else {
+			$('#modalTitle').text('新增超级返');
+		}
+
+		// 显示弹窗并应用系统样式
+		$('#superReturnModal').addClass('show').css({
+			display: 'flex',
+			justifyContent: 'center',
+			alignItems: 'center',
+			opacity: 1
+		});
+		// 强制重绘
+		$('.modal-content').css({
+			transform: 'scale(1)',
+			opacity: 1
+		});
+	}
+
+	// 关闭弹窗
+	function closeModal() {
+		$('#superReturnModal').removeClass('show').css({
+			display: 'none',
+			opacity: 0
+		});
+		$('.modal-content').css({
+			transform: 'scale(0.95)',
+			opacity: 0
+		});
+	}
+
+	// 加载数据
+	function loadSuperReturnData() {
+		readJsonFile(JSON_FILE_PATH).then(data => {
+			superReturnList = data || [];
+			renderTable();
+		}).catch(err => {
+			showToast("数据加载失败：" + err.message, "error");
+		});
+	}
+
+	// 渲染表格
+	function renderTable() {
+		const $tbody = $('#superReturnTableBody');
+		$tbody.empty();
+
+		if (!superReturnList.length) {
+			$tbody.html(`<tr><td colspan="9" class="empty-tip">暂无数据</td></tr>`);
+			return;
+		}
+
+		superReturnList.forEach((item, index) => {
+			const tr = $(`
+		<tr data-id="${item.id}">
+			<td>${index + 1}</td>
+			<td style="max-width:180px;word-break:break-all;">${item.id}</td>
+			<td>${item.name}</td>
+			<td>${item.phone}</td>
+			<td style="max-width:260px;white-space:normal;word-break:break-all;">${item.cookie}</td>
+			<td>${item.remark || '-'}</td>
+			<td>${formatTime(item.createTime)}</td>
+			<td>${formatTime(item.updateTime)}</td>
+			<td>
+				<button class="btn btn-sm btn-primary btn-edit-user" data-id="${item.id}" style="margin-right:5px;">
+					<i class="fa fa-edit"></i> 编辑
+				</button>
+				<button class="btn btn-sm btn-danger btn-delete-user" data-id="${item.id}">
+					<i class="fa fa-trash"></i> 删除
+				</button>
+			</td>
+		</tr>`);
+			$tbody.append(tr);
+		});
+	}
+
+	// 保存表单数据
+	function saveFormData() {
+		const formData = {
+			id: $('#id').val() || window.generateUUID(),
+			name: $('#name').val().trim(),
+			phone: $('#phone').val().trim(),
+			cookie: $('#cookie').val().trim(),
+			remark: $('#remark').val().trim(),
+			createTime: $('#id').val() ?
+				superReturnList.find(x => x.id === $('#id').val()).createTime :
+				new Date().toISOString(),
+			updateTime: new Date().toISOString()
+		};
+
+		// 表单验证
+		if (!formData.name) {
+			showToast("请输入超级返名称", "error");
+			$('#name').addClass('error');
+			return;
+		}
+		if (!formData.phone) {
+			showToast("请输入手机号", "error");
+			$('#phone').addClass('error');
+			return;
+		}
+		if (!formData.cookie) {
+			showToast("请输入Cookie信息", "error");
+			$('#cookie').addClass('error');
+			return;
+		}
+
+		// 更新数据列表
+		if ($('#id').val()) {
+			const idx = superReturnList.findIndex(x => x.id === formData.id);
+			if (idx >= 0) superReturnList[idx] = formData;
+		} else {
+			superReturnList.push(formData);
+		}
+
+		// 保存到文件
+		saveSuperReturnData().then(() => {
+			closeModal();
+			showToast("保存成功", "success");
+			recordOperationLog("超级返管理", `${formData.id ? "编辑" : "新增"}超级返：${formData.name}`);
+			loadSuperReturnData();
+		}).catch(() => {
+			showToast("保存失败", "error");
+		});
+	}
+
+	// 保存到JSON文件
+	function saveSuperReturnData() {
+		return saveJsonFile(JSON_FILE_PATH, superReturnList);
+	}
+
+	// 时间格式化
+	function formatTime(timeStr) {
+		if (!timeStr) return "-";
+		return new Date(timeStr).toLocaleString();
+	}
+
+	// 挂载全局函数
+	window.initSuperReturnManagement = initSuperReturnManagement;
+</script>

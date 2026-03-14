@@ -1,5 +1,45 @@
 ﻿[
   {
+    "logId": "log_1773477482804_b0wrjselw",
+    "operationType": "超级返管理",
+    "operationDesc": "编辑超级返：路登三-临沂超级返",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-14T08:38:02.804Z",
+    "operationTimeStr": "2026/3/14 16:38:02",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1773477126500_hb47lxet9",
+    "operationType": "超级返管理",
+    "operationDesc": "删除超级返：log_1773477107033_hw6ddexi6",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-14T08:32:06.500Z",
+    "operationTimeStr": "2026/3/14 16:32:06",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1773477123845_dtqs5fobo",
+    "operationType": "超级返管理",
+    "operationDesc": "编辑：111",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-14T08:32:03.845Z",
+    "operationTimeStr": "2026/3/14 16:32:03",
+    "ip": "127.0.0.1"
+  },
+  {
+    "logId": "log_1773477108208_xxws27nzt",
+    "operationType": "超级返管理",
+    "operationDesc": "编辑：111",
+    "operator": "admin",
+    "status": "success",
+    "operationTime": "2026-03-14T08:31:48.208Z",
+    "operationTimeStr": "2026/3/14 16:31:48",
+    "ip": "127.0.0.1"
+  },
+  {
     "logId": "log_1772618183085_poa0h33vb",
     "operationType": "编辑用户",
     "operationDesc": "编辑用户【李庆坤】成功",
