@@ -15,8 +15,12 @@
 						<button type="button" class="btn btn-sm btn-primary setting-tab"
 							data-target="setting-postpic">晒图相关</button>
 						<button type="button" class="btn btn-sm btn-default setting-tab"
+							data-target="setting-shop">店铺设置</button>
+						<button type="button" class="btn btn-sm btn-default setting-tab"
 							data-target="setting-other">其他设置</button>
 					</div>
+
+					<!-- 晒图相关 -->
 					<div class="setting-group" id="setting-postpic">
 						<h5 class="setting-group-title">
 							<i class="fa fa-picture-o"></i> 晒图相关
@@ -44,6 +48,44 @@
 							<small class="text-muted">从提醒天数往后顺延连续几天提醒</small>
 						</div>
 					</div>
+
+					<!-- ===================== 新增：店铺设置 ===================== -->
+					<div class="setting-group" id="setting-shop" style="display:none;">
+						<h5 class="setting-group-title">
+							<i class="fa fa-shopping-bag"></i> 店铺设置
+						</h5>
+						<div class="form-group">
+							<label>店铺名</label>
+							<select class="form-control" id="shopSettingShopName">
+								<option value="">请选择店铺</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>店铺短ID
+								<i class="fa fa-question-circle text-primary"
+									style="margin-left:5px; font-size:16px; cursor:pointer;" data-toggle="modal"
+									data-target="#shopIdHelpModal">
+								</i></label>
+							<input type="text" class="form-control" id="shopSettingShopCode" placeholder="请输入店铺短ID">
+						</div>
+						<div class="form-group">
+							<label>超级返账户</label>
+							<select class="form-control" id="shopSettingCjfAccount">
+								<option value="">请选择超级返账户</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>店铺平台</label>
+							<select class="form-control" id="shopSettingShopType">
+								<option value="">请选择店铺类型</option>
+								<option value="tb">天猫 / 淘宝</option>
+								<option value="dy">抖音</option>
+								<option value="pdd">拼多多</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- 其他设置 -->
 					<div class="setting-group" id="setting-other" style="display:none;">
 						<h5 class="setting-group-title">
 							<i class="fa fa-cog"></i> 其他设置
@@ -58,6 +100,41 @@
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
 				<button type="button" class="btn btn-primary" id="btnSaveSystemSettings">保存设置</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- ===================== 店铺短ID 帮助弹窗 ===================== -->
+<div class="modal fade" id="shopIdHelpModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">如何查看店铺短ID</h4>
+			</div>
+			
+			<div class="modal-body">
+				<!-- 切换按钮 -->
+				<div style="text-align:center; margin-bottom:20px;">
+					<button class="btn btn-primary platform-btn" data-platform="dy">抖音</button>
+					<button class="btn btn-default platform-btn" data-platform="tb">天猫 / 淘宝</button>
+					<!-- <button class="btn btn-default platform-btn" data-platform="pdd">拼多多</button> -->
+				</div>
+
+				<!-- 图片显示区域 -->
+				<div class="help-image-box text-center">
+					<img id="helpPlatformImage" 
+					     src="images/抖音-短ID查看.png" 
+					     style="max-width:100%; height:auto; border-radius:4px;" 
+					     alt="店铺ID查看教程">
+				</div>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
 			</div>
 		</div>
 	</div>

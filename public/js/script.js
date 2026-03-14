@@ -1959,7 +1959,7 @@ function initShopSwitcher() {
 				shopId: currentShopId,
 				shopType: currentShopType,
 				shopName: currentShopName,
-				shopCode: currentshopCode
+				shopCode: currentShopCode
 			}));
 
 			// 加载对应店铺数据
@@ -2394,7 +2394,7 @@ async function queryOrderData() {
 
 		const cjfId = getCjfIdByShopName(shopName);
 		if (!cjfId) {
-			showToast('未找到该店铺对应的cjfId', 'error');
+			showToast('店铺未绑定超级返账户，请前往【账户→设置→店铺设置】中更新绑定', 'error');
 			return;
 		}
 
@@ -2556,18 +2556,20 @@ function renderOrderTable(orderList) {
 		const innerOrderNo = ''; // 内部单号为空
 		const orderId = order.orderId || '';
 		const feigeAccount = ''; // 飞鸽账号为空
-		const doudianPrice = order.doudianPrice ? (order.doudianPrice / 100).toFixed(0) : '0'; // 本金（转元，取整）
-		const spreadUnitPrice = order.spreadUnitPrice ? (order.spreadUnitPrice / 100).toFixed(0) :
+		const doudianPrice = order.doudianPrice ? (order.doudianPrice / 100).toFixed(2) : '0'; // 本金（转元，取整）
+		const spreadUnitPrice = order.spreadUnitPrice ? (order.spreadUnitPrice / 100).toFixed(2) :
 			'0'; // 佣金（转元，取整）
-		const goldCoinCosts = order.goldCoinCosts ? (order.goldCoinCosts / 100).toFixed(0) : '0'; // 金币（转元，取整）
+		const goldCoinCosts = order.goldCoinCosts ? (order.goldCoinCosts / 100).toFixed(2) : '0'; // 金币（转元，取整）
 		const evaluateCost = '0'; // 评价花费为0
 
 		// 计算合计：本金+佣金+金币+评价花费
-		const total = (parseInt(doudianPrice) + parseInt(spreadUnitPrice) + parseInt(goldCoinCosts) + parseInt(
-			evaluateCost)).toString();
+		const total = (parseFloat(doudianPrice) + parseFloat(spreadUnitPrice) + parseFloat(goldCoinCosts) +
+			parseFloat(
+				evaluateCost)).toString();
 		const remark = ''; // 备注为空
 		// 计算佣金合计：佣金+金币+评价花费
-		const commissionTotal = (parseInt(spreadUnitPrice) + parseInt(goldCoinCosts) + parseInt(evaluateCost))
+		const commissionTotal = (parseFloat(spreadUnitPrice) + parseFloat(goldCoinCosts) + parseFloat(
+				evaluateCost))
 			.toString();
 
 		// ========== 核心修改：适配Excel原生格式 ==========
@@ -2795,6 +2797,23 @@ function initUserDropdown() {
  * 绑定页面事件
  */
 function bindEvents() {
+
+	// 平台图片配置（把这里换成你的真实图片地址）
+	const platformImages = {
+		dy: "images/抖音-短ID查看.png", // 抖音图片
+		tb: "images/天猫-短ID查看.png", // 天猫/淘宝图片
+		pdd: "images/拼多多-短ID查看.jpg" // 拼多多图片
+	};
+
+	$('.platform-btn').off('click').on('click', function() {
+		$(".platform-btn").removeClass("btn-primary").addClass("btn-default");
+		$(this).removeClass("btn-default").addClass("btn-primary");
+
+		// 切换图片
+		let p = $(this).data("platform");
+		$("#helpPlatformImage").attr("src", platformImages[p]);
+	});
+
 	// 功能按钮事件
 	$('#btnAdd').off('click').click(showAddPlanModal);
 	$('#btnLoadData').off('click').click(loadDataFromJson);
@@ -4156,10 +4175,7 @@ function initSystemSettingSelects() {
 	}
 }
 
-/**
- * 打开系统设置模态框
- */
-function openSystemSettingModal() {
+async function openSystemSettingModal() {
 	initSystemSettingSelects();
 
 	const user = USER_INFO_LIST.find(u => u.userName === currentUserName);
@@ -4173,7 +4189,48 @@ function openSystemSettingModal() {
 	$('#postPictureReminderDay').val(set.postPictureReminderDay || '');
 	$('#postPictureReminderTimes').val(set.postPictureReminderTimes || '');
 
-	// 绑定标签切换
+	// ===================== 加载店铺下拉 =====================
+	const $shopSelect = $('#shopSettingShopName');
+	$shopSelect.empty().append('<option value="">请选择店铺</option>');
+	if (user.shopList && user.shopList.length) {
+		user.shopList.forEach(shop => {
+			$shopSelect.append(`<option value="${shop.shopId}">${shop.shopName}</option>`);
+		});
+	}
+
+	// ===================== 加载超级返账户下拉 =====================
+	const $cjfSelect = $('#shopSettingCjfAccount');
+	$cjfSelect.empty().append('<option value="">请选择超级返账户</option>');
+	try {
+		const res = await fetch('/data/cjfInfo.json', {
+			cache: 'no-cache'
+		});
+		const cjfList = await res.json() || [];
+		cjfList.forEach(item => {
+			$cjfSelect.append(`<option value="${item.id}">${item.name}</option>`);
+		});
+	} catch (e) {
+		console.error('加载超级返账户失败', e);
+	}
+
+	// 店铺切换时自动回填已有数据
+	$('#shopSettingShopName').off('change').on('change', function() {
+		const shopId = $(this).val();
+		if (!shopId) {
+			$('#shopSettingShopCode').val('');
+			$('#shopSettingShopType').val('');
+			$('#shopSettingCjfAccount').val('');
+			return;
+		}
+		const shop = user.shopList.find(s => s.shopId === shopId);
+		if (shop) {
+			$('#shopSettingShopCode').val(shop.shopCode || '');
+			$('#shopSettingShopType').val(shop.shopType || '');
+			$('#shopSettingCjfAccount').val(shop.cjfId || '');
+		}
+	});
+
+	// 标签切换
 	$('.setting-tab').off('click').on('click', function() {
 		$('.setting-tab').removeClass('btn-primary').addClass('btn-default');
 		$(this).removeClass('btn-default').addClass('btn-primary');
@@ -4181,15 +4238,6 @@ function openSystemSettingModal() {
 		$('.setting-group').hide();
 		$(`#${target}`).show();
 	});
-
-	// 绑定勾选联动
-	// $('#postPictureReminderEnabled').off('change').on('change', function() {
-	// 	const enable = $(this).is(':checked');
-	// 	if (!enable) {
-	// 		$('#postPictureReminderDay').val('');
-	// 		$('#postPictureReminderTimes').val('');
-	// 	}
-	// });
 
 	$('#systemSettingModal').modal('show');
 }
@@ -4204,11 +4252,11 @@ async function saveSystemSettings() {
 		return;
 	}
 
+	// 保存晒图设置
 	const enabled = $('#postPictureReminderEnabled').is(':checked');
 	const day = $('#postPictureReminderDay').val();
 	const times = $('#postPictureReminderTimes').val();
 
-	// 只有勾选了才验证
 	if (enabled && (!day || !times)) {
 		showToast('请选择完整的提醒天数和次数', 'warning');
 		return;
@@ -4219,12 +4267,35 @@ async function saveSystemSettings() {
 		postPictureReminderDay: parseInt(day),
 		postPictureReminderTimes: parseInt(times)
 	};
-	user.updateTime = new Date().toISOString();
 
+	// ===================== 保存店铺设置 =====================
+	const shopId = $('#shopSettingShopName').val();
+	const shopCode = $('#shopSettingShopCode').val().trim();
+	const shopType = $('#shopSettingShopType').val();
+	const cjfId = $('#shopSettingCjfAccount').val();
+
+	if (shopId) {
+		const shop = user.shopList.find(s => s.shopId === shopId);
+		if (shop) {
+			shop.shopCode = shopCode;
+			shop.shopType = shopType;
+			shop.cjfId = cjfId;
+			currentShopType = shopType;
+			currentShopCode = shopCode;
+		}
+	}
+
+	user.updateTime = new Date().toISOString();
 	const res = await saveUserInfoToJson();
+
 	if (res.success) {
-		showToast('系统设置保存成功', 'success');
+		showToast('系统设置 + 店铺设置保存成功', 'success');
 		$('#systemSettingModal').modal('hide');
+
+		// 保存后刷新店铺信息
+		await loadUserInfoFromJson();
+		getUserShopList();
+		initShopSwitcher();
 	} else {
 		showToast('保存失败：' + res.msg, 'error');
 	}
@@ -4586,6 +4657,15 @@ function resetForm() {
 
 // 点击创建按钮
 async function qnzgAdd() {
+	if (!currentShopCode) {
+		showToast('店铺未绑定店铺短ID，请前往【账户→设置→店铺设置】中更新绑定', 'error');
+		return;
+	}
+	if (!currentShopType) {
+		showToast('店铺未绑定店铺平台，请前往【账户→设置→店铺设置】中更新绑定', 'error');
+		return;
+	}
+
 	if (!currentSelectedPlan) {
 		showToast('请先选择刷单计划', 'warning');
 		return;
@@ -4634,7 +4714,9 @@ async function qnzgAdd() {
 		// ==============================================
 		const previewRes = await fetch("/aspx/ApiProxy.aspx?cookie=" + encodedCookie, {
 			method: "POST",
-			headers: { "Content-Type": "application/json" },
+			headers: {
+				"Content-Type": "application/json"
+			},
 			body: JSON.stringify({
 				type: "preview",
 				app: currentShopType == "dy" ? 0 : 1,
@@ -4676,7 +4758,9 @@ async function qnzgAdd() {
 				// 逐个创建订单（串行，防止接口报错）
 				const createRes = await fetch("/aspx/ApiProxy.aspx?cookie=" + encodedCookie, {
 					method: "POST",
-					headers: { "Content-Type": "application/json" },
+					headers: {
+						"Content-Type": "application/json"
+					},
 					body: JSON.stringify({
 						type: "create",
 						activityName: activityName,
