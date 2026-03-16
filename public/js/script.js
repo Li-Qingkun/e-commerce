@@ -63,7 +63,8 @@ async function loadAllModals() {
 	const $container = $("#modalContainer");
 	for (let file of modalFiles) {
 		try {
-			const html = await fetch(`ss_model/${file}`).then(res => res.text());
+			const timestamp = new Date().getTime();
+			const html = await fetch(`ss_model/${file}?v=${timestamp}`).then(res => res.text());
 			$container.append(html);
 		} catch (e) {
 			console.error("加载模态框失败：", file, e);
