@@ -585,7 +585,10 @@ function renderDynamicMenu() {
 				if (page === 'priceRecord') {
 					openPriceRecordModal();
 				} else if (page === 'factoryPattern') {
-					openFactoryPatternModal();
+					// openFactoryPatternModal();
+					// 供应链知识库
+					window.open('https://sax5ic6vhb.jiandaoyun.com/sharedoc/3zJ496qjm1nD1G4mIIMqjI',
+						'_blank');
 				}
 			});
 		}
@@ -633,6 +636,10 @@ function bindMenuClickEvents() {
 					initPlanSelectChangeEvent();
 				}, 100);
 				break;
+			// case 'factoryPattern':
+			// 	// 供应链知识库
+			// 	window.open('https://sax5ic6vhb.jiandaoyun.com/sharedoc/3zJ496qjm1nD1G4mIIMqjI', '_blank');
+			// 	break;
 			default:
 				// 其他菜单（如有需要扩展）
 				showToast(`菜单【${$this.text().trim()}】暂未配置功能`, 'warning');
