@@ -10,12 +10,11 @@
         "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be1",
         "shopName": "众合祥汽车配件",
         "shopType": "dy",
-        "cjfId": "",
-        "shopCode": ""
+        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4bed"
       }
     ],
     "createTime": "2026-02-12T09:40:56.599Z",
-    "updateTime": "2026-03-14T06:02:22.572Z",
+    "updateTime": "2026-03-03T05:40:04.171Z",
     "systemSettings": {
       "postPictureReminderEnabled": true,
       "postPictureReminderDay": 1,
@@ -23,48 +22,31 @@
     }
   },
   {
-    "id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
-    "userName": "111",
-    "password": "111",
-    "role": "admin",
-    "memberExpireTime": "2027-02-12",
-    "shopList": [
-      {
-        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be2",
-        "shopName": "111"
-      }
-    ],
-    "createTime": "2026-02-12T09:41:09.656Z",
-    "updateTime": "2026-02-16T06:58:47.176Z"
-  },
-  {
     "id": "7b7c8d8c-9999-4999-8999-999999999999",
     "userName": "李庆坤",
     "password": "lqk",
     "role": "vip",
-    "memberExpireTime": "2026-03-16",
+    "memberExpireTime": "2026-04-17",
     "shopList": [
       {
         "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be3",
         "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed",
         "shopType": "dy",
-        "shopName": "得力沐璞汽车用品专卖店",
+        "shopName": "得力沐璞专卖店",
         "shopCode": "265396706"
       },
       {
         "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be4",
         "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4bed",
-        "shopType": "dy",
-        "shopName": "迈库雷汽车用品旗舰店",
-        "shopCode": "246991168"
+        "shopName": "迈库雷汽车用品旗舰店"
       }
     ],
     "createTime": "2026-02-12T09:43:02.396Z",
-    "updateTime": "2026-03-04T09:56:03.619Z",
+    "updateTime": "2026-03-21T13:33:13.428Z",
     "systemSettings": {
       "postPictureReminderEnabled": true,
       "postPictureReminderDay": 7,
-      "postPictureReminderTimes": 2
+      "postPictureReminderTimes": 1
     }
   },
   {
@@ -129,17 +111,19 @@
     "id": "7b7c8d8c-9999-4999-8999-999999999997",
     "userName": "zem",
     "password": "yunying001",
-    "role": "normal",
+    "role": "vip",
     "shopList": [
       {
         "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4b10",
+        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed",
         "shopName": "得力堪卢专卖店",
         "shopType": "tb",
-        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6bed"
+        "shopCode": "342701982"
       }
     ],
     "createTime": "2026-02-23T10:04:07.202Z",
-    "updateTime": "2026-02-23T10:04:07.202Z"
+    "updateTime": "2026-03-05T01:25:23.056Z",
+    "memberExpireTime": "2027-03-05"
   },
   {
     "id": "7b7c8d8c-9999-4999-8999-999999999996",
@@ -172,5 +156,37 @@
     ],
     "createTime": "2026-02-28T01:28:32.232Z",
     "updateTime": "2026-02-28T01:28:32.232Z"
+  },
+  {
+    "id": "user_mmol6xj9_1hda6b6dyqm_yzlccxu8bgj",
+    "userName": "东方",
+    "password": "dongfang123",
+    "role": "vip",
+    "memberExpireTime": "2026-04-14",
+    "shopList": [
+      {
+        "cjfId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd6be1",
+        "shopId": "1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd2b12",
+        "shopType": "dy",
+        "shopName": "炳煜汽车用品",
+        "shopCode": "206311078"
+      }
+    ],
+    "createTime": "2026-03-13T07:40:05.061Z",
+    "updateTime": "2026-03-13T07:40:29.201Z"
+  },
+  {
+    "id": "user_mmq5ph36_mi6v33b6yjs_d0zpt2kzla",
+    "userName": "爱坤和风动",
+    "password": "123456",
+    "role": "vip",
+    "memberExpireTime": "2026-04-15",
+    "shopList": [
+      {
+        "shopName": "众合祥旗舰店"
+      }
+    ],
+    "createTime": "2026-03-14T10:02:08.706Z",
+    "updateTime": "2026-03-14T10:10:43.177Z"
   }
 ]

@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "menu_1001",
     "name": "超级返平台",
@@ -34,10 +34,10 @@
     "icon": "fa fa-table",
     "page": "priceRecord",
     "parentId": "",
-    "sort": 1,
+    "sort": 2,
     "isVip": false,
     "status": "enable",
-    "id": "menu_1772175059635"
+    "id": "menu_1772180744466"
   },
   {
     "name": "创建推广订单",
@@ -47,16 +47,16 @@
     "sort": 2,
     "isVip": true,
     "status": "enable",
-    "id": "menu_1772526667590"
+    "id": "menu_1772524242941"
   },
   {
-    "name": "工厂版型表",
+    "name": "供应链知识库",
     "icon": "fa fa-info-circle",
     "page": "factoryPattern",
     "parentId": "",
     "sort": 3,
     "isVip": false,
     "status": "enable",
-    "id": "menu_1772527020462"
+    "id": "menu_1772526990101"
   }
 ]

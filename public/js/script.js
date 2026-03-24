@@ -636,10 +636,10 @@ function bindMenuClickEvents() {
 					initPlanSelectChangeEvent();
 				}, 100);
 				break;
-			// case 'factoryPattern':
-			// 	// 供应链知识库
-			// 	window.open('https://sax5ic6vhb.jiandaoyun.com/sharedoc/3zJ496qjm1nD1G4mIIMqjI', '_blank');
-			// 	break;
+				// case 'factoryPattern':
+				// 	// 供应链知识库
+				// 	window.open('https://sax5ic6vhb.jiandaoyun.com/sharedoc/3zJ496qjm1nD1G4mIIMqjI', '_blank');
+				// 	break;
 			default:
 				// 其他菜单（如有需要扩展）
 				showToast(`菜单【${$this.text().trim()}】暂未配置功能`, 'warning');
@@ -684,7 +684,7 @@ async function loadAndRenderViewTable() {
 		const allRecords = await response.json();
 		const userId = currentUserInfo?.id || ''; // 获取当前用户ID
 		const currentShopData = allRecords.find(item =>
-			item.shopId === currentShopId && item.shopName === currentShopName
+			item.shopId === currentShopId
 		);
 
 		if (!currentShopData || !currentShopData.skuDetails || currentShopData.skuDetails.length === 0) {
@@ -989,7 +989,7 @@ async function loadPriceRecords() {
 		// 找到当前店铺的数据
 		const userId = currentUserInfo?.id || '';
 		const currentShopData = priceRecords.find(item =>
-			item.shopId === currentShopId && item.shopName === currentShopName
+			item.shopId === currentShopId
 		);
 		if (currentShopData) {
 			// 渲染优惠券配置
@@ -1140,7 +1140,7 @@ async function savePriceRecords() {
 
 		// 4. 更新全局数组（单文件存储）
 		const existingIndex = priceRecords.findIndex(item =>
-			item.shopId === currentShopId && item.shopName === currentShopName
+			item.shopId === currentShopId
 		);
 		if (existingIndex >= 0) {
 			priceRecords[existingIndex] = currentShopData;
@@ -2440,8 +2440,9 @@ async function queryOrderData() {
 
 		// 处理返回结果（逻辑和原来一致）
 		if (result.code === 200 && result.data && result.data.list) {
-			renderOrderTable(result.data.list);
-			showToast(`查询成功，共找到 ${result.data.list.length} 条订单`, 'success');
+			const datas = result.data.list.filter(item => item.exemptSeller === 0)
+			renderOrderTable(datas);
+			showToast(`查询成功，共找到 ${datas.length} 条扣费订单`, 'success');
 		} else {
 			$('#orderResultTableBody').html(`
                 <tr>
@@ -2556,35 +2557,37 @@ function renderOrderTable(orderList) {
 
 	// 渲染每一行订单数据（适配Excel原生格式）
 	orderList.forEach((order, index) => {
-		// 字段映射和单位转换（接口返回的是分，转换为元）
-		const productId = order.productId || '';
-		const paySuccessTime = formatPayTime(order.paySuccessTime ? order.paySuccessTime.split(' ')[0] :
-			''); // 只保留日期部分
-		const shopName = order.shopName || '';
-		const innerOrderNo = ''; // 内部单号为空
-		const orderId = order.orderId || '';
-		const feigeAccount = ''; // 飞鸽账号为空
-		const doudianPrice = order.doudianPrice ? (order.doudianPrice / 100).toFixed(2) : '0'; // 本金（转元，取整）
-		const spreadUnitPrice = order.spreadUnitPrice ? (order.spreadUnitPrice / 100).toFixed(2) :
-			'0'; // 佣金（转元，取整）
-		const goldCoinCosts = order.goldCoinCosts ? (order.goldCoinCosts / 100).toFixed(2) : '0'; // 金币（转元，取整）
-		const evaluateCost = '0'; // 评价花费为0
+		if (order.exemptSeller === 0) {
+			// 字段映射和单位转换（接口返回的是分，转换为元）
+			const productId = order.productId || '';
+			const paySuccessTime = formatPayTime(order.paySuccessTime ? order.paySuccessTime.split(' ')[0] :
+				''); // 只保留日期部分
+			const shopName = order.shopName || '';
+			const innerOrderNo = ''; // 内部单号为空
+			const orderId = order.orderId || '';
+			const feigeAccount = ''; // 飞鸽账号为空
+			const doudianPrice = order.doudianPrice ? (order.doudianPrice / 100).toFixed(2) : '0'; // 本金（转元，取整）
+			const spreadUnitPrice = order.spreadUnitPrice ? (order.spreadUnitPrice / 100).toFixed(2) :
+				'0'; // 佣金（转元，取整）
+			const goldCoinCosts = order.goldCoinCosts ? (order.goldCoinCosts / 100).toFixed(2) :
+			'0'; // 金币（转元，取整）
+			const evaluateCost = '0'; // 评价花费为0
 
-		// 计算合计：本金+佣金+金币+评价花费
-		const total = (parseFloat(doudianPrice) + parseFloat(spreadUnitPrice) + parseFloat(goldCoinCosts) +
-			parseFloat(
-				evaluateCost)).toString();
-		const remark = ''; // 备注为空
-		// 计算佣金合计：佣金+金币+评价花费
-		const commissionTotal = (parseFloat(spreadUnitPrice) + parseFloat(goldCoinCosts) + parseFloat(
-				evaluateCost))
-			.toString();
+			// 计算合计：本金+佣金+金币+评价花费
+			const total = (parseFloat(doudianPrice) + parseFloat(spreadUnitPrice) + parseFloat(goldCoinCosts) +
+				parseFloat(
+					evaluateCost)).toString();
+			const remark = ''; // 备注为空
+			// 计算佣金合计：佣金+金币+评价花费
+			const commissionTotal = (parseFloat(spreadUnitPrice) + parseFloat(goldCoinCosts) + parseFloat(
+					evaluateCost))
+				.toString();
 
-		// ========== 核心修改：适配Excel原生格式 ==========
-		// 1. 移除多余样式，使用纯文本格式
-		// 2. 添加data-excel-value属性存储纯文本值（用于复制）
-		// 3. 单元格内容仅保留纯文本，无HTML标签
-		const $tr = $(`
+			// ========== 核心修改：适配Excel原生格式 ==========
+			// 1. 移除多余样式，使用纯文本格式
+			// 2. 添加data-excel-value属性存储纯文本值（用于复制）
+			// 3. 单元格内容仅保留纯文本，无HTML标签
+			const $tr = $(`
             <tr style="height:25px;">
                 <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px;" data-excel-value="${productId}">${productId}</td>
                 <td style="padding:2px 5px; border:1px solid #ddd; font-size:12px;" data-excel-value="${paySuccessTime}">${paySuccessTime}</td>
@@ -2602,7 +2605,8 @@ function renderOrderTable(orderList) {
             </tr>
         `);
 
-		$tbody.append($tr);
+			$tbody.append($tr);
+		}
 	});
 }
 

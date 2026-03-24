@@ -355,7 +355,11 @@ function handleRegister() {
 		.map(shop => shop.trim())
 		.filter(shop => shop)
 		.map(shop => ({
-			shopName: shop
+			cjfId: '',
+			shopId: generateSecureUUID,
+			shopName: shop,
+			shopType: '',
+			shopCode: ''
 		}));
 
 	// 先获取现有用户数据

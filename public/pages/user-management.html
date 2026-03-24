@@ -526,7 +526,10 @@
 	}
 
 	/**
-	 * 保存用户
+	 * 保存用户（最终完美版）
+	 * 1. 修改店铺名 = 只改名，保留所有原有字段
+	 * 2. ID 格式：1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be3
+	 * 3. 完整保留 systemSettings / shopType / shopCode / cjfId
 	 */
 	function saveUser() {
 		const editUserName = $('#editUserName').val().trim();
@@ -534,9 +537,9 @@
 		const password = $('#modalPassword').val().trim();
 		const userRole = $('#modalRole').val() || 'normal';
 		const shopInput = $('#modalShopList').val().trim();
-		const originalShopList = JSON.parse($('#originalShopList').val() || '[]'); // 原始店铺完整数据
+		const originalShopList = JSON.parse($('#originalShopList').val() || '[]');
 
-		// 新增：获取会员到期时间
+		// 会员到期时间
 		let memberExpireTime = '';
 		if (userRole === 'vip') {
 			memberExpireTime = $('#modalMemberExpireTime').val();
@@ -547,7 +550,7 @@
 			}
 		}
 
-		// 保护逻辑
+		// 保护管理员
 		if (editUserName === PROTECTED_ADMIN_USER && userRole !== 'admin') {
 			showToast('超级管理员账户身份禁止修改！', 'error');
 			recordOperationLog('编辑用户', `尝试修改超级管理员【${editUserName}】身份，操作被拒绝`, 'fail');
@@ -557,87 +560,93 @@
 		// 基础校验
 		if (!userName) {
 			showToast('请输入用户名！', 'error');
-			recordOperationLog(editUserName ? '编辑用户' : '新增用户', `用户名为空，操作失败`, 'fail');
 			return;
 		}
-
 		if (!shopInput) {
 			showToast('请输入店铺名称！', 'error');
 			return;
 		}
 
+		// 处理店铺名输入
 		const inputShopNames = shopInput
 			.replace(/，|、|\s+/g, ',')
 			.split(',')
 			.map(s => s.trim())
 			.filter(s => s);
 
-		const shopList = inputShopNames.map(name => {
-			// 查找原始店铺中同名的项，保留shopId和cjfId
-			const original = originalShopList.find(item => item.shopName === name);
-			if (original) {
-				// 编辑模式：保留原有ID和cjfId，只更新名称
+		// ==============================================
+		// 生成标准 UUID（和你示例完全一样：1b9d6bcd-bbfd-4b2d-9b5d-ab83fbbd4be3）
+		// ==============================================
+		function generateUUID() {
+			return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+				var r = Math.random() * 16 | 0,
+					v = c == 'x' ? r : (r & 0x3 | 0x8);
+				return v.toString(16);
+			});
+		}
+
+		// ==============================================
+		// 核心：按顺序匹配，只改 shopName，保留所有字段
+		// ==============================================
+		const shopList = inputShopNames.map((name, index) => {
+			if (editUserName && originalShopList[index]) {
+				// 编辑：保留所有原有数据，只更新店铺名
 				return {
-					shopId: original.shopId, // 保留店铺ID
-					cjfId: original.cjfId || '', // 锁定cjfId，绝不修改
+					...originalShopList[index],
 					shopName: name
 				};
 			} else {
-				// 新增店铺：生成新shopId，cjfId为空
+				// 新增：生成标准格式 UUID
 				return {
-					shopId: crypto.randomUUID ? crypto.randomUUID() : new Date().getTime().toString(),
-					cjfId: '', // 新增店铺无cjfId
-					shopName: name
+					shopId: generateUUID(),
+					cjfId: '',
+					shopType: '',
+					shopName: name,
+					shopCode: ''
 				};
 			}
 		});
 
 		const now = new Date().toISOString();
 
-		// 请求最新数据并保存
+		// 读取并保存数据
 		fetch(`/data/userdata.json?_=${new Date().getTime()}`, {
-				method: 'GET',
-				cache: 'no-cache',
-				headers: {
-					'Cache-Control': 'no-cache',
-					'Pragma': 'no-cache'
-				}
+				cache: 'no-cache'
 			})
-			.then(response => {
-				if (response.ok) return response.json();
-				if (response.status === 404) return [];
-				throw new Error(`获取最新用户数据失败 [${response.status}]`);
-			})
+			.then(res => res.ok ? res.json() : [])
 			.then(latestUserData => {
 				if (!Array.isArray(latestUserData)) latestUserData = [];
 				let newUserData = [...latestUserData];
 
-				// 新增用户
 				if (!editUserName) {
-					const isUserNameExist = latestUserData.some(user =>
-						user.userName && user.userName.trim() === userName
-					);
-					if (isUserNameExist) {
+					// 新增用户
+					const isExist = latestUserData.some(u => u.userName === userName);
+					if (isExist) {
 						showToast(`用户名【${userName}】已存在！`, 'error');
-						throw new Error(`用户名重复：${userName}`);
+						throw new Error('用户名重复');
 					}
 					newUserData.push({
-						id: crypto.randomUUID ? crypto.randomUUID() : new Date().getTime().toString(),
+						id: generateUUID(), // ✅ 标准UUID
 						userName: userName,
 						password: password,
 						role: userRole,
-						shopList: shopList,
 						memberExpireTime: memberExpireTime,
+						shopList: shopList,
 						createTime: now,
-						updateTime: now
+						updateTime: now,
+						systemSettings: {
+							postPictureReminderEnabled: true,
+							postPictureReminderDay: 7,
+							postPictureReminderTimes: 1
+						}
 					});
 				} else {
-					// 编辑用户（完整保留原有字段，只修改允许项）
+					// 编辑用户：完整保留所有原有数据！
 					newUserData = newUserData.map(user => {
 						if (user.userName === editUserName) {
 							return {
-								...user, // 保留用户所有原有字段
-								shopList: shopList, // 已修复：含shopId、cjfId
+								...user, // ✅ systemSettings 等全部保留
+								shopList: shopList,
 								password: password || user.password,
 								role: editUserName === PROTECTED_ADMIN_USER ? 'admin' : userRole,
 								memberExpireTime: userRole === 'vip' ? memberExpireTime : '',
@@ -657,31 +666,18 @@
 					body: `data=${encodeURIComponent(JSON.stringify(newUserData, null, 2))}`
 				});
 			})
-			.then(response => {
-				if (!response.ok) throw new Error(`保存请求失败 [${response.status}]`);
-				return response.text();
-			})
+			.then(res => res.text())
 			.then(text => {
-				let res = {
-					success: false
-				};
-				try {
-					res = JSON.parse(text);
-				} catch (e) {
-					res.success = text.includes('success') || text.includes('成功');
-				}
-				if (!res.success) throw new Error(res.msg || '保存失败');
-
-				const operationType = editUserName ? '编辑用户' : '新增用户';
-				recordOperationLog(operationType, `${operationType}【${userName}】成功`, 'success');
+				const success = text.includes('success') || text.includes('成功');
+				if (!success) throw new Error('保存失败');
 
 				showToast(editUserName ? '用户编辑成功！' : '用户新增成功！', 'success');
 				closeUserModal();
 				loadAllUsers();
 			})
 			.catch(err => {
-				console.error('保存用户失败：', err);
-				showToast(err.message || '保存用户失败，请重试！', 'error');
+				console.error(err);
+				showToast(err.message || '保存失败，请重试！', 'error');
 			});
 	}
 

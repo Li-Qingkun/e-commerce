@@ -1,161 +1,77 @@
 ﻿[
   {
-    "ID": "1771990337541",
+    "ID": 1773624363504,
     "Code": "",
-    "Name": "哨兵模式U盘通用链接",
-    "SkuName": "",
-    "SkuPrice": "118",
-    "createTime": "2026-02-25T03:32:00.000Z",
-    "PostPictures": 1,
-    "ReleasePlans": [
-      {
-        "ReleaseDate": "2026-02-25",
-        "ReleaseQuantity": 2,
-        "ReleaseName": "哨兵模式专用U盘行车记录仪360度全景车载u盘TF存储卡type-c配件"
-      },
-      {
-        "ReleaseDate": "2026-02-26",
-        "ReleaseQuantity": 2,
-        "ReleaseName": "哨兵模式U盘"
-      },
-      {
-        "ReleaseDate": "2026-02-27",
-        "ReleaseQuantity": 2,
-        "ReleaseName": "深蓝哨兵模式U盘"
-      },
-      {
-        "ReleaseDate": "2026-02-28",
-        "ReleaseQuantity": 2,
-        "ReleaseName": "深蓝哨兵模式U盘"
-      },
-      {
-        "ReleaseDate": "2026-03-01",
-        "ReleaseQuantity": 2,
-        "ReleaseName": "银河哨兵模式U盘"
-      }
-    ]
-  },
-  {
-    "ID": 1771990610212,
-    "Code": "",
-    "Name": "26款坦克300+日产车系",
+    "Name": "领克",
     "SkuName": "",
     "SkuPrice": "",
-    "createTime": "2026-02-25T03:36:50.212Z",
+    "createTime": "2026-03-16T01:26:03.504Z",
     "PostPictures": 0,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
     "ReleasePlans": [
       {
-        "ReleaseDate": "2026-03-03",
+        "ReleaseDate": "2026-03-16",
         "ReleaseQuantity": 2,
-        "ReleaseName": "坦克300记录仪U盘+日产N6车载U盘"
+        "ReleaseName": ""
       },
       {
-        "ReleaseDate": "2026-03-04",
+        "ReleaseDate": "2026-03-17",
         "ReleaseQuantity": 2,
-        "ReleaseName": "坦克300记录仪U盘+日产N6车载U盘"
+        "ReleaseName": ""
       },
       {
-        "ReleaseDate": "2026-03-05",
+        "ReleaseDate": "2026-03-18",
         "ReleaseQuantity": 2,
-        "ReleaseName": "坦克300记录仪U盘+日产N6车载U盘"
+        "ReleaseName": ""
       },
       {
-        "ReleaseDate": "2026-03-06",
+        "ReleaseDate": "2026-03-19",
         "ReleaseQuantity": 2,
-        "ReleaseName": "坦克300记录仪U盘+日产N6车载U盘"
+        "ReleaseName": ""
+      },
+      {
+        "ReleaseDate": "2026-03-20",
+        "ReleaseQuantity": 2,
+        "ReleaseName": ""
       }
     ]
   },
   {
-    "ID": "1771990741242",
+    "ID": 1773624393359,
     "Code": "",
-    "Name": "零跑+深蓝（陨石封面）",
-    "SkuName": "",
-    "SkuPrice": "118",
-    "createTime": "2026-02-25T03:39:00.000Z",
-    "PostPictures": 1,
-    "ReleasePlans": [
-      {
-        "ReleaseDate": "2026-02-27",
-        "ReleaseQuantity": 2,
-        "ReleaseName": "零跑C10记录仪U盘+深蓝S07哨兵模式U盘"
-      },
-      {
-        "ReleaseDate": "2026-02-28",
-        "ReleaseQuantity": 2,
-        "ReleaseName": "零跑C10记录仪U盘+深蓝S07哨兵模式U盘"
-      },
-      {
-        "ReleaseDate": "2026-03-01",
-        "ReleaseQuantity": 2,
-        "ReleaseName": "零跑C10记录仪U盘+深蓝S07哨兵模式U盘"
-      },
-      {
-        "ReleaseDate": "2026-03-02",
-        "ReleaseQuantity": 2,
-        "ReleaseName": "零跑C10记录仪U盘+深蓝S07哨兵模式U盘"
-      }
-    ]
-  },
-  {
-    "ID": 1771990913916,
-    "Code": "",
-    "Name": "萤火虫+银河车系（白色封面）",
+    "Name": "捷途 陨石",
     "SkuName": "",
     "SkuPrice": "",
-    "createTime": "2026-02-25T03:41:53.916Z",
+    "createTime": "2026-03-16T01:26:33.359Z",
     "PostPictures": 0,
+    "PostPictureCount": 0,
+    "PostPictureDate": "",
     "ReleasePlans": [
       {
-        "ReleaseDate": "2026-03-07",
+        "ReleaseDate": "2026-03-16",
         "ReleaseQuantity": 2,
-        "ReleaseName": "萤火虫记录仪U盘+银河E5车载U盘"
+        "ReleaseName": ""
       },
       {
-        "ReleaseDate": "2026-03-08",
+        "ReleaseDate": "2026-03-17",
         "ReleaseQuantity": 2,
-        "ReleaseName": "萤火虫记录仪U盘+银河E5车载U盘"
+        "ReleaseName": ""
       },
       {
-        "ReleaseDate": "2026-03-09",
+        "ReleaseDate": "2026-03-18",
         "ReleaseQuantity": 2,
-        "ReleaseName": "萤火虫记录仪U盘+银河E5车载U盘"
+        "ReleaseName": ""
       },
       {
-        "ReleaseDate": "2026-03-10",
+        "ReleaseDate": "2026-03-19",
         "ReleaseQuantity": 2,
-        "ReleaseName": "萤火虫记录仪U盘+银河E5车载U盘"
-      }
-    ]
-  },
-  {
-    "ID": 1771991165968,
-    "Code": "",
-    "Name": "名爵MG4+ 银河 （黑色）",
-    "SkuName": "",
-    "SkuPrice": "",
-    "createTime": "2026-02-25T03:46:05.968Z",
-    "PostPictures": 0,
-    "ReleasePlans": [
-      {
-        "ReleaseDate": "2026-03-11",
-        "ReleaseQuantity": 2,
-        "ReleaseName": "名爵MG4记录仪U盘+银河E5哨兵模式U盘"
+        "ReleaseName": ""
       },
       {
-        "ReleaseDate": "2026-03-12",
+        "ReleaseDate": "2026-03-20",
         "ReleaseQuantity": 2,
-        "ReleaseName": "名爵MG4记录仪U盘+银河E5哨兵模式U盘"
-      },
-      {
-        "ReleaseDate": "2026-03-13",
-        "ReleaseQuantity": 2,
-        "ReleaseName": "名爵MG4记录仪U盘+银河E5哨兵模式U盘"
-      },
-      {
-        "ReleaseDate": "2026-03-14",
-        "ReleaseQuantity": 2,
-        "ReleaseName": "名爵MG4记录仪U盘+银河E5哨兵模式U盘"
+        "ReleaseName": ""
       }
     ]
   }
